@@ -1,0 +1,9 @@
+/.idea/
+/vendor/
+/logs/
+.env
+*.log
+/tests/.phpunit.result.cache
+/tests/.phpunit.cache
+/tests/codecoverage/
+/.php*
