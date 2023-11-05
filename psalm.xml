@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<psalm
+        errorLevel="1"
+        resolveFromConfigFile="true"
+        findUnusedBaselineEntry="true"
+        findUnusedCode="false"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="https://getpsalm.org/schema/config"
+        xsi:schemaLocation="https://getpgesalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+>
+    <projectFiles>
+        <directory name="domain"/>
+        <directory name="tests/cases"/>
+        <directory name="tests/helpers"/>
+        <ignoreFiles>
+            <directory name="vendor"/>
+        </ignoreFiles>
+    </projectFiles>
+    <plugins>
+        <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
+        <pluginClass class="Weirdan\DoctrinePsalmPlugin\Plugin"/>
+    </plugins>
+</psalm>
