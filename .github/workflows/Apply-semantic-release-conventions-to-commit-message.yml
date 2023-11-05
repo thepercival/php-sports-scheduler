@@ -1,5 +1,5 @@
 # https://github.com/semantic-release/semantic-release
-name: Apply semantic-release conventions to commit message
+name: Apply-semantic-release-conventions-to-commit-message
 
 on:
   push:
