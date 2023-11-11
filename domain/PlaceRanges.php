@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace SportsScheduler;
 
-use SportsHelpers\PlaceRanges;
+use SportsHelpers\PlaceRanges as PlaceRangesBase;
 
-class CustomPlaceRanges extends PlaceRanges
+class PlaceRanges extends PlaceRangesBase
 {
     public const MaxNrOfPlacesPerPouleSmall = 20;
     public const MaxNrOfPlacesPerPouleLarge = 12;
