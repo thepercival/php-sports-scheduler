@@ -11,11 +11,13 @@ use PHPUnit\Framework\TestCase;
 use SportsHelpers\SportRange;
 use SportsPlanning\Planning;
 use SportsPlanning\Output\Planning as PlanningOutput;
+use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 class AllInOneGameTest extends TestCase
 {
     use PlanningCreator;
+    use GppMarginCalculator;
 
     public function testSimple(): void
     {
@@ -24,7 +26,8 @@ class AllInOneGameTest extends TestCase
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $maxGppMargin = $scheduleCreator->getMaxGppMargin($input, $input->getPoule(1));
+        $biggestPoule = $input->getPoule(1);
+        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
         $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
         // (new ScheduleOutput($this->getLogger()))->output($schedules);
         $gameCreator = new GameCreator($this->getLogger());

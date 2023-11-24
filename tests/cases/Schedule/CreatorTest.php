@@ -10,9 +10,13 @@ use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use SportsHelpers\Against\Side as AgainstSide;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
 use SportsPlanning\Combinations\AssignedCounter;
+use SportsPlanning\Combinations\HomeAway;
+use SportsPlanning\Combinations\PlaceCombination;
+use SportsPlanning\Poule;
 use SportsScheduler\Planning\Validator as PlanningValidator;
 use SportsPlanning\Schedule;
 use SportsPlanning\Output\Schedule as ScheduleOutput;
@@ -20,11 +24,13 @@ use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsPlanning\Schedule\Game;
 use SportsPlanning\Schedule\GamePlace;
 use SportsPlanning\Schedule\Sport as SportSchedule;
+use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 class CreatorTest extends TestCase
 {
     use PlanningCreator;
+    use GppMarginCalculator;
 
     public function testH2hAndGpp(): void
     {
@@ -43,8 +49,8 @@ class CreatorTest extends TestCase
         ];
         $input = $this->createInput([5], $sportVariants);
 
-        $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $maxGppMargin = $scheduleCreator->getMaxGppMargin($input, $input->getPoule(1));
+        $biggestPoule = $input->getPoule(1);
+        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
         self::assertEquals(0, $maxGppMargin);
     }
 
@@ -56,9 +62,9 @@ class CreatorTest extends TestCase
         ];
         $input = $this->createInput([5], $sportVariants);
 
-        $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $maxGppMargin = $scheduleCreator->getMaxGppMargin($input, $input->getPoule(1));
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $biggestPoule = $input->getPoule(1);
+        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
+        $schedules = (new ScheduleCreator($this->getLogger()))->createFromInput($input, $maxGppMargin);
         $schedule = reset($schedules);
         self::assertNotFalse($schedule);
 
@@ -112,7 +118,8 @@ class CreatorTest extends TestCase
         $input = $this->createInput([5], $sportVariants);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $maxGppMargin = $scheduleCreator->getMaxGppMargin($input, $input->getPoule(1));
+        $biggestPoule = $input->getPoule(1);
+        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
         $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
         $schedule = reset($schedules);
         self::assertNotFalse($schedule);
@@ -133,7 +140,8 @@ class CreatorTest extends TestCase
         $input = $this->createInput([8], $sportVariants);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $maxGppMargin = $scheduleCreator->getMaxGppMargin($input, $input->getPoule(1));
+        $biggestPoule = $input->getPoule(1);
+        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
         $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
         $schedule = reset($schedules);
         self::assertNotFalse($schedule);
@@ -151,7 +159,8 @@ class CreatorTest extends TestCase
         $input = $this->createInput([5], $sportVariants);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $maxGppMargin = $scheduleCreator->getMaxGppMargin($input, $input->getPoule(1));
+        $biggestPoule = $input->getPoule(1);
+        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
         $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
         $schedule = reset($schedules);
         self::assertNotFalse($schedule);
@@ -188,7 +197,8 @@ class CreatorTest extends TestCase
         $input = $this->createInput([5], $sportVariants);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $maxGppMargin = $scheduleCreator->getMaxGppMargin($input, $input->getPoule(1));
+        $biggestPoule = $input->getPoule(1);
+        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
         $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
         $schedule = reset($schedules);
         self::assertNotFalse($schedule);
@@ -222,13 +232,15 @@ class CreatorTest extends TestCase
         // (new ScheduleOutput($this->getLogger()))->output($schedules);
         // (new ScheduleOutput($this->getLogger()))->outputTotals($schedules);
 
+        $tmpPoule = $input->getPoule(1);
+
         foreach( $schedules as $schedule) {
-            $sportVariants = array_values($schedule->createSportVariants()->toArray());
-            $assignedCounter = new AssignedCounter($schedule->getPoule(), $sportVariants);
+            $sportVariants = $schedule->createSportVariants();
+            $assignedCounter = new AssignedCounter($tmpPoule, $sportVariants);
             foreach( $schedule->getSportSchedules() as $sportSchedule) {
                 $sportVariant = $sportSchedule->createVariant();
                 if( $sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
-                    $homeAways = $sportSchedule->convertGamesToHomeAways();
+                    $homeAways = $this->gamesToHomeAway($sportSchedule, $tmpPoule);
                     $assignedCounter->assignHomeAways($homeAways);
                 }
             }
@@ -252,13 +264,14 @@ class CreatorTest extends TestCase
 //        (new ScheduleOutput($this->getLogger()))->output($schedules);
 //        (new ScheduleOutput($this->getLogger()))->outputTotals($schedules);
 
+        $tmpPoule = $input->getPoule(1);
         foreach( $schedules as $schedule) {
-            $sportVariants = array_values($schedule->createSportVariants()->toArray());
-            $assignedCounter = new AssignedCounter($schedule->getPoule(), $sportVariants);
+            $sportVariants = $schedule->createSportVariants();
+            $assignedCounter = new AssignedCounter($tmpPoule, $sportVariants);
             foreach( $schedule->getSportSchedules() as $sportSchedule) {
                 $sportVariant = $sportSchedule->createVariant();
                 if( $sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
-                    $homeAways = $sportSchedule->convertGamesToHomeAways();
+                    $homeAways = $this->gamesToHomeAway($sportSchedule, $tmpPoule);
                     $assignedCounter->assignHomeAways($homeAways);
                 }
             }
@@ -281,13 +294,14 @@ class CreatorTest extends TestCase
 //        (new ScheduleOutput($this->getLogger()))->output($schedules);
 //        (new ScheduleOutput($this->getLogger()))->outputTotals($schedules);
 
+        $tmpPoule = $input->getPoule(1);
         foreach( $schedules as $schedule) {
-            $sportVariants = array_values($schedule->createSportVariants()->toArray());
-            $assignedCounter = new AssignedCounter($schedule->getPoule(), $sportVariants);
+            $sportVariants = $schedule->createSportVariants();
+            $assignedCounter = new AssignedCounter($tmpPoule, $sportVariants);
             foreach( $schedule->getSportSchedules() as $sportSchedule) {
                 $sportVariant = $sportSchedule->createVariant();
                 if( $sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
-                    $homeAways = $sportSchedule->convertGamesToHomeAways();
+                    $homeAways = $this->gamesToHomeAway($sportSchedule, $tmpPoule);
                     $assignedCounter->assignHomeAways($homeAways);
                 }
             }
@@ -309,13 +323,14 @@ class CreatorTest extends TestCase
     //        (new ScheduleOutput($this->getLogger()))->output($schedules);
     //        (new ScheduleOutput($this->getLogger()))->outputTotals($schedules);
 
+        $tmpPoule = $input->getPoule(1);
         foreach( $schedules as $schedule) {
-            $sportVariants = array_values($schedule->createSportVariants()->toArray());
-            $assignedCounter = new AssignedCounter($schedule->getPoule(), $sportVariants);
+            $sportVariants = $schedule->createSportVariants();
+            $assignedCounter = new AssignedCounter($tmpPoule, $sportVariants);
             foreach( $schedule->getSportSchedules() as $sportSchedule) {
                 $sportVariant = $sportSchedule->createVariant();
                 if( $sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
-                    $homeAways = $sportSchedule->convertGamesToHomeAways();
+                    $homeAways = $this->gamesToHomeAway($sportSchedule, $tmpPoule);
                     $assignedCounter->assignHomeAways($homeAways);
                 }
             }
@@ -324,13 +339,13 @@ class CreatorTest extends TestCase
         }
     }
 
-protected function getWithAssignedDifference(SportSchedule $sportSchedule): int
-    {
-        $assignedCounter = new AssignedCounter($sportSchedule->getSchedule()->getPoule(),[$sportSchedule->createVariant()]);
-        $homeAways = $sportSchedule->convertGamesToHomeAways();
-        $assignedCounter->assignHomeAways($homeAways);
-        return $assignedCounter->getWithAmountDifference();
-    }
+//    protected function getWithAssignedDifference(SportSchedule $sportSchedule): int
+//    {
+//        $assignedCounter = new AssignedCounter($sportSchedule->getSchedule()->getPoule(),[$sportSchedule->createVariant()]);
+//        $homeAways = $sportSchedule->convertGamesToHomeAways();
+//        $assignedCounter->assignHomeAways($homeAways);
+//        return $assignedCounter->getWithAmountDifference();
+//    }
 
 
     protected function checkNotParticipating(SportSchedule $sportSchedule, int $placeNr): void
@@ -343,5 +358,30 @@ protected function getWithAssignedDifference(SportSchedule $sportSchedule): int
                     })->count() > 0;
             })
         );
+    }
+
+    /**
+     * @param SportSchedule $sportSchedule
+     * @param Poule $poule
+     * @return list<HomeAway>
+     */
+    protected function gamesToHomeAway(SportSchedule $sportSchedule, Poule $poule): array {
+        return array_map( function(Game $game) use($poule): HomeAway {
+            return $this->gameToHomeAway($game, $poule);
+        }, array_values( $sportSchedule->getGames()->toArray() ) );
+    }
+
+
+    protected function gameToHomeAway(Game $game, Poule $poule): HomeAway {
+        $homePlaceNrs = $game->getSidePlaceNrs(AgainstSide::Home);
+        $homePlaces = array_map( function(int $placeNr) use($poule): \SportsPlanning\Place {
+            return $poule->getPlace($placeNr);
+        }, $homePlaceNrs );
+        $awayPlaceNrs = $game->getSidePlaceNrs(AgainstSide::Away);
+        $awayPlaces = array_map( function(int $placeNr) use($poule): \SportsPlanning\Place {
+            return $poule->getPlace($placeNr);
+        }, $awayPlaceNrs );
+
+        return new HomeAway( new PlaceCombination( $homePlaces ), new PlaceCombination( $awayPlaces ) );
     }
 }

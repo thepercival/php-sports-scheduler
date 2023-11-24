@@ -6,6 +6,9 @@ namespace SportsScheduler\Schedule\CreatorHelpers;
 
 use drupol\phpermutations\Generators\Combinations as CombinationsGenerator;
 use Psr\Log\LoggerInterface;
+use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
+use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
+use SportsHelpers\Sport\Variant\AllInOneGame;
 use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
 use SportsPlanning\Combinations\AssignedCounter;
 use SportsPlanning\Combinations\PlaceCombination;
@@ -17,6 +20,7 @@ use SportsPlanning\Schedule;
 use SportsPlanning\Schedule\Game;
 use SportsPlanning\Schedule\GamePlace;
 use SportsPlanning\Schedule\Sport as SportSchedule;
+use SportsScheduler\Schedule\SportVariantWithNr;
 
 class Single
 {
@@ -27,19 +31,27 @@ class Single
     /**
      * @param Schedule $schedule
      * @param Poule $poule
-     * @param array<int, SingleSportVariant> $sportVariants
+     * @param list<SportVariantWithNr> $singlesWithNr
      * @param AssignedCounter $assignedCounter
      */
     public function createSportSchedules(
         Schedule $schedule,
         Poule $poule,
-        array $sportVariants,
+        array $singlesWithNr,
         AssignedCounter $assignedCounter): void
     {
+        $sportVariants = array_map(function(SportVariantWithNr $sportVariantWithNr): SingleSportVariant|AgainstH2h|AgainstGpp|AllInOneGame{
+            return $sportVariantWithNr->sportVariant;
+        }, $singlesWithNr );
+
         /** @psalm-suppress ArgumentTypeCoercion */
         $singleAssignedCounter = new AssignedCounter($poule, $sportVariants);
-        foreach ($sportVariants as $sportNr => $sportVariant) {
-            $sportSchedule = new SportSchedule($schedule, $sportNr, $sportVariant->toPersistVariant());
+        foreach ($singlesWithNr as $singleWithNr) {
+            $sportVariant = $singleWithNr->sportVariant;
+            if( !($sportVariant instanceof SingleSportVariant ) ) {
+                continue;
+            }
+            $sportSchedule = new SportSchedule($schedule, $singleWithNr->number, $sportVariant->toPersistVariant());
             $gameRound = $this->generateGameRounds($poule, $sportVariant, $singleAssignedCounter);
             $this->createGames($sportSchedule, $gameRound);
         }

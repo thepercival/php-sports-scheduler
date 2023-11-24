@@ -13,6 +13,7 @@ use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWit
 use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
+use SportsScheduler\Schedule\SportVariantWithNr;
 
 class AgainstDifferenceManager
 {
@@ -38,31 +39,31 @@ class AgainstDifferenceManager
 
     /**
      * @param Poule $poule
-     * @param non-empty-array<int, AgainstH2h|AgainstGpp> $againstVariantMap
+     * @param non-empty-list<SportVariantWithNr> $againstWithNr
      * @param int $allowedMargin
      * @param LoggerInterface $logger
      */
     public function __construct(
         protected Poule $poule,
-        array $againstVariantMap,
+        array $againstWithNr,
         protected int $allowedMargin,
         protected LoggerInterface $logger)
     {
-        $this->initAmountMaps($poule, $againstVariantMap);
+        $this->initAmountMaps($poule, $againstWithNr);
     }
 
     /**
      * @param Poule $poule
-     * @param non-empty-array<int, AgainstH2h|AgainstGpp> $againstVariantMap
+     * @param non-empty-list<SportVariantWithNr> $againstVariantsWithNr
      * @return void
      */
-    private function initAmountMaps(Poule $poule, array $againstVariantMap): void
+    private function initAmountMaps(Poule $poule, array $againstVariantsWithNr): void
     {
-        $againstGppMap = $this->getAgainstGppMap($againstVariantMap);
+        $againstGppMap = $this->getAgainstGppMap($againstVariantsWithNr);
         $this->initAmountMap($poule, $againstGppMap);
         $this->initAgainstAmountMap($poule, $againstGppMap);
         $this->initWithAmountMap($poule, $againstGppMap);
-        $this->initHomeAmountMap($poule, $againstVariantMap);
+        $this->initHomeAmountMap($poule, $againstVariantsWithNr);
     }
 
     /**
@@ -238,10 +239,10 @@ class AgainstDifferenceManager
 
     /**
      * @param Poule $poule
-     * @param non-empty-array<int, AgainstH2h|AgainstGpp> $againstVariantMap
+     * @param non-empty-list<SportVariantWithNr> $againstVariantsWithNr
      * @return void
      */
-    private function initHomeAmountMap(Poule $poule, array $againstVariantMap): void
+    private function initHomeAmountMap(Poule $poule, array $againstVariantsWithNr): void
     {
         // $totalNrOfGames = $this->getTotalNrOfGames($poule, $againstVariantMap);
 
@@ -249,7 +250,12 @@ class AgainstDifferenceManager
         $nrOfHomeCombinationsCumulative = 0;
 
 //        $counter = 0;
-        foreach ($againstVariantMap as $sportNr => $againstVariant) {
+        foreach ($againstVariantsWithNr as $againstVariantWithNr) {
+            $againstVariant = $againstVariantWithNr->sportVariant;
+            if( !($againstVariant instanceof AgainstH2h ) && !($againstVariant instanceof AgainstGpp ) ) {
+                continue;
+            }
+            $sportNr = $againstVariantWithNr->number;
             $againstWithPoule = $this->getVariantWithPoule($poule, $againstVariant);
             $nrOfSportGames = $againstWithPoule->getTotalNrOfGames();
            // $lastSportVariant = ++$counter === count($againstVariantMap);
@@ -323,15 +329,16 @@ class AgainstDifferenceManager
     }
 
     /**
-     * @param array<int, AgainstH2h|AgainstGpp> $againstVariantMap
+     * @param list<SportVariantWithNr> $againstVariantsWithNr
      * @return array<int, AgainstGpp>
      */
-    protected function getAgainstGppMap(array $againstVariantMap): array
+    protected function getAgainstGppMap(array $againstVariantsWithNr): array
     {
         $map = [];
-        foreach( $againstVariantMap as $sportNr => $againstVariant) {
-            if( $againstVariant instanceof AgainstGpp) {
-                $map[$sportNr] = $againstVariant;
+        foreach( $againstVariantsWithNr as $againstVariantWithNr) {
+            $sportVariant = $againstVariantWithNr->sportVariant;
+            if( $sportVariant instanceof AgainstGpp) {
+                $map[$againstVariantWithNr->number] = $sportVariant;
             }
         }
         return $map;

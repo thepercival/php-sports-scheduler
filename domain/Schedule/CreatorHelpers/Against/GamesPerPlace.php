@@ -16,6 +16,7 @@ use SportsPlanning\Poule;
 use SportsPlanning\Schedule;
 use SportsPlanning\Schedule\Sport as SportSchedule;
 use SportsScheduler\Schedule\CreatorHelpers\Against as AgainstHelper;
+use SportsScheduler\Schedule\SportVariantWithNr;
 
 class GamesPerPlace extends AgainstHelper
 {
@@ -27,7 +28,7 @@ class GamesPerPlace extends AgainstHelper
     /**
      * @param Schedule $schedule
      * @param Poule $poule
-     * @param array<int, AgainstGpp> $sportVariantMap
+     * @param list<SportVariantWithNr> $againstGppsWithNr
      * @param AssignedCounter $assignedCounter
      * @param AgainstDifferenceManager $againstGppDifferenceManager,
      * @param int|null $nrOfSecondsBeforeTimeout
@@ -36,7 +37,7 @@ class GamesPerPlace extends AgainstHelper
     public function createSportSchedules(
         Schedule                 $schedule,
         Poule                    $poule,
-        array                    $sportVariantMap,
+        array                    $againstGppsWithNr,
         AssignedCounter          $assignedCounter,
         AgainstDifferenceManager $againstGppDifferenceManager,
         int|null                 $nrOfSecondsBeforeTimeout
@@ -44,7 +45,12 @@ class GamesPerPlace extends AgainstHelper
     {
         $homeAwayCreator = new GppHomeAwayCreator();
 
-        foreach ($sportVariantMap as $sportNr => $sportVariant) {
+        foreach ($againstGppsWithNr as $againstGppWithNr) {
+            $sportNr = $againstGppWithNr->number;
+            $sportVariant = $againstGppWithNr->sportVariant;
+            if( !($sportVariant instanceof AgainstGpp ) ) {
+                continue;
+            }
             $sportSchedule = new SportSchedule($schedule, $sportNr, $sportVariant->toPersistVariant());
 
             $gameRoundCreator = new AgainstGppGameRoundCreator($this->logger);
@@ -64,8 +70,4 @@ class GamesPerPlace extends AgainstHelper
             $assignedCounter->assignHomeAways($gameRound->getAllHomeAways());
         }
     }
-
-
-
-
 }

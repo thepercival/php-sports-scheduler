@@ -31,6 +31,7 @@ use SportsPlanning\Referee as PlanningReferee;
 use SportsPlanning\Referee\Info as RefereeInfo;
 use SportsScheduler\Resource\RefereePlace\Service as RefereePlaceService;
 use SportsScheduler\Schedule\Creator as ScheduleCreator;
+use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 use SportsScheduler\TestHelper\PlanningReplacer;
 
@@ -38,6 +39,7 @@ class ValidatorTest extends TestCase
 {
     use PlanningCreator;
     use PlanningReplacer;
+    use GppMarginCalculator;
 
     public function testHasEnoughTotalNrOfGames(): void
     {
@@ -115,7 +117,8 @@ class ValidatorTest extends TestCase
         $planning = new Planning($input, new SportRange(1, 1), 1);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $maxGppMargin = $scheduleCreator->getMaxGppMargin($input, $input->getPoule(1));
+        $biggestPoule = $input->getPoule(1);
+        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
         $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
 
         $gameCreator = new GameCreator($this->getLogger());
@@ -469,7 +472,8 @@ class ValidatorTest extends TestCase
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $maxGppMargin = $scheduleCreator->getMaxGppMargin($input, $input->getPoule(1));
+        $biggestPoule = $input->getPoule(1);
+        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
         $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
 
         $gameCreator = new GameCreator($this->getLogger());
@@ -509,7 +513,8 @@ class ValidatorTest extends TestCase
         $planning = new Planning($input, new SportRange(2, 2), 2);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $maxGppMargin = $scheduleCreator->getMaxGppMargin($input, $input->getPoule(1));
+        $biggestPoule = $input->getPoule(1);
+        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
         $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
 
         $gameCreator = new GameCreator($this->getLogger());

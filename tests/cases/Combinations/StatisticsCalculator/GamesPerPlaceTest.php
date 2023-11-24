@@ -23,30 +23,35 @@ use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsPlanning\Poule;
 use SportsScheduler\Schedule\CreatorHelpers\AgainstDifferenceManager;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
+use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 class GamesPerPlaceTest extends TestCase
 {
     use PlanningCreator;
+    use GppMarginCalculator;
 
     public function testSortHomeAway(): void {
 
         $sportVariant = $this->getAgainstGppSportVariant(2, 2, 26);
         $input = $this->createInput([18], [new SportVariantWithFields($sportVariant, 1)]);
         $poule = $input->getPoule(1);
+        $nrOfPlaces = count($poule->getPlaces());
         $variantWithPoule = new AgainstGppWithPoule($poule, $sportVariant);
         $assignedCounter = new AssignedCounter($poule, [$sportVariant]);
-        $againstGppMap = $this->getAgainstGppSportVariantMap($input);
-        if( count($againstGppMap) === 0 ) {
+        $scheduleCreator = new ScheduleCreator($this->getLogger());
+        $inputSports = array_values($input->getSports()->toArray());
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($inputSports);
+        $againstGppsWithNr = $scheduleCreator->getAgainstGppSportVariantsWithNr($sportVariantsWithNr, $nrOfPlaces);
+        if( count($againstGppsWithNr) === 0 ) {
             return;
         }
 
-        $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $allowedGppMargin = $scheduleCreator->getMaxGppMargin($input, $poule);
+        $allowedGppMargin = $this->getMaxGppMargin($poule, $this->getLogger() );
 
         $differenceManager = new AgainstDifferenceManager(
             $poule,
-            $againstGppMap,
+            $againstGppsWithNr,
             $allowedGppMargin,
             $this->getLogger());
         $amountRange = $differenceManager->getAmountRange(1);
@@ -100,22 +105,6 @@ class GamesPerPlaceTest extends TestCase
             $homeAways = array_merge($homeAways, $homeAwayCreator->create($variantWithPoule));
         }
         return $homeAways;
-    }
-
-    /**
-     * @param Input $input
-     * @return array<int, AgainstGpp>
-     */
-    protected function getAgainstGppSportVariantMap(Input $input): array
-    {
-        $map = [];
-        foreach( $input->getSports() as $sport) {
-            $sportVariant = $sport->createVariant();
-            if( $sportVariant instanceof AgainstGpp) {
-                $map[$sport->getNumber()] = $sportVariant;
-            }
-        }
-        return $map;
     }
 
     protected function getLogger(): LoggerInterface

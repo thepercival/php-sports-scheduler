@@ -13,6 +13,7 @@ use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
 use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\SportRange;
 use SportsPlanning\Input as PlanningInput;
+use SportsPlanning\Input\Configuration;
 use SportsPlanning\Input\Service as PlanningInputService;
 use SportsPlanning\Output\Planning as PlanningOutput;
 use SportsPlanning\Referee\Info as RefereeInfo;
@@ -143,12 +144,12 @@ class Iterator implements \Iterator
         BalancedPouleStructure $pouleStructure,
         SportVariantWithFields  $sportVariantWithFields
     ): PlanningInput {
-        return new PlanningInput(
+        return new PlanningInput( new Configuration(
             $pouleStructure,
             [$sportVariantWithFields],
             new RefereeInfo($this->selfReferee === SelfReferee::Disabled ? $this->nrOfReferees : new SelfRefereeInfo($this->selfReferee)),
             false
-        );
+        ) );
     }
 
     protected function incrementValue(): bool

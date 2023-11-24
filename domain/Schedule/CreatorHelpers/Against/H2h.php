@@ -9,13 +9,13 @@ use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
 use SportsPlanning\Combinations\AssignedCounter;
 use SportsScheduler\Combinations\HomeAwayCreator\H2h as H2hHomeAwayCreator;
-use SportsPlanning\GameRound\Against as AgainstGameRound;
 use SportsScheduler\GameRound\Creator\Against\H2h as AgainstH2hGameRoundCreator;
 use SportsPlanning\Poule;
 use SportsPlanning\Schedule;
 use SportsScheduler\Schedule\CreatorHelpers\AgainstDifferenceManager;
 use SportsPlanning\Schedule\Sport as SportSchedule;
 use SportsScheduler\Schedule\CreatorHelpers\Against as AgainstHelper;
+use SportsScheduler\Schedule\SportVariantWithNr;
 
 class H2h extends AgainstHelper
 {
@@ -27,7 +27,7 @@ class H2h extends AgainstHelper
     /**
      * @param Schedule $schedule
      * @param Poule $poule
-     * @param array<int, AgainstH2h> $againstH2hVariants
+     * @param list<SportVariantWithNr> $againstH2hsWithNr
      * @param AssignedCounter $assignedCounter
      * @param AgainstDifferenceManager $againstGppDifferenceManager
      * @throws Exception
@@ -35,19 +35,24 @@ class H2h extends AgainstHelper
     public function createSportSchedules(
         Schedule $schedule,
         Poule $poule,
-        array $againstH2hVariants,
+        array $againstH2hsWithNr,
         AssignedCounter $assignedCounter,
         AgainstDifferenceManager $againstGppDifferenceManager
     ): void
     {
         $homeAwayCreator = new H2hHomeAwayCreator();
-        foreach ($againstH2hVariants as $sportNr => $againstH2h) {
-            $sportSchedule = new SportSchedule($schedule, $sportNr, $againstH2h->toPersistVariant());
+        $sportNr = 1;
+        foreach ($againstH2hsWithNr as $againstH2hWithNr) {
+            $sportVariant = $againstH2hWithNr->sportVariant;
+            if( !($sportVariant instanceof AgainstH2h ) ) {
+                continue;
+            }
+            $sportSchedule = new SportSchedule($schedule, $sportNr, $sportVariant->toPersistVariant());
 
             $gameRoundCreator = new AgainstH2hGameRoundCreator($this->logger);
             $gameRound = $gameRoundCreator->createGameRound(
                 $poule,
-                $againstH2h,
+                $sportVariant,
                 $homeAwayCreator,
                 $assignedCounter,
                 $againstGppDifferenceManager->getHomeRange($sportNr)

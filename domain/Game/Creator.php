@@ -11,6 +11,7 @@ use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Game\Place\Against as AgainstGamePlace;
 use SportsPlanning\Game\Place\Together as TogetherGamePlace;
 use SportsPlanning\Game\Together as TogetherGame;
+use SportsPlanning\Place;
 use SportsPlanning\Planning;
 use SportsPlanning\Poule;
 use SportsPlanning\Schedule;
@@ -71,7 +72,9 @@ class Creator
             if ($sportVariant instanceof AgainstSportVariant) {
                 $game = new AgainstGame($planning, $poule, $defaultField, $gameRoundGame->getGameRoundNumber());
                 foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
-                    $sidePlaces = $gameRoundGame->getSidePlaces($poule, $side);
+                    $sidePlaces = array_map( function(int $placeNr) use($poule): Place {
+                        return $poule->getPlace($placeNr);
+                    }, $gameRoundGame->getSidePlaceNrs($side) );
                     foreach ($sidePlaces as $place) {
                         new AgainstGamePlace($game, $place, $side);
                     }

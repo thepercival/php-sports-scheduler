@@ -129,12 +129,12 @@ trait PlanningCreator
         if ($refereeInfo === null) {
             $refereeInfo = new RefereeInfo($this->getDefaultNrOfReferees());
         }
-        $input = new Input(
+        $input = new Input( new Input\Configuration(
             new PouleStructure(...$pouleStructureAsArray),
             $sportVariantsWithFields,
             $refereeInfo,
             $perPoule
-        );
+        ) );
 
         return $input;
     }
@@ -158,7 +158,10 @@ trait PlanningCreator
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
         if( $allowedGppMargin === null ) {
-            $allowedGppMargin = $scheduleCreator->getMaxGppMargin($input, $input->getPoule(1));
+            $biggestPoule = $input->getPoule(1);
+            $sports = array_values($input->getSports()->toArray());
+            $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sports);
+            $allowedGppMargin = $scheduleCreator->getMaxGppMargin($sportVariantsWithNr, count($biggestPoule->getPlaces()));
         }
         $schedules = $scheduleCreator->createFromInput($input, $allowedGppMargin);
 
