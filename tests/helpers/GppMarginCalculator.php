@@ -36,6 +36,4 @@ trait GppMarginCalculator
         $nrOfPlaces = count($poule->getPlaces());
         return $scheduleCreator->getMaxGppMargin($sportVariantsWithNr, $nrOfPlaces);
     }
-
-
 }
