@@ -202,11 +202,11 @@ class GamesPerPlace extends AgainstCreator
             ) ) {
                 return true;
             }
-            else {
+//            else {
 //                if( $gameRound->getNumber() <= 5 ) {
 //                    $this->logger->info('return to gr  : ' . $gameRound->getNumber() );
 //                }
-            }
+//            }
         }
         // $this->logger->info('gr ' . $gameRound->getNumber() . ' trying.. ( grgames ' . count($gameRound->getHomeAways()) . ', haGr ' . count($homeAwaysForGameRound) .  ' )');
 
@@ -311,17 +311,17 @@ class GamesPerPlace extends AgainstCreator
         $poule = $againstWithPoule->getPoule();
         $unassignedMap = [];
         foreach ($poule->getPlaces() as $place) {
-            $unassignedMap[$place->getNumber()] = new PlaceCounter($place);
+            $unassignedMap[$place->getPlaceNr()] = new PlaceCounter($place);
         }
         foreach ($homeAways as $homeAway) {
             foreach ($homeAway->getPlaces() as $place) {
-                $unassignedMap[$place->getNumber()]->increment();
+                $unassignedMap[$place->getPlaceNr()]->increment();
             }
         }
 
         $nrOfGamePlacesPerBatch = $againstWithPoule->getNrOfGamePlacesPerBatch();
         foreach ($poule->getPlaces() as $place) {
-            if ($currentGameRoundNumber + $unassignedMap[$place->getNumber()]->count() > $nrOfGamePlacesPerBatch) {
+            if ($currentGameRoundNumber + $unassignedMap[$place->getPlaceNr()]->count() > $nrOfGamePlacesPerBatch) {
                 return true;
             }
         }

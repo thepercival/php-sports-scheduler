@@ -73,7 +73,7 @@ class AllInOneGame
             foreach ($gameRound->getGames() as $gameRoundGame) {
                 $game = new Game($sportSchedule);
                 foreach ($gameRoundGame->getGamePlaces() as $gameRoundGamePlace) {
-                    $gamePlace = new GamePlace($game, $gameRoundGamePlace->getPlace()->getNumber());
+                    $gamePlace = new GamePlace($game, $gameRoundGamePlace->getPlace()->getPlaceNr());
                     $gamePlace->setGameRoundNumber($gameRoundGamePlace->getGameRoundNumber());
                 }
             }

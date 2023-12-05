@@ -94,8 +94,8 @@ abstract class Against
         array            &$assignedHomeMap
     ): void {
         foreach ($homeAway->getPlaces() as $place) {
-            $assignedSportMap[$place->getNumber()]->increment();
-            $assignedMap[$place->getNumber()]->increment();
+            $assignedSportMap[$place->getPlaceNr()]->increment();
+            $assignedMap[$place->getPlaceNr()]->increment();
         }
         $assignedWithMap[$homeAway->getHome()->getIndex()]->increment();
         $assignedWithMap[$homeAway->getAway()->getIndex()]->increment();
@@ -104,7 +104,7 @@ abstract class Against
         }
 
         foreach ($homeAway->getHome()->getPlaces() as $homePlace) {
-            $assignedHomeMap[$homePlace->getNumber()]->increment();
+            $assignedHomeMap[$homePlace->getPlaceNr()]->increment();
         }
         $gameRound->add($homeAway);
     }
@@ -153,7 +153,7 @@ abstract class Against
     {
         $map = [];
         foreach ($poule->getPlaces() as $place) {
-            $map[$place->getNumber()] = new PlaceCounter($place);
+            $map[$place->getPlaceNr()] = new PlaceCounter($place);
         }
         return $map;
     }
@@ -177,10 +177,10 @@ abstract class Against
         $map = [];
         foreach ($homeAways as $homeAway) {
             foreach ($homeAway->getPlaces() as $place) {
-                if (!isset($map[$place->getLocation()])) {
-                    $map[$place->getLocation()] = new PlaceCounter($place);
+                if (!isset($map[(string)$place])) {
+                    $map[(string)$place] = new PlaceCounter($place);
                 }
-                $map[$place->getLocation()]->increment();
+                $map[(string)$place]->increment();
             }
         }
         foreach ($map as $location => $placeCounter) {

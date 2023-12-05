@@ -83,7 +83,7 @@ class PreAssignSorter
     {
         $total = 0;
         foreach ($game->getPlaces() as $gamePlace) {
-            $total += $gamePlace->getPlace()->getNumber();
+            $total += $gamePlace->getPlace()->getPlaceNr();
         }
         return $total;
     }

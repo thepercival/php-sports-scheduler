@@ -68,11 +68,11 @@ final class H2h extends HomeAwayCreator
 
     protected function shouldSwap(Place $home, Place $away): bool
     {
-        $even = (($home->getNumber() + $away->getNumber()) % 2) === 0;
-        if ($even && $home->getNumber() < $away->getNumber()) {
+        $even = (($home->getPlaceNr() + $away->getPlaceNr()) % 2) === 0;
+        if ($even && $home->getPlaceNr() < $away->getPlaceNr()) {
             return true;
         }
-        if (!$even && $home->getNumber() > $away->getNumber()) {
+        if (!$even && $home->getPlaceNr() > $away->getPlaceNr()) {
             return true;
         }
         return false;

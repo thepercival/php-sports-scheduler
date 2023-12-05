@@ -72,7 +72,7 @@ class GameAssignmentsTest extends TestCase
         /** @var GameCounter[] $gameRefereePlaceCounters */
         $gameRefereePlaceCounters = $gameCounters[ResourceType::RefereePlaces->value];
         $place = $planning->getInput()->getPoule(1)->getPlace(1);
-        $gameRefereePlaceCounter = $gameRefereePlaceCounters[$place->getLocation()];
+        $gameRefereePlaceCounter = $gameRefereePlaceCounters[(string)$place];
         self::assertSame($place, $gameRefereePlaceCounter->getResource());
         self::assertSame(2, $gameRefereePlaceCounter->getNrOfGames());
     }

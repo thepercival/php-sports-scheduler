@@ -119,7 +119,7 @@ class Predicter
 
         $pouleHasForcedRefereePlaces = function (Poule $poule) use ($totalNrOfForcedRefereePlaces): bool {
             foreach ($poule->getPlaces() as $place) {
-                if (array_key_exists($place->getLocation(), $totalNrOfForcedRefereePlaces)) {
+                if (array_key_exists((string)$place, $totalNrOfForcedRefereePlaces)) {
                     return true;
                 }
             }
@@ -148,8 +148,8 @@ class Predicter
             // place met laagste nrOfForcedAssignment moet minimaal 1x beschikbaar zijn
             foreach ($poule->getPlaces() as $place) {
                 $nrOfForcedRefereePlaces = 0;
-                if (array_key_exists($place->getLocation(), $totalNrOfForcedRefereePlaces)) {
-                    $nrOfForcedRefereePlaces = $totalNrOfForcedRefereePlaces[$place->getLocation()];
+                if (array_key_exists((string)$place, $totalNrOfForcedRefereePlaces)) {
+                    $nrOfForcedRefereePlaces = $totalNrOfForcedRefereePlaces[(string)$place];
                 }
                 if ($nrOfForcedRefereePlaces >= $pouleMax /*|| $nrOfForcedRefereePlaces <= $pouleMin*/) {
                     return false;

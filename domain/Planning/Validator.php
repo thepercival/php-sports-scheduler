@@ -277,10 +277,10 @@ class Validator
             }
             $places = $game->getPoulePlaces();
             foreach ($places as $place) {
-                if (array_key_exists($place->getLocation(), $nrOfGamesPerPlace) === false) {
-                    $nrOfGamesPerPlace[$place->getLocation()] = 0;
+                if (array_key_exists((string)$place, $nrOfGamesPerPlace) === false) {
+                    $nrOfGamesPerPlace[(string)$place] = 0;
                 }
-                $nrOfGamesPerPlace[$place->getLocation()]++;
+                $nrOfGamesPerPlace[(string)$place]++;
             }
         }
 

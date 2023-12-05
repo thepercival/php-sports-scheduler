@@ -24,7 +24,7 @@ abstract class Against
                 $game = new Game($sportSchedule, $gameRound->getNumber());
                 foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
                     foreach ($homeAway->get($side)->getPlaces() as $place) {
-                        $gamePlace = new GamePlace($game, $place->getNumber());
+                        $gamePlace = new GamePlace($game, $place->getPlaceNr());
                         $gamePlace->setAgainstSide($side);
                     }
                 }

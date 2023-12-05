@@ -34,7 +34,7 @@ class With extends Validator
         $poulePlaces = $this->poule->getPlaceList();
         foreach ($this->poule->getPlaces() as $place) {
             $withPlaceCombinations = $this->getWithCombinations($place, $poulePlaces, $nrOfPlaces);
-            $this->counters[$place->getNumber()] = new WithCounter($place, $withPlaceCombinations);
+            $this->counters[$place->getPlaceNr()] = new WithCounter($place, $withPlaceCombinations);
         }
     }
 
@@ -74,8 +74,8 @@ class With extends Validator
         $places = $placeCombination->getPlaces();
         foreach ($places as $place) {
             $withPlaceCombinations = $this->getWithCombinations($place, $places, count($places));
-            if (isset($this->counters[$place->getNumber()])) {
-                $this->counters[$place->getNumber()]->addCombinations($withPlaceCombinations);
+            if (isset($this->counters[$place->getPlaceNr()])) {
+                $this->counters[$place->getPlaceNr()]->addCombinations($withPlaceCombinations);
             }
         }
     }

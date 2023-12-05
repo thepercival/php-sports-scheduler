@@ -426,13 +426,13 @@ class GamesPerPlace extends StatisticsCalculator
     }
 
     private function outputAgainstPlaceTotals(Place $place, string $prefix): void {
-        $placeNr = $place->getNumber() < 10 ? '0' . $place->getNumber() : $place->getNumber();
+        $placeNr = $place->getPlaceNr() < 10 ? '0' . $place->getPlaceNr() : $place->getPlaceNr();
         $out = $placeNr . " => ";
         foreach( $this->againstGppWithPoule->getPoule()->getPlaces() as $opponent ) {
-            if( $opponent->getNumber() <= $place->getNumber() ) {
+            if( $opponent->getPlaceNr() <= $place->getPlaceNr() ) {
                 $out .= '     ,';
             } else {
-                $opponentNr = $opponent->getNumber() < 10 ? '0' . $opponent->getNumber() : $opponent->getNumber();
+                $opponentNr = $opponent->getPlaceNr() < 10 ? '0' . $opponent->getPlaceNr() : $opponent->getPlaceNr();
                 $placeCombination = new PlaceCombination([$place, $opponent]);
                 $out .= '' . $opponentNr . ':' . $this->getOutputAmount($placeCombination) . ',';
             }

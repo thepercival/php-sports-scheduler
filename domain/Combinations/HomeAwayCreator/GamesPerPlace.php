@@ -76,8 +76,8 @@ final class GamesPerPlace extends HomeAwayCreator
         $this->gameCounterMap = [];
         $this->homeCounterMap = [];
         foreach ($poule->getPlaces() as $place) {
-            $this->gameCounterMap[$place->getNumber()] = new PlaceCounter($place);
-            $this->homeCounterMap[$place->getNumber()] = new PlaceCounter($place);
+            $this->gameCounterMap[$place->getPlaceNr()] = new PlaceCounter($place);
+            $this->homeCounterMap[$place->getPlaceNr()] = new PlaceCounter($place);
         }
     }
 
@@ -88,20 +88,20 @@ final class GamesPerPlace extends HomeAwayCreator
     ): HomeAway {
         if ($this->shouldSwap($sportVariant, $home, $away)) {
             foreach ($home->getPlaces() as $homePlace) {
-                $this->gameCounterMap[$homePlace->getNumber()]->increment();
+                $this->gameCounterMap[$homePlace->getPlaceNr()]->increment();
             }
             foreach ($away->getPlaces() as $awayPlace) {
-                $this->gameCounterMap[$awayPlace->getNumber()]->increment();
-                $this->homeCounterMap[$awayPlace->getNumber()]->increment();
+                $this->gameCounterMap[$awayPlace->getPlaceNr()]->increment();
+                $this->homeCounterMap[$awayPlace->getPlaceNr()]->increment();
             }
             return new HomeAway($away, $home);
         }
         foreach ($home->getPlaces() as $homePlace) {
-            $this->gameCounterMap[$homePlace->getNumber()]->increment();
-            $this->homeCounterMap[$homePlace->getNumber()]->increment();
+            $this->gameCounterMap[$homePlace->getPlaceNr()]->increment();
+            $this->homeCounterMap[$homePlace->getPlaceNr()]->increment();
         }
         foreach ($away->getPlaces() as $awayPlace) {
-            $this->gameCounterMap[$awayPlace->getNumber()]->increment();
+            $this->gameCounterMap[$awayPlace->getPlaceNr()]->increment();
         }
         return new HomeAway($home, $away);
     }
@@ -133,7 +133,7 @@ final class GamesPerPlace extends HomeAwayCreator
     {
         $number = 0;
         foreach ($combination->getPlaces() as $place) {
-            $number += $place->getNumber();
+            $number += $place->getPlaceNr();
         }
         return $number;
     }
@@ -153,12 +153,12 @@ final class GamesPerPlace extends HomeAwayCreator
 
     protected function getNrOfGamesForPlace(Place $place): int
     {
-        return $this->gameCounterMap[$place->getNumber()]->count();
+        return $this->gameCounterMap[$place->getPlaceNr()]->count();
     }
 
     protected function getNrOfHomeGamesForPlace(Place $place): int
     {
-        return $this->homeCounterMap[$place->getNumber()]->count();
+        return $this->homeCounterMap[$place->getPlaceNr()]->count();
     }
 
     protected function getNrOfHomeGames(PlaceCombination $placeCombination): int
