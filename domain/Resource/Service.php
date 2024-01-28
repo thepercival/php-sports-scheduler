@@ -24,9 +24,9 @@ use SportsScheduler\Resource\RefereePlace\Predicter;
 use SportsScheduler\Resource\Service\Helper;
 use SportsScheduler\Resource\Service\InfoToAssign;
 use SportsPlanning\Sport;
-use SportsPlanning\Output\Batch as BatchOutput;
-use SportsPlanning\Output\Game as GameOutput;
-use SportsPlanning\Output\Planning as PlanningOutput;
+use SportsPlanning\Output\BatchOutput;
+use SportsPlanning\Output\GameOutput;
+use SportsPlanning\Output\PlanningOutput;
 
 class Service
 {
@@ -327,12 +327,12 @@ class Service
                 )) {
                     return true;
                 }
-            } else {
+            } // else {
 //                    $this->batchOutput->output($batch, ' batch completed nr ' . $batch->getNumber());
 //                    $this->logger->info('unassinged games: ');
 //                    $this->batchOutput->outputGames($games);
 //                    $er = 12;
-            }
+            // }
 
             $this->releaseGame($batch, $game);
         }

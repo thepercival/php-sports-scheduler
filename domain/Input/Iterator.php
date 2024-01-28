@@ -15,7 +15,7 @@ use SportsHelpers\SportRange;
 use SportsPlanning\Input as PlanningInput;
 use SportsPlanning\Input\Configuration;
 use SportsPlanning\Input\Service as PlanningInputService;
-use SportsPlanning\Output\Planning as PlanningOutput;
+use SportsPlanning\Output\PlanningOutput;
 use SportsPlanning\Referee\Info as RefereeInfo;
 
 /**

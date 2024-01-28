@@ -10,7 +10,7 @@ use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWit
 use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
 use SportsPlanning\Combinations\PlaceCombination;
 use SportsPlanning\Combinations\HomeAway;
-use SportsPlanning\Output\Combinations\GameRound as GameRoundOutput;
+use SportsPlanning\Output\Combinations\GameRoundOutput;
 use SportsPlanning\Combinations\PlaceCombinationCounter;
 use SportsPlanning\GameRound\Against as AgainstGameRound;
 use SportsScheduler\GameRound\Creator\Against\H2h as H2hGameRoundCreator;

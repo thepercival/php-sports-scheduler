@@ -8,7 +8,7 @@ use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
 use SportsHelpers\Sport\Variant\WithPoule\Single as SingleWithPoule;
 use SportsPlanning\Combinations\AssignedCounter;
-use SportsPlanning\Output\Combinations\GameRound as GameRoundOutput;
+use SportsPlanning\Output\Combinations\GameRoundOutput;
 use SportsPlanning\GameRound\Together as TogetherGameRound;
 use SportsPlanning\GameRound\Together\Game;
 use SportsPlanning\GameRound\Together\GamePlace;
