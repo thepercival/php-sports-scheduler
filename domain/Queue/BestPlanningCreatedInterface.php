@@ -3,9 +3,8 @@
 namespace SportsScheduler\Queue;
 
 use SportsPlanning\Input\Configuration;
-use SportsPlanning\Planning;
 
 interface BestPlanningCreatedInterface
 {
-    public function bestPlanningCreated(Planning $bestPlanning): void;
+    public function bestPlanningCreated(Configuration $inputConfiguration): void;
 }
