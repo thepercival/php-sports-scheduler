@@ -81,7 +81,7 @@ class Iterator implements \Iterator
         if ($this->current === null) {
             return 'no current value';
         }
-        return $planningInputOutput->getInputAsString($this->current);
+        return $planningInputOutput->getInputConfigurationAsString($this->current->createConfiguration());
     }
 
     public function next(): void

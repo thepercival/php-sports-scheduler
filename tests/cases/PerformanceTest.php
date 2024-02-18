@@ -126,7 +126,7 @@ class PerformanceTest extends TestCase
         $planning = $this->createPlanning($input, $nrOfGamesPerBatchRange/*, 0, true*/);
         self::assertEquals(
             '[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] - [against(1vs1) h2h:gpp=>1:0 f(4)] - ref=>0:',
-            $input->getName()
+            $input->createConfiguration()->getName()
         );
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
