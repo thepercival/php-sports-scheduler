@@ -6,7 +6,7 @@ namespace SportsScheduler\Resource\RefereePlace;
 
 use DateTimeImmutable;
 use SportsPlanning\Batch\SelfReferee as SelfRefereeBatch;
-use SportsScheduler\Exception\TimeoutException;
+use SportsScheduler\Exceptions\TimeoutException;
 use SportsPlanning\Place as PlanningPlace;
 use SportsPlanning\Planning;
 use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentValidator;

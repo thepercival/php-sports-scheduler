@@ -11,7 +11,7 @@ use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
 use SportsPlanning\Batch;
 use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeOtherPouleBatch;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeSamePouleBatch;
-use SportsScheduler\Exception\TimeoutException;
+use SportsScheduler\Exceptions\TimeoutException;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Game\Together as TogetherGame;
 use SportsPlanning\Input;

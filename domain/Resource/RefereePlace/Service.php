@@ -6,7 +6,7 @@ use DateTimeImmutable;
 use SportsHelpers\SelfReferee;
 use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
-use SportsScheduler\Exception\TimeoutException;
+use SportsScheduler\Exceptions\TimeoutException;
 use SportsPlanning\Game;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Game\Together as TogetherGame;

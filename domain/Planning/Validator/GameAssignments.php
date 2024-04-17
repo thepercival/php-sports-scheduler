@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace SportsScheduler\Planning\Validator;
 
 use SportsHelpers\SelfReferee;
-use SportsPlanning\Exception\NoBestPlanning as UnequalAssignedFieldsException;
 use SportsPlanning\Resource\ResourceType;
-use SportsScheduler\Exception\UnequalAssignedRefereePlaces as UnequalAssignedRefereePlacesException;
-use SportsScheduler\Exception\UnequalAssignedReferees as UnequalAssignedRefereesException;
-use SportsPlanning\Game;
+use SportsScheduler\Exceptions\UnequalAssignedFieldsException;
+use SportsScheduler\Exceptions\UnequalAssignedRefereePlacesException;
+use SportsScheduler\Exceptions\UnequalAssignedRefereesException;
 use SportsPlanning\Place;
 use SportsPlanning\Planning;
 use SportsPlanning\Resource\GameCounter;

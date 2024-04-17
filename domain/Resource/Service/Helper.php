@@ -9,7 +9,7 @@ use SportsHelpers\Sport\Variant\Creator as VariantCreator;
 use SportsPlanning\Batch;
 use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeOtherPouleBatch;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeSamePouleBatch;
-use SportsPlanning\Exception\NoBestPlanning as NoBestPlanningException;
+use SportsPlanning\Exceptions\NoBestPlanningException;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Game\Together as TogetherGame;
 use SportsPlanning\Input;
