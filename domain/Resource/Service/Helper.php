@@ -15,6 +15,8 @@ use SportsPlanning\Game\Together as TogetherGame;
 use SportsPlanning\Input;
 use SportsPlanning\Input\Calculator as InputCalculator;
 use SportsPlanning\Place;
+use SportsPlanning\Planning\BatchGamesType;
+use SportsPlanning\Planning\Type as PlanningType;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\Filter as PlanningFilter;
 
@@ -39,7 +41,7 @@ class Helper
     private function initMaxNrOfBatches(): void
     {
         try {
-            if ($this->planning->isBatchGames()) {
+            if ($this->planning->getType() === PlanningType::BatchGames) {
                 // -1 because needs to be less nrOfBatches
                 $this->maxNrOfBatches = $this->planning->getInput()->getBestPlanning(null)->getNrOfBatches() - 1;
             } else {
@@ -129,7 +131,7 @@ class Helper
         if (
             (
                 $infoToAssign->getNrOfGames() < $this->planning->getMinNrOfBatchGames()
-                && $this->planning->isEqualBatchGames()
+                && $this->planning->getBatchGamesType() === BatchGamesType::RangeIsZero
             )
             ||
             $this->willMinNrOfBatchGamesBeReached($infoToAssign)) {
@@ -258,7 +260,7 @@ class Helper
                 }
             }
         }
-        if ($this->planning->isUnequalBatchGames()) {
+        if ($this->planning->getBatchGamesType() === BatchGamesType::RangeIsOneOrMore) {
             return $infoToAssign->getNrOfGames() >= $this->planning->getMinNrOfBatchGames();
         }
 
