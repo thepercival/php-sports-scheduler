@@ -16,6 +16,7 @@ use SportsPlanning\Input;
 use SportsPlanning\Input\Calculator as InputCalculator;
 use SportsPlanning\Place;
 use SportsPlanning\Planning;
+use SportsPlanning\Planning\Filter as PlanningFilter;
 
 class Helper
 {
@@ -42,7 +43,8 @@ class Helper
                 // -1 because needs to be less nrOfBatches
                 $this->maxNrOfBatches = $this->planning->getInput()->getBestPlanning(null)->getNrOfBatches() - 1;
             } else {
-                $planningFilter = new Planning\Filter($this->planning->getNrOfBatchGames(), 0);
+                $planningFilter = new PlanningFilter( null, null,
+                    $this->planning->getNrOfBatchGames(), 0);
                 $batchGamePlanning = $this->planning->getInput()->getPlanning($planningFilter);
                 if ($batchGamePlanning !== null) {
                     $this->maxNrOfBatches = $batchGamePlanning->getNrOfBatches();
