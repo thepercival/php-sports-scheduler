@@ -175,9 +175,7 @@ trait PlanningCreator
         if ($showHighestCompletedBatchNr) {
             $gameAssigner->showHighestCompletedBatchNr();
         }
-        $gameAssigner->assignGames($planning);
-
-        if (PlanningState::Succeeded !== $planning->getState()) {
+        if( $gameAssigner->assignGames($planning) === false ) {
             throw new Exception("planning could not be created", E_ERROR);
         }
         return $planning;

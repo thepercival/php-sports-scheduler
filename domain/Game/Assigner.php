@@ -23,7 +23,7 @@ class Assigner
         $this->throwOnTimeout = true;
     }
 
-    public function assignGames(Planning $planning): void
+    public function assignGames(Planning $planning): bool
     {
         $games = (new PreAssignSorter())->getGames($planning);
         // (new GameOutput($this->logger))->outputGames($games);
@@ -46,7 +46,7 @@ class Assigner
             } else {
                 $planning->setTimeoutState(null);
             }
-            return;
+            return false;
         }
 
         $firstBatch = $planning->createFirstBatch();
@@ -68,12 +68,13 @@ class Assigner
                     $planning->setTimeoutState(null);
                 }
                 $this->logger->error('   could not assign refereeplaces (plId:' . (string)$planning->getId() . ')');
-                return;
+                return false;
             }
         }
         $planning->setState(PlanningState::Succeeded);
         $planning->setTimeoutState(null);
         $planning->setNrOfBatches($firstBatch->getLeaf()->getNumber());
+        return true;
     }
 
     public function disableThrowOnTimeout(): void
