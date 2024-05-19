@@ -8,10 +8,10 @@ use SportsHelpers\PlaceRanges as PlaceRangesBase;
 
 class PlaceRanges extends PlaceRangesBase
 {
-    public const MaxNrOfPlacesPerPouleSmall = 20;
-    public const MaxNrOfPlacesPerPouleLarge = 12;
-    public const MaxNrOfPlacesPerRoundSmall = 40;
-    public const MaxNrOfPlacesPerRoundLarge = 128;
+    public const int MaxNrOfPlacesPerPouleSmall = 20;
+    public const int MaxNrOfPlacesPerPouleLarge = 12;
+    public const int MaxNrOfPlacesPerRoundSmall = 40;
+    public const int MaxNrOfPlacesPerRoundLarge = 128;
 
     public function __construct(int $minNrOfPlacesPerPoule)
     {

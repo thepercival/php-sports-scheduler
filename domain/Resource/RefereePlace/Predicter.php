@@ -11,7 +11,7 @@ use SportsPlanning\Poule\PouleCounter;
 
 class Predicter
 {
-    private const SAME_POULE_MAX_DELTA = 1;
+    private const int SAME_POULE_MAX_DELTA = 1;
 
     /**
      * @param list<Poule> $poules
