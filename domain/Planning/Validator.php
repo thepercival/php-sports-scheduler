@@ -87,10 +87,13 @@ class Validator
             $invalidations[] = "the planning has not enough games";
         }
         if (($validity & PlanningValidity::UNEQUAL_GAME_HOME_AWAY) === PlanningValidity::UNEQUAL_GAME_HOME_AWAY) {
-            $invalidations[] = "the planning an unequal number of home- or awayplaces";
+            $invalidations[] = "the planning has places that have an unequal number of home- or away-gameplaces";
         }
-        if (($validity & PlanningValidity::UNEQUAL_GAME_WITH_AGAINST) === PlanningValidity::UNEQUAL_GAME_WITH_AGAINST) {
-            $invalidations[] = "the planning an unequal number of with- or againstplaces";
+        if (($validity & PlanningValidity::UNEQUAL_GAME_AGAINST) === PlanningValidity::UNEQUAL_GAME_AGAINST) {
+            $invalidations[] = "the planning has places that have an unequal number of against-gameplaces";
+        }
+        if (($validity & PlanningValidity::UNEQUAL_GAME_WITH) === PlanningValidity::UNEQUAL_GAME_WITH) {
+            $invalidations[] = "the planning has places that have an unequal number of with-gameplaces";
         }
         if (($validity & PlanningValidity::UNEQUAL_PLACE_NROFHOMESIDES) === PlanningValidity::UNEQUAL_PLACE_NROFHOMESIDES) {
             $invalidations[] = "the planning has places with too much difference in nrOfHomeSides";
@@ -219,14 +222,14 @@ class Validator
                     $withValidator = new WithValidator($poule, $sport);
                     $withValidator->addGames($planning);
                     if (!$withValidator->balanced()) {
-                        return PlanningValidity::UNEQUAL_GAME_WITH_AGAINST;
+                        return PlanningValidity::UNEQUAL_GAME_WITH;
                     }
                 }
                 if ($againstWithPoule instanceof AgainstH2hWithPoule || $againstWithPoule->allAgainstSameNrOfGamesAssignable()) {
                     $againstValidator = new AgainstValidator($poule, $sport);
                     $againstValidator->addGames($planning);
                     if (!$againstValidator->balanced()) {
-                        return PlanningValidity::UNEQUAL_GAME_WITH_AGAINST;
+                        return PlanningValidity::UNEQUAL_GAME_AGAINST;
                     }
                 }
             // }

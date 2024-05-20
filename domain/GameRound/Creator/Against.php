@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SportsScheduler\GameRound\Creator;
 
 use Psr\Log\LoggerInterface;
-use SportsScheduler\Combinations\MultipleCombinationsCounter\Against as AgainstCounter;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
 use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
 use SportsPlanning\Combinations\PlaceCombination;
@@ -13,8 +12,6 @@ use SportsPlanning\Combinations\HomeAway;
 use SportsPlanning\Output\Combinations\GameRoundOutput;
 use SportsPlanning\Combinations\PlaceCombinationCounter;
 use SportsPlanning\GameRound\Against as AgainstGameRound;
-use SportsScheduler\GameRound\Creator\Against\H2h as H2hGameRoundCreator;
-use SportsPlanning\Place;
 use SportsPlanning\PlaceCounter;
 use SportsPlanning\Poule;
 
@@ -41,33 +38,6 @@ abstract class Against
             }
         }
         return $gameRound->createNext();
-    }
-
-    /**
-     * @param array<int, PlaceCounter> $placeCounters
-     * @return array<int, PlaceCounter>
-     */
-    protected function copyCounters(array $placeCounters): array
-    {
-        return array_map(fn(PlaceCounter $placeCounter) => clone $placeCounter, $placeCounters);
-    }
-
-    /**
-     * @param array<string, PlaceCombinationCounter> $counters
-     * @return array<string, PlaceCombinationCounter>
-     */
-    protected function copyWithCounters(array $counters): array
-    {
-        return array_map(fn(PlaceCombinationCounter $counter) => clone $counter, $counters);
-    }
-
-    /**
-     * @param array<int, AgainstCounter> $againstCounters
-     * @return array<int, AgainstCounter>
-     */
-    protected function copyAgainstCounters(array $againstCounters): array
-    {
-        return array_map(fn(AgainstCounter $againstCounter) => clone $againstCounter, $againstCounters);
     }
 
     protected function isGameRoundCompleted(AgainstH2hWithPoule|AgainstGppWithPoule $variantWithPoule, AgainstGameRound $gameRound): bool

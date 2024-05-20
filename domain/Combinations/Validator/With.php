@@ -6,7 +6,7 @@ namespace SportsScheduler\Combinations\Validator;
 
 use drupol\phpermutations\Iterators\Combinations as CombinationIt;
 use SportsHelpers\Against\Side;
-use SportsScheduler\Combinations\MultipleCombinationsCounter\With as WithCounter;
+use SportsPlanning\PlaceCounter;
 use SportsPlanning\Combinations\PlaceCombination;
 use SportsScheduler\Combinations\Validator;
 use SportsPlanning\Game\Against as AgainstGame;
@@ -14,28 +14,11 @@ use SportsPlanning\Place;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
 
-/**
- * @template-extends Validator<WithCounter>
- */
 class With extends Validator
 {
     public function __construct(protected Poule $poule, protected Sport $sport)
     {
         parent::__construct($poule, $sport);
-
-        $this->initCounters($this->sportVariant->getNrOfHomePlaces());
-        if ($this->sportVariant->getNrOfHomePlaces() !== $this->sportVariant->getNrOfAwayPlaces()) {
-            $this->initCounters($this->sportVariant->getNrOfAwayPlaces());
-        }
-    }
-
-    protected function initCounters(int $nrOfPlaces): void
-    {
-        $poulePlaces = $this->poule->getPlaceList();
-        foreach ($this->poule->getPlaces() as $place) {
-            $withPlaceCombinations = $this->getWithCombinations($place, $poulePlaces, $nrOfPlaces);
-            $this->counters[$place->getPlaceNr()] = new WithCounter($place, $withPlaceCombinations);
-        }
     }
 
     /**
@@ -71,42 +54,41 @@ class With extends Validator
 
     private function addCombinations(PlaceCombination $placeCombination): void
     {
-        $places = $placeCombination->getPlaces();
-        foreach ($places as $place) {
-            $withPlaceCombinations = $this->getWithCombinations($place, $places, count($places));
-            if (isset($this->counters[$place->getPlaceNr()])) {
-                $this->counters[$place->getPlaceNr()]->addCombinations($withPlaceCombinations);
+        $placesA = $placeCombination->getPlaces();
+        $placesB = $placeCombination->getPlaces();
+        foreach ($placesA as $placeA) {
+            foreach ($placesB as $placeB) {
+                if( $placeA === $placeB ) {
+                    continue;
+                }
+                $placeCounterMapA = $this->placeCounterMaps[$placeA->getPlaceNr()];
+                $this->placeCounterMaps[$placeA->getPlaceNr()] = $placeCounterMapA->addPlace($placeB);
+
+//                $placeCounterMapB = $this->placeCounterMaps[$placeB->getPlaceNr()];
+//                $this->placeCounterMaps[$placeB->getPlaceNr()] = $placeCounterMapB->addPlace($placeA);
             }
         }
     }
 
-    public function balanced(): bool
-    {
-        foreach ($this->counters as $counter) {
-            if (!$counter->balanced()) {
-                return false;
-            }
-        }
-        return true;
-    }
 
-    public function totalCount(): int
-    {
-        $totalCount = 0;
-        foreach ($this->counters as $counter) {
-            $totalCount += $counter->totalCount();
-        }
-        return $totalCount;
-    }
-
-    public function __toString(): string
-    {
-        $header = ' all with-counters: ' . $this->totalCount() . 'x' . PHP_EOL;
-        $lines = '';
-        foreach ($this->counters as $counter) {
-            $lines .= $counter;
-        }
-
-        return $header . $lines;
-    }
+//
+//    public function totalCount(): int
+//    {
+//        $totalCount = 0;
+//        foreach ($this->counters as $counter) {
+//            $totalCount += $counter->totalCount();
+//        }
+//        return $totalCount;
+//    }
+//
+//    public function __toString(): string
+//    {
+//        $header = ' all with-counters: ' . $this->totalCount() . 'x' . PHP_EOL;
+//        $lines = '';
+//        foreach ($this->counters as $counter) {
+//            $lines .= $counter;
+//        }
+//
+//        return $header . $lines;
+//    }
 }

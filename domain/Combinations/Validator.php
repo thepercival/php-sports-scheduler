@@ -7,23 +7,22 @@ namespace SportsScheduler\Combinations;
 use SportsHelpers\Against\Side as AgainstSide;
 use SportsHelpers\Sport\Variant\Against as AgainstSportVariant;
 use SportsPlanning\Combinations\PlaceCombination;
+use SportsPlanning\Combinations\PlaceCounterMap;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Game\Place\Against as AgainstGamePlace;
 use SportsPlanning\Place;
+use SportsPlanning\PlaceCounter;
 use SportsPlanning\Planning;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
 
-/**
- * @template T
- */
 abstract class Validator
 {
     protected AgainstSportVariant $sportVariant;
     /**
-     * @var array<int|string, T>
+     * @var array<int, PlaceCounterMap>
      */
-    protected array $counters = [];
+    protected array $placeCounterMaps = [];
 
     public function __construct(protected Poule $poule, protected Sport $sport)
     {
@@ -32,6 +31,22 @@ abstract class Validator
             throw new \Exception('only against-sports', E_ERROR);
         }
         $this->sportVariant = $sportVariant;
+
+        $this->initCounters();
+    }
+
+    private function initCounters(): void
+    {
+        foreach( $this->poule->getPlaces() as $placeA ) {
+            $placeCounters = [];
+            foreach( $this->poule->getPlaces() as $placeB ) {
+                if( $placeA === $placeB ) {
+                    continue;
+                }
+                $placeCounters[$placeB->getPlaceNr()] = new PlaceCounter($placeB);
+            }
+            $this->placeCounterMaps[$placeA->getPlaceNr()] = new PlaceCounterMap($placeCounters);
+        }
     }
 
     public function getPlaceCombination(AgainstGame $game, AgainstSide $side): PlaceCombination
@@ -47,6 +62,16 @@ abstract class Validator
         foreach ($planning->getAgainstGamesForPoule($this->poule) as $game) {
             $this->addGame($game);
         }
+    }
+
+    public function balanced(): bool
+    {
+        foreach ($this->placeCounterMaps as $placeCounterMap) {
+            if( $placeCounterMap->getAmountDifference() > 0 ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     abstract public function addGame(AgainstGame $game): void;

@@ -19,12 +19,12 @@ use SportsPlanning\Batch;
 use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
 use SportsPlanning\Game\Against as AgainstGame;
+use SportsPlanning\Output\PlanningOutput;
 use SportsScheduler\Game\Assigner as GameAssigner;
 use SportsScheduler\Game\Creator as GameCreator;
 use SportsPlanning\Game\Place\Against as AgainstGamePlace;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\State as PlanningState;
-use SportsPlanning\Output\Planning as PlanningOutput;
 use SportsScheduler\Planning\Validator as PlanningValidator;
 use SportsPlanning\Planning\Validity;
 use SportsPlanning\Referee as PlanningReferee;
@@ -130,9 +130,9 @@ class ValidatorTest extends TestCase
         $planningGame = $planning->getAgainstGames()->first();
         $planning->getAgainstGames()->removeElement($planningGame);
 
-        //        (new PlanningOutput())->outputWithGames($planning, true);
+//        (new PlanningOutput())->output($planning, PlanningOutput\Extra::Games->value);
 
-        self::assertSame(Validity::UNEQUAL_GAME_WITH_AGAINST, $planningValidator->validate($planning));
+        self::assertSame(Validity::UNEQUAL_GAME_AGAINST, $planningValidator->validate($planning));
     }
 
     public function testGamesInARow(): void
@@ -143,7 +143,7 @@ class ValidatorTest extends TestCase
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
 
-//        (new PlanningOutput())->outputWithGames($planning, true);
+        // (new PlanningOutput())->output($planning, PlanningOutput\Extra::Games);
 
         // ---------------- MAKE INVALID --------------------- //
         $refObject   = new ReflectionObject($planning);
@@ -446,7 +446,7 @@ class ValidatorTest extends TestCase
         $planningValidator = new PlanningValidator();
         $planningValidator->validate($planning);
         $descriptions = $planningValidator->getValidityDescriptions(Validity::ALL_INVALID, $planning);
-        self::assertCount(16, $descriptions);
+        self::assertCount(17, $descriptions);
 
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
@@ -461,7 +461,7 @@ class ValidatorTest extends TestCase
         $planningValidator = new PlanningValidator();
         $planningValidator->validate($planning);
         $descriptions = $planningValidator->getValidityDescriptions(Validity::ALL_INVALID, $planning);
-        self::assertCount(16, $descriptions);
+        self::assertCount(17, $descriptions);
     }
 
     public function testNrOfHomeAwayH2H2(): void
