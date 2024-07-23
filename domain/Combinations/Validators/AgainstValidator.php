@@ -2,21 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Combinations\Validator;
+namespace SportsScheduler\Combinations\Validators;
 
-use drupol\phpermutations\Iterators\Combinations as CombinationIt;
 use SportsHelpers\Against\Side;
-use SportsPlanning\Combinations\HomeAway;
-use SportsPlanning\Game\Place\Against as AgainstGamePlace;
-use SportsPlanning\PlaceCounter;
-use SportsPlanning\Combinations\PlaceCombination;
-use SportsScheduler\Combinations\Validator;
 use SportsPlanning\Game\Against as AgainstGame;
-use SportsPlanning\Place;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
 
-class Against extends Validator
+class AgainstValidator extends Validator
 {
     public function __construct(protected Poule $poule, protected Sport $sport)
     {
@@ -36,7 +29,7 @@ class Against extends Validator
 //                throw new \Exception('placeCounter not found');
 //            }
             foreach( $game->getSidePlaces(Side::Away) as $awayGamePlace ) {
-                $placeCounterMap = $placeCounterMap->addPlace($awayGamePlace->getPlace());
+                $placeCounterMap->addPlace($awayGamePlace->getPlace());
             }
             $this->placeCounterMaps[$homeGamePlace->getPlace()->getPlaceNr()] = $placeCounterMap;
         }
@@ -48,7 +41,7 @@ class Against extends Validator
 //                throw new \Exception('placeCounter not found');
 //            }
             foreach( $game->getSidePlaces(Side::Home) as $homeGamePlace ) {
-                $placeCounterMap = $placeCounterMap->addPlace($homeGamePlace->getPlace());
+                $placeCounterMap->addPlace($homeGamePlace->getPlace());
             }
             $this->placeCounterMaps[$awayGamePlace->getPlace()->getPlaceNr()] = $placeCounterMap;
         }

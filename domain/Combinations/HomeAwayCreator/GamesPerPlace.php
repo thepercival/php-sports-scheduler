@@ -11,17 +11,17 @@ use SportsPlanning\Combinations\HomeAway;
 use SportsScheduler\Combinations\HomeAwayCreator;
 use SportsPlanning\Combinations\PlaceCombination;
 use SportsPlanning\Place;
-use SportsPlanning\PlaceCounter;
+use SportsPlanning\Counters\CounterForPlace;
 use SportsPlanning\Poule;
 
 final class GamesPerPlace extends HomeAwayCreator
 {
     /**
-     * @var array<int, PlaceCounter>
+     * @var array<int, CounterForPlace>
      */
     protected array $gameCounterMap = [];
     /**
-     * @var array<int, PlaceCounter>
+     * @var array<int, CounterForPlace>
      */
     protected array $homeCounterMap = [];
 
@@ -76,8 +76,8 @@ final class GamesPerPlace extends HomeAwayCreator
         $this->gameCounterMap = [];
         $this->homeCounterMap = [];
         foreach ($poule->getPlaces() as $place) {
-            $this->gameCounterMap[$place->getPlaceNr()] = new PlaceCounter($place);
-            $this->homeCounterMap[$place->getPlaceNr()] = new PlaceCounter($place);
+            $this->gameCounterMap[$place->getPlaceNr()] = new CounterForPlace($place);
+            $this->homeCounterMap[$place->getPlaceNr()] = new CounterForPlace($place);
         }
     }
 
@@ -88,20 +88,26 @@ final class GamesPerPlace extends HomeAwayCreator
     ): HomeAway {
         if ($this->shouldSwap($sportVariant, $home, $away)) {
             foreach ($home->getPlaces() as $homePlace) {
-                $this->gameCounterMap[$homePlace->getPlaceNr()]->increment();
+                $gameCounter = $this->gameCounterMap[$homePlace->getPlaceNr()];
+                $this->gameCounterMap[$homePlace->getPlaceNr()] = $gameCounter->increment();
             }
             foreach ($away->getPlaces() as $awayPlace) {
-                $this->gameCounterMap[$awayPlace->getPlaceNr()]->increment();
-                $this->homeCounterMap[$awayPlace->getPlaceNr()]->increment();
+                $gameCounter = $this->gameCounterMap[$awayPlace->getPlaceNr()];
+                $this->gameCounterMap[$awayPlace->getPlaceNr()] = $gameCounter->increment();
+                $homeCounter = $this->homeCounterMap[$awayPlace->getPlaceNr()];
+                $this->homeCounterMap[$awayPlace->getPlaceNr()] = $homeCounter->increment();
             }
             return new HomeAway($away, $home);
         }
         foreach ($home->getPlaces() as $homePlace) {
-            $this->gameCounterMap[$homePlace->getPlaceNr()]->increment();
-            $this->homeCounterMap[$homePlace->getPlaceNr()]->increment();
+            $gameCounter = $this->gameCounterMap[$homePlace->getPlaceNr()];
+            $this->gameCounterMap[$homePlace->getPlaceNr()] = $gameCounter->increment();
+            $homeCounter = $this->homeCounterMap[$homePlace->getPlaceNr()];
+            $this->homeCounterMap[$homePlace->getPlaceNr()] = $homeCounter->increment();
         }
         foreach ($away->getPlaces() as $awayPlace) {
-            $this->gameCounterMap[$awayPlace->getPlaceNr()]->increment();
+            $gameCounter = $this->gameCounterMap[$awayPlace->getPlaceNr()];
+            $this->gameCounterMap[$awayPlace->getPlaceNr()] = $gameCounter->increment();
         }
         return new HomeAway($home, $away);
     }

@@ -9,15 +9,16 @@ use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side;
 use SportsPlanning\Combinations\Amount\Calculator;
 use SportsPlanning\Combinations\HomeAway;
-use SportsPlanning\Combinations\PlaceCombinationCounterMap;
-use SportsPlanning\Combinations\PlaceCombinationCounterMap\Ranged as RangedPlaceCombinationCounterMap;
-use SportsPlanning\Combinations\PlaceCounterMap;
+use SportsPlanning\Counters\Maps\PlaceCombinationCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCombinationCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
+use SportsPlanning\Counters\Maps\PlaceCounterMap;
 use SportsScheduler\Combinations\StatisticsCalculator\LeastAmountAssigned;
 
 abstract class StatisticsCalculator
 {
     public function __construct(
-        protected RangedPlaceCombinationCounterMap $assignedHomeMap,
+        protected RangedPlaceCounterMap $rangedHomeCounterMap,
         protected int $nrOfHomeAwaysAssigned,
         protected LoggerInterface $logger
     )
@@ -33,33 +34,11 @@ abstract class StatisticsCalculator
     abstract public function allAssigned(): bool;
 
     /**
-     * @param PlaceCombinationCounterMap $map
+     * @param RangedPlaceCounterMap|PlaceCounterMap $map
      * @param HomeAway $homeAway
      * @return LeastAmountAssigned
      */
-    protected function getLeastAgainstCombinationAssigned(PlaceCombinationCounterMap $map, HomeAway $homeAway): LeastAmountAssigned
-    {
-        $leastAmount = -1;
-        $nrOfLeastAmount = 0;
-        foreach ($homeAway->getAgainstPlaceCombinations() as $againstPlaceCombination ) {
-            $amountAssigned = $map->count($againstPlaceCombination);
-            if ($leastAmount === -1 || $amountAssigned < $leastAmount) {
-                $leastAmount = $amountAssigned;
-                $nrOfLeastAmount = 1;
-            }
-            if ($amountAssigned === $leastAmount) {
-                $nrOfLeastAmount++;
-            }
-        }
-        return new LeastAmountAssigned($leastAmount, $nrOfLeastAmount);
-    }
-
-    /**
-     * @param PlaceCounterMap $map
-     * @param HomeAway $homeAway
-     * @return LeastAmountAssigned
-     */
-    protected function getLeastAssigned(PlaceCounterMap $map, HomeAway $homeAway): LeastAmountAssigned
+    protected function getLeastAssigned(RangedPlaceCounterMap|PlaceCounterMap $map, HomeAway $homeAway): LeastAmountAssigned
     {
         $leastAmount = -1;
         $nrOfPlaces = 0;
@@ -77,11 +56,33 @@ abstract class StatisticsCalculator
     }
 
     /**
-     * @param PlaceCombinationCounterMap $map
+     * @param RangedPlaceCombinationCounterMap $map
      * @param HomeAway $homeAway
      * @return LeastAmountAssigned
      */
-    protected function getLeastWithCombinationAssigned(PlaceCombinationCounterMap $map, HomeAway $homeAway): LeastAmountAssigned
+    protected function getLeastAgainstCombinationAssigned(RangedPlaceCombinationCounterMap $map, HomeAway $homeAway): LeastAmountAssigned
+    {
+        $leastAmount = -1;
+        $nrOfLeastAmount = 0;
+        foreach ($homeAway->getAgainstPlaceCombinations() as $againstPlaceCombination ) {
+            $amountAssigned = $map->count($againstPlaceCombination);
+            if ($leastAmount === -1 || $amountAssigned < $leastAmount) {
+                $leastAmount = $amountAssigned;
+                $nrOfLeastAmount = 1;
+            }
+            if ($amountAssigned === $leastAmount) {
+                $nrOfLeastAmount++;
+            }
+        }
+        return new LeastAmountAssigned($leastAmount, $nrOfLeastAmount);
+    }
+
+    /**
+     * @param RangedPlaceCombinationCounterMap $map
+     * @param HomeAway $homeAway
+     * @return LeastAmountAssigned
+     */
+    protected function getLeastWithCombinationAssigned(RangedPlaceCombinationCounterMap $map, HomeAway $homeAway): LeastAmountAssigned
     {
         $leastAmount = -1;
         $nrOfSides = 0;
@@ -102,28 +103,29 @@ abstract class StatisticsCalculator
     public function outputHomeTotals(string $prefix, bool $withDetails): void
     {
         $header = 'HomeTotals : ';
-        $allowedRange = $this->assignedHomeMap->getAllowedRange();
+        $allowedRange = $this->rangedHomeCounterMap->getAllowedRange();
         $header .= ' allowedRange : ' . $allowedRange;
-        $nrOfPossiblities = count( $this->assignedHomeMap->getMap()->getList() );
-        $header .= ', belowMinimum/max : ' . $this->assignedHomeMap->getNrOfPlaceCombinationsBelowMinimum();
-        $header .= '/' . (new Calculator($nrOfPossiblities, $allowedRange))->maxCountBeneathMinimum();
+        $rangedHomeCounterReport = $this->rangedHomeCounterMap->calculateReport();
+        $nrOfPossiblities = $rangedHomeCounterReport->getNOfPossibleCombinations();
+        $header .= ', belowMinimum(total) : ' . $rangedHomeCounterReport->getTotalBelowMinimum();
+        $header .= '/' . (new Calculator($nrOfPossiblities, $allowedRange))->maxCountBelowMinimum();
         $header .= ', nrOfPossibilities : ' . $nrOfPossiblities;
         $this->logger->info($prefix . $header);
 
-        $map = $this->assignedHomeMap->getMap()->getAmountMap();
+        $map = $rangedHomeCounterReport->getAmountMap();
         $mapOutput = $prefix . 'map: ';
         foreach($map as $amount) {
             $mapOutput .= $amount  . ', ';
         }
-        $this->logger->info($prefix . $mapOutput . 'difference : '.$this->assignedHomeMap->getAmountDifference());
+        $this->logger->info($prefix . $mapOutput . 'difference : '.$rangedHomeCounterReport->getAmountDifference());
 
         if( !$withDetails ) {
             return;
         }
         $prefix =  '    ' . $prefix;
         $amountPerLine = 4; $counter = 0; $line = '';
-        foreach( $this->assignedHomeMap->getMap()->getList() as $counterIt ) {
-            $line .= $counterIt->getPlaceCombination() . ' ' . $counterIt->count() . 'x, ';
+        foreach($this->rangedHomeCounterMap->copyPlaceCounterMap() as $counterIt ) {
+            $line .= $counterIt->getPlace() . ' ' . $counterIt->count() . 'x, ';
             if( ++$counter === $amountPerLine ) {
                 $this->logger->info($prefix . $line);
                 $counter = 0;

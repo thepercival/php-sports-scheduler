@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Combinations;
+namespace SportsScheduler\Combinations\Validators;
 
 use SportsHelpers\Against\Side as AgainstSide;
 use SportsHelpers\Sport\Variant\Against as AgainstSportVariant;
 use SportsPlanning\Combinations\PlaceCombination;
-use SportsPlanning\Combinations\PlaceCounterMap;
+use SportsPlanning\Counters\CounterForPlace;
+use SportsPlanning\Counters\Maps\PlaceCounterMap;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Game\Place\Against as AgainstGamePlace;
 use SportsPlanning\Place;
-use SportsPlanning\PlaceCounter;
 use SportsPlanning\Planning;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
@@ -43,7 +43,7 @@ abstract class Validator
                 if( $placeA === $placeB ) {
                     continue;
                 }
-                $placeCounters[$placeB->getPlaceNr()] = new PlaceCounter($placeB);
+                $placeCounters[$placeB->getPlaceNr()] = new CounterForPlace($placeB);
             }
             $this->placeCounterMaps[$placeA->getPlaceNr()] = new PlaceCounterMap($placeCounters);
         }
@@ -67,7 +67,7 @@ abstract class Validator
     public function balanced(): bool
     {
         foreach ($this->placeCounterMaps as $placeCounterMap) {
-            if( $placeCounterMap->getAmountDifference() > 0 ) {
+            if( $placeCounterMap->calculateReport()->getAmountDifference() > 0 ) {
                 return false;
             }
         }

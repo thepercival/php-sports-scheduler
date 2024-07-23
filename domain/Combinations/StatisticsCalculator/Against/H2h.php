@@ -5,12 +5,9 @@ declare(strict_types=1);
 namespace SportsScheduler\Combinations\StatisticsCalculator\Against;
 
 use Psr\Log\LoggerInterface;
-use SportsPlanning\Combinations\Amount\Range as AmountRange;
 use SportsPlanning\Combinations\HomeAway;
-use SportsPlanning\Combinations\PlaceCombination;
-use SportsPlanning\Combinations\PlaceCombinationCounterMap;
-use SportsPlanning\Combinations\PlaceCombinationCounterMap\Ranged as RangedPlaceCombinationCounterMap;
-use SportsPlanning\Combinations\PlaceCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
+use SportsPlanning\Counters\Maps\PlaceCounterMap;
 use SportsScheduler\Combinations\StatisticsCalculator;
 use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
 
@@ -18,13 +15,13 @@ class H2h extends StatisticsCalculator
 {
     public function __construct(
         protected Againsth2hWithPoule $againstH2hWithPoule,
-        RangedPlaceCombinationCounterMap $assignedHomeMap,
+        RangedPlaceCounterMap $rangedHomeCounterMap,
         int $nrOfHomeAwaysAssigned,
-        protected PlaceCounterMap $assignedSportMap,
+        protected PlaceCounterMap $amountCounterMapForSport,
         LoggerInterface $logger
     )
     {
-        parent::__construct($assignedHomeMap, $nrOfHomeAwaysAssigned, $logger);
+        parent::__construct($rangedHomeCounterMap, $nrOfHomeAwaysAssigned, $logger);
     }
 
     public function allAssigned(): bool
@@ -37,18 +34,20 @@ class H2h extends StatisticsCalculator
 
     public function addHomeAway(HomeAway $homeAway): self
     {
-        $assignedSportMap = $this->assignedSportMap;
+        $amountCounterMapForSport = clone $this->amountCounterMapForSport;
         foreach ($homeAway->getPlaces() as $place) {
-            $assignedSportMap = $assignedSportMap->addPlace($place);
+            $amountCounterMapForSport->addPlace($place);
         }
-
-        $assignedHomeMap = $this->assignedHomeMap->addPlaceCombination($homeAway->getHome());
+        $rangedHomeCounterMap = clone $this->rangedHomeCounterMap;
+        foreach ($homeAway->getHome()->getPlaces() as $place) {
+            $rangedHomeCounterMap->addPlace($place);
+        }
 
         return new self(
             $this->againstH2hWithPoule,
-            $assignedHomeMap,
+            $rangedHomeCounterMap,
             $this->nrOfHomeAwaysAssigned + 1,
-            $assignedSportMap,
+            $amountCounterMapForSport,
             $this->logger
         );
     }
@@ -64,7 +63,7 @@ class H2h extends StatisticsCalculator
         $leastAmountAssigned = [];
         // $leastHomeAmountAssigned = [];
         foreach($homeAways as $homeAway ) {
-            $leastAmountAssigned[$homeAway->getIndex()] = $this->getLeastAssigned($this->assignedSportMap, $homeAway);
+            $leastAmountAssigned[$homeAway->getIndex()] = $this->getLeastAssigned($this->amountCounterMapForSport, $homeAway);
             // $leastHomeAmountAssigned[$homeAway->getIndex()] = $this->getLeastAssignedPlaces($this->assignedHomeMap, $homeAway->getHome()->getPlaces());
         }
         uasort($homeAways, function (

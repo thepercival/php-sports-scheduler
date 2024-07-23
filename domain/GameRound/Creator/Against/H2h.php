@@ -6,12 +6,14 @@ namespace SportsScheduler\GameRound\Creator\Against;
 
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsPlanning\Combinations\AssignedCounter;
 use SportsPlanning\Combinations\HomeAway;
+use SportsPlanning\Counters\Maps\Schedule\HomeCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\SideCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\TogetherCounterMap;
 use SportsScheduler\Combinations\HomeAwayCreator\H2h as H2hHomeAwayCreator;
-use SportsPlanning\Combinations\Mapper;
-use SportsPlanning\Combinations\PlaceCombinationCounterMap\Ranged as RangedPlaceCombinationCounterMap;
-use SportsPlanning\Combinations\PlaceCounterMap;
+use SportsPlanning\Combinations\CombinationMapper;
+use SportsPlanning\Counters\Maps\PlaceCounterMap;
 use SportsScheduler\Combinations\StatisticsCalculator\Against\H2h as H2hStatisticsCalculator;
 use SportsPlanning\GameRound\Against as AgainstGameRound;
 use SportsScheduler\GameRound\Creator\Against as AgainstCreator;
@@ -30,19 +32,19 @@ class H2h extends AgainstCreator
         Poule $poule,
         AgainstH2h $sportVariant,
         H2hHomeAwayCreator $homeAwayCreator,
-        AssignedCounter $assignedCounter,
+        SideCounterMap $homeCounterMap,
         AmountRange $homeAmountRange
     ): AgainstGameRound {
         $againstH2hWithPoule = new AgainstH2hWithPoule($poule, $sportVariant);
-        $mapper = new Mapper();
+        $mapper = new CombinationMapper();
         $gameRound = new AgainstGameRound();
         $homeAways = $homeAwayCreator->createForOneH2H($againstH2hWithPoule);
 
         $statisticsCalculator = new H2hStatisticsCalculator(
             $againstH2hWithPoule,
-            new RangedPlaceCombinationCounterMap($assignedCounter->getAssignedHomeMap(), $homeAmountRange),
+            new RangedPlaceCounterMap($homeCounterMap, $homeAmountRange),
             0,
-            new PlaceCounterMap( $mapper->getPlaceMap($poule) ),
+            new PlaceCounterMap($mapper->initPlaceCounterMap($poule)),
             $this->logger
         );
 

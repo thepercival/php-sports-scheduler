@@ -6,8 +6,8 @@ namespace SportsScheduler\Resource\RefereePlace;
 
 use SportsHelpers\SelfReferee;
 use SportsPlanning\Batch\SelfReferee as SelfRefereeBatch;
+use SportsPlanning\Counters\GamePlacesCounterForPoule;
 use SportsPlanning\Poule;
-use SportsPlanning\Poule\PouleCounter;
 
 class Predicter
 {
@@ -37,7 +37,7 @@ class Predicter
 
     protected function validatePouleAssignmentsSamePoule(SelfRefereeBatch $batch): bool
     {
-        $pouleCounterMap = $this->createPouleCounterMap();
+        $pouleCounterMap = $this->createGamePlacesCounterMap();
         $this->addGamesToPouleCounterMap($pouleCounterMap, $batch);
 
         foreach ($pouleCounterMap as $pouleCounter) {
@@ -50,19 +50,19 @@ class Predicter
     }
 
     /**
-     * @return array<int,PouleCounter>
+     * @return array<int,GamePlacesCounterForPoule>
      */
-    protected function createPouleCounterMap(): array
+    protected function createGamePlacesCounterMap(): array
     {
         $pouleCounterMap = [];
         foreach ($this->poules as $poule) {
-            $pouleCounterMap[$poule->getNumber()] = new PouleCounter($poule);
+            $pouleCounterMap[$poule->getNumber()] = new GamePlacesCounterForPoule($poule);
         }
         return $pouleCounterMap;
     }
 
     /**
-     * @param array<int,PouleCounter> $pouleCounterMap
+     * @param array<int,GamePlacesCounterForPoule> $pouleCounterMap
      * @param SelfRefereeBatch $batch
      */
     protected function addGamesToPouleCounterMap(array $pouleCounterMap, SelfRefereeBatch $batch): void
@@ -74,14 +74,14 @@ class Predicter
 
     protected function validatePouleAssignmentsOtherPoules(SelfRefereeBatch $batch): bool
     {
-        $pouleCounterMap = $this->createPouleCounterMap();
+        $pouleCounterMap = $this->createGamePlacesCounterMap();
         $this->addGamesToPouleCounterMap($pouleCounterMap, $batch);
 
         foreach ($pouleCounterMap as $pouleCounter) {
             $otherPouleCounters = array_values(
                 array_filter(
                     $pouleCounterMap,
-                    function (PouleCounter $pouleCounterIt) use ($pouleCounter): bool {
+                    function (GamePlacesCounterForPoule $pouleCounterIt) use ($pouleCounter): bool {
                         return $pouleCounter !== $pouleCounterIt;
                     }
                 )
@@ -95,7 +95,7 @@ class Predicter
     }
 
     /**
-     * @param list<PouleCounter> $pouleCounters
+     * @param list<GamePlacesCounterForPoule> $pouleCounters
      * @return int
      */
     protected function getNrOfPlacesAvailable(array $pouleCounters): int

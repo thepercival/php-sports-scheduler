@@ -6,21 +6,24 @@ namespace SportsScheduler\GameRound\Creator\Against;
 
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
+use SportsHelpers\Against\Side;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
+use SportsHelpers\Sport\Variant\WithPoule\Against\EquallyAssignCalculator;
 use SportsPlanning\Combinations\Amount\Range as AmountRange;
-use SportsPlanning\Combinations\AssignedCounter;
+use SportsPlanning\Combinations\CombinationMapper;
 use SportsPlanning\Combinations\HomeAway;
+use SportsPlanning\Counters\Maps\Schedule\AllScheduleMaps;
+use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCombinationCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\SideCounterMap;
 use SportsScheduler\Combinations\HomeAwayBalancer;
 use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as GppHomeAwayCreator;
-use SportsPlanning\Combinations\Mapper;
-use SportsPlanning\Combinations\PlaceCombinationCounterMap\Ranged as RangedPlaceCombinationCounterMap;
-use SportsPlanning\Combinations\PlaceCounterMap\Ranged as RangedPlaceCounterMap;
 use SportsScheduler\Combinations\StatisticsCalculator\Against\GamesPerPlace as GppStatisticsCalculator;
 use SportsScheduler\Exceptions\NoSolutionException;
 use SportsScheduler\Exceptions\TimeoutException;
 use SportsPlanning\GameRound\Against as AgainstGameRound;
 use SportsScheduler\GameRound\Creator\Against as AgainstCreator;
-use SportsPlanning\PlaceCounter;
+use SportsPlanning\Counters\CounterForPlace;
 use SportsPlanning\Poule;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
 
@@ -40,7 +43,7 @@ class GamesPerPlace extends AgainstCreator
         Poule $poule,
         AgainstGpp $againstGpp,
         GppHomeAwayCreator $homeAwayCreator,
-        AssignedCounter $assignedCounter,
+        AllScheduleMaps $allScheduleMaps,
         AmountRange $amountRange,
         AmountRange $againstAmountRange,
         AmountRange $withAmountRange,
@@ -58,30 +61,23 @@ class GamesPerPlace extends AgainstCreator
         $homeAways = $this->createHomeAways($homeAwayCreator, $poule, $againstGpp);
         $homeAways = $this->initHomeAways($homeAways);
 
-        $assignedMap = new RangedPlaceCounterMap(
-            $assignedCounter->getAssignedMap(),
-            $amountRange
-        );
-        $assignedAgainstMap = new RangedPlaceCombinationCounterMap(
-            $assignedCounter->getAssignedAgainstMap(),
-            $againstAmountRange
-        );
-        $assignedWithMap = new RangedPlaceCombinationCounterMap(
-            $assignedCounter->getAssignedWithMap(),
-            $withAmountRange
-        );
-//        $assignedCounter->getAssignedWithMap()->output($this->logger, '', '');
-        $assignedHomeMap = new RangedPlaceCombinationCounterMap(
-            $assignedCounter->getAssignedHomeMap(), $homeAmountRange
-        );
+        $calculator = new EquallyAssignCalculator();
+        if( $calculator->assignAgainstSportsEqually( count($poule->getPlaces()), [$againstGpp] ) ) {
+
+        }
+        $rangedAmountCounterMap = new RangedPlaceCounterMap($allScheduleMaps->getAmountCounterMap(),$amountRange);
+        $rangedWithCounterMap = new RangedPlaceCombinationCounterMap($allScheduleMaps->getWithCounterMap(),$withAmountRange);
+        $rangedAgainstCounterMap = new RangedPlaceCombinationCounterMap($allScheduleMaps->getAgainstCounterMap(),$againstAmountRange);
+        $rangedHomeCounterMap = new RangedPlaceCounterMap($allScheduleMaps->getHomeCounterMap(), $homeAmountRange);
+        $rangedAwayCounterMap = new RangedPlaceCounterMap($allScheduleMaps->getAwayCounterMap(), $homeAmountRange);
 
         $statisticsCalculator = new GppStatisticsCalculator(
             $variantWithPoule,
-            $assignedHomeMap,
+            $rangedHomeCounterMap,
             0,
-            $assignedMap,
-            $assignedAgainstMap,
-            $assignedWithMap,
+            $rangedAmountCounterMap,
+            $rangedAgainstCounterMap,
+            $rangedWithCounterMap,
             $this->logger
         );
 
@@ -101,9 +97,13 @@ class GamesPerPlace extends AgainstCreator
             throw new NoSolutionException('creation of homeaway can not be false', E_ERROR);
         }
         $homeAwayBalancer = new HomeAwayBalancer($this->logger);
+
+        $homeCounterMap = new SideCounterMap(Side::Home, $rangedHomeCounterMap->copyPlaceCounterMap());
+        $awayCounterMap = new SideCounterMap(Side::Away, $rangedAwayCounterMap->copyPlaceCounterMap());
         $swappedHomeAways = $homeAwayBalancer->balance2(
-            $assignedHomeMap,
-            $assignedCounter->getAssignedAwayMap(),
+            $homeCounterMap,
+            $rangedHomeCounterMap->getAllowedRange(),
+            $awayCounterMap,
             $gameRound->getAllHomeAways()
         );
         $this->updateWithSwappedHomeAways($gameRound, $swappedHomeAways);
@@ -311,11 +311,12 @@ class GamesPerPlace extends AgainstCreator
         $poule = $againstWithPoule->getPoule();
         $unassignedMap = [];
         foreach ($poule->getPlaces() as $place) {
-            $unassignedMap[$place->getPlaceNr()] = new PlaceCounter($place);
+            $unassignedMap[$place->getPlaceNr()] = new CounterForPlace($place);
         }
         foreach ($homeAways as $homeAway) {
             foreach ($homeAway->getPlaces() as $place) {
-                $unassignedMap[$place->getPlaceNr()]->increment();
+                $unassignedCounter = $unassignedMap[$place->getPlaceNr()];
+                $unassignedMap[$place->getPlaceNr()] = $unassignedCounter->increment();
             }
         }
 

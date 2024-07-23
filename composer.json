@@ -55,7 +55,7 @@
     },
     "scripts": {
         "test": [
-            "XDEBUG_MODE=coverage vendor/bin/phpunit --configuration tests/phpunit.xml tests/cases/"
+            "XDEBUG_MODE=debug vendor/bin/phpunit --configuration tests/phpunit.xml tests/cases/"
         ],
         "profile": [
             "XDEBUG_MODE=profile vendor/bin/phpunit --configuration tests/phpunit.xml tests/cases/ProfileTest.php"

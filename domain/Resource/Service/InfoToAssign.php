@@ -6,7 +6,8 @@ namespace SportsScheduler\Resource\Service;
 
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Game\Together as TogetherGame;
-use SportsScheduler\Place\GameCounter;
+use SportsPlanning\Resource\GameCounter;
+use SportsPlanning\Resource\GameCounter\Place as PlaceGameCounter;
 
 class InfoToAssign
 {
@@ -17,7 +18,7 @@ class InfoToAssign
     protected array $sportInfoMap = [];
 
     /**
-     * @var array<string, GameCounter> $placeGameCounters
+     * @var array<string, PlaceGameCounter> $placeGameCounters
      */
     protected array $placeGameCounters = [];
 
@@ -45,9 +46,10 @@ class InfoToAssign
             foreach ($game->getPlaces() as $gamePlace) {
                 $place = $gamePlace->getPlace();
                 if (!isset($this->placeGameCounters[$place->getUniqueIndex()])) {
-                    $this->placeGameCounters[$place->getUniqueIndex()] = new GameCounter($place, 1);
+                    $this->placeGameCounters[$place->getUniqueIndex()] = new PlaceGameCounter($place, 1);
                 } else {
-                    $this->placeGameCounters[$place->getUniqueIndex()]->increment();
+                    $placeGameCounter = $this->placeGameCounters[$place->getUniqueIndex()];
+                    $this->placeGameCounters[$place->getUniqueIndex()] = $placeGameCounter->increment();
                 }
             }
         }
@@ -62,7 +64,7 @@ class InfoToAssign
     }
 
     /**
-     * @return array<string, GameCounter>
+     * @return array<string, PlaceGameCounter>
      */
     public function getPlaceInfoMap(): array
     {

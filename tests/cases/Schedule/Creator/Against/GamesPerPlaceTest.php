@@ -12,9 +12,9 @@ use Psr\Log\LoggerInterface;
 use SportsHelpers\SportRange;
 use SportsScheduler\Game\Creator as GameCreator;
 use SportsPlanning\Planning;
-use SportsPlanning\Output\Planning as PlanningOutput;
+use SportsPlanning\Output\PlanningOutput;
 use SportsPlanning\Referee\Info as RefereeInfo;
-use SportsPlanning\Output\Schedule as ScheduleOutput;
+use SportsPlanning\Output\ScheduleOutput;
 use SportsScheduler\Planning\Validator as PlanningValidator;
 use SportsPlanning\Planning\Validity;
 use SportsScheduler\Schedule\Creator as ScheduleCreator;
@@ -159,8 +159,8 @@ class GamesPerPlaceTest extends TestCase
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
         $schedules = $scheduleCreator->createFromInput($input, 0);
-//        (new ScheduleOutput($this->getLogger()))->output($schedules);
-//        (new ScheduleOutput($this->getLogger()))->outputTotals($schedules);
+        (new ScheduleOutput($this->getLogger()))->output($schedules);
+        (new ScheduleOutput($this->getLogger()))->outputTotals($schedules);
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
 //        (new PlanningOutput())->outputWithGames($planning, true);

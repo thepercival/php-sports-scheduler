@@ -247,7 +247,7 @@ class AgainstDifferenceManager
         // $totalNrOfGames = $this->getTotalNrOfGames($poule, $againstVariantMap);
 
         // $allowedMarginCumulative = 0;
-        $nrOfHomeCombinationsCumulative = 0;
+        $nrOfHomePlacesCumulative = 0;
 
 //        $counter = 0;
         foreach ($againstVariantsWithNr as $againstVariantWithNr) {
@@ -258,6 +258,7 @@ class AgainstDifferenceManager
             $sportNr = $againstVariantWithNr->number;
             $againstWithPoule = $this->getVariantWithPoule($poule, $againstVariant);
             $nrOfSportGames = $againstWithPoule->getTotalNrOfGames();
+            // $againstWithPoule->
            // $lastSportVariant = ++$counter === count($againstVariantMap);
 
 //            if ($this->allowedMargin === 0) { // alle 1 en de laatste 0
@@ -276,18 +277,19 @@ class AgainstDifferenceManager
 //            }
 
             // $nrOfHomeCombinations = 1;
-            $nrOfHomeCombinationsSport = $againstVariant->getNrOfWithCombinationsPerGame(Side::Home) * $nrOfSportGames;
-            $nrOfHomeCombinationsCumulative += $nrOfHomeCombinationsSport;
+            $nrOfHomePlacesSport = $againstVariant->getNrOfHomePlaces() * $nrOfSportGames ;
+            $nrOfHomePlacesCumulative += $nrOfHomePlacesSport;
             $allowedHomeAmountCum = (new EquallyAssignCalculator())->getMaxAmount(
-                $nrOfHomeCombinationsCumulative,
-                $againstWithPoule->getNrOfPossibleWithCombinations(Side::Home)
+                $nrOfHomePlacesCumulative,
+                $againstWithPoule->getNrOfPlaces() /*$againstWithPoule->getNrOfPossibleWithCombinations(Side::Home)*/
             );
 
             $minNrOfHomeAllowedToAssignedToMinimumCum = (new EquallyAssignCalculator())->getNrOfDeficit(
-                $nrOfHomeCombinationsCumulative,
-                $againstWithPoule->getNrOfPossibleWithCombinations(Side::Home)
+                $nrOfHomePlacesCumulative,
+                $againstWithPoule->getNrOfPlaces()
             );
-            $maxNrOfHomeAllowedToAssignedToMinimumCum = $againstWithPoule->getNrOfPossibleWithCombinations(Side::Home) - $minNrOfHomeAllowedToAssignedToMinimumCum;
+            // $maxNrOfHomeAllowedToAssignedToMinimumCum = $againstWithPoule->getNrOfPossibleWithCombinations(Side::Home) - $minNrOfHomeAllowedToAssignedToMinimumCum;
+            $maxNrOfHomeAllowedToAssignedToMinimumCum = $againstWithPoule->getNrOfPlaces() - $minNrOfHomeAllowedToAssignedToMinimumCum;
 
             $allowedHomeMaxSport = $allowedHomeAmountCum + $this->allowedMargin;
             $allowedHomeMinSport = $allowedHomeAmountCum - $this->allowedMargin;
@@ -311,7 +313,7 @@ class AgainstDifferenceManager
 
     /**
      * @param Poule $poule
-     * @param array<int, AgainstH2h|AgainstGpp> $againstVariantMap
+     * @param array<int, AgainstGpp|AgainstH2h> $againstVariantMap
      * @return int
      */
     private function getTotalNrOfGames(Poule $poule, array $againstVariantMap): int {
@@ -342,15 +344,6 @@ class AgainstDifferenceManager
             }
         }
         return $map;
-    }
-
-    protected function getVariantWithPoule(
-        Poule $poule,
-        AgainstH2h|AgainstGpp $againstVariant): AgainstH2hWithPoule|AgainstGppWithPoule {
-        if( $againstVariant instanceof AgainstGpp) {
-            return new AgainstGppWithPoule($poule, $againstVariant);
-        }
-        return new AgainstH2hWithPoule($poule, $againstVariant);
     }
 
 
@@ -394,5 +387,14 @@ class AgainstDifferenceManager
 
     public function getHomeRange(int $sportNr): AmountRange {
         return $this->homeAmountRange[$sportNr];
+    }
+
+    protected function getVariantWithPoule(
+        Poule $poule,
+        AgainstH2h|AgainstGpp $againstVariant): AgainstH2hWithPoule|AgainstGppWithPoule {
+        if( $againstVariant instanceof AgainstGpp) {
+            return new AgainstGppWithPoule($poule, $againstVariant);
+        }
+        return new AgainstH2hWithPoule($poule, $againstVariant);
     }
 }

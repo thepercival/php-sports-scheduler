@@ -10,13 +10,13 @@ use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\SportRange;
-use SportsPlanning\Combinations\AssignedCounter;
 use SportsPlanning\Combinations\HomeAway;
+use SportsPlanning\Counters\Maps\Schedule\AllScheduleMaps;
 use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as GppHomeAwayCreator;
 use SportsPlanning\Combinations\Mapper;
-use SportsPlanning\Combinations\PlaceCounterMap\Ranged as RangedPlaceCounterMap;
-use SportsPlanning\Combinations\PlaceCombinationCounterMap\Ranged as RangedPlaceCombinationCounterMap;
-use SportsPlanning\Combinations\PlaceCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCombinationCounterMap;
+use SportsPlanning\Counters\Maps\PlaceCounterMap;
 use SportsScheduler\Combinations\StatisticsCalculator\Against\GamesPerPlace as GppStatisticsCalculator;
 use SportsPlanning\Input;
 use SportsScheduler\Schedule\Creator as ScheduleCreator;
@@ -38,7 +38,7 @@ class GamesPerPlaceTest extends TestCase
         $poule = $input->getPoule(1);
         $nrOfPlaces = count($poule->getPlaces());
         $variantWithPoule = new AgainstGppWithPoule($poule, $sportVariant);
-        $assignedCounter = new AssignedCounter($poule, [$sportVariant]);
+        $allScheduleMaps = new AllScheduleMaps($poule, [$sportVariant]);
         $scheduleCreator = new ScheduleCreator($this->getLogger());
         $inputSports = array_values($input->getSports()->toArray());
         $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($inputSports);
@@ -55,18 +55,18 @@ class GamesPerPlaceTest extends TestCase
             $allowedGppMargin,
             $this->getLogger());
         $amountRange = $differenceManager->getAmountRange(1);
-        $assignedMap = new RangedPlaceCounterMap($assignedCounter->getAssignedMap(),$amountRange );
+        $assignedMap = new RangedPlaceCounterMap($allScheduleMaps->getAmountCounterMap(),$amountRange );
         $againstAmountRange = $differenceManager->getAgainstRange(1);
         $assignedAgainstMap = new RangedPlaceCombinationCounterMap(
-            $assignedCounter->getAssignedAgainstMap(),
+            $allScheduleMaps->getAgainstCounterMap(),
             $againstAmountRange );
         $withAmountRange = $differenceManager->getWithRange(1);
         $assignedWithMap = new RangedPlaceCombinationCounterMap(
-            $assignedCounter->getAssignedWithMap() , $withAmountRange);
+            $allScheduleMaps->getWithCounterMap() , $withAmountRange);
 
         $homeAmountRange = $differenceManager->getHomeRange(1);
-        $assignedHomeMap = new RangedPlaceCombinationCounterMap(
-            $assignedCounter->getAssignedHomeMap(), $homeAmountRange);
+        $assignedHomeMap = new RangedPlaceCounterMap(
+            $allScheduleMaps->getHomeCounterMap(), $homeAmountRange);
 
         $statisticsCalculator = new GppStatisticsCalculator(
             $variantWithPoule,

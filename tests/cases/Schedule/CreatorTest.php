@@ -13,13 +13,13 @@ use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side as AgainstSide;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsPlanning\Combinations\AssignedCounter;
 use SportsPlanning\Combinations\HomeAway;
 use SportsPlanning\Combinations\PlaceCombination;
+use SportsPlanning\Counters\Maps\Schedule\AllScheduleMaps;
 use SportsPlanning\Poule;
 use SportsScheduler\Planning\Validator as PlanningValidator;
 use SportsPlanning\Schedule;
-use SportsPlanning\Output\Schedule as ScheduleOutput;
+use SportsPlanning\Output\ScheduleOutput;
 use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsPlanning\Schedule\Game;
 use SportsPlanning\Schedule\GamePlace;
@@ -236,15 +236,15 @@ class CreatorTest extends TestCase
 
         foreach( $schedules as $schedule) {
             $sportVariants = $schedule->createSportVariants();
-            $assignedCounter = new AssignedCounter($tmpPoule, $sportVariants);
+            $allScheduleMaps = new AllScheduleMaps($tmpPoule, $sportVariants);
             foreach( $schedule->getSportSchedules() as $sportSchedule) {
                 $sportVariant = $sportSchedule->createVariant();
                 if( $sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
                     $homeAways = $this->gamesToHomeAway($sportSchedule, $tmpPoule);
-                    $assignedCounter->assignHomeAways($homeAways);
+                    $allScheduleMaps->addHomeAways($homeAways);
                 }
             }
-            self::assertSame(0, $assignedCounter->getAgainstAmountDifference() );
+            self::assertSame(0, $allScheduleMaps->getAgainstCounterMap()->calculateReport()->getAmountDifference() );
         }
     }
 
@@ -267,15 +267,15 @@ class CreatorTest extends TestCase
         $tmpPoule = $input->getPoule(1);
         foreach( $schedules as $schedule) {
             $sportVariants = $schedule->createSportVariants();
-            $assignedCounter = new AssignedCounter($tmpPoule, $sportVariants);
+            $allScheduleMaps = new AllScheduleMaps($tmpPoule, $sportVariants);
             foreach( $schedule->getSportSchedules() as $sportSchedule) {
                 $sportVariant = $sportSchedule->createVariant();
                 if( $sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
                     $homeAways = $this->gamesToHomeAway($sportSchedule, $tmpPoule);
-                    $assignedCounter->assignHomeAways($homeAways);
+                    $allScheduleMaps->addHomeAways($homeAways);
                 }
             }
-            self::assertSame(2, $assignedCounter->getAgainstAmountDifference() );
+            self::assertSame(2, $allScheduleMaps->getAgainstCounterMap()->calculateReport()->getAmountDifference() );
         }
     }
 
@@ -297,15 +297,15 @@ class CreatorTest extends TestCase
         $tmpPoule = $input->getPoule(1);
         foreach( $schedules as $schedule) {
             $sportVariants = $schedule->createSportVariants();
-            $assignedCounter = new AssignedCounter($tmpPoule, $sportVariants);
+            $allScheduleMaps = new AllScheduleMaps($tmpPoule, $sportVariants);
             foreach( $schedule->getSportSchedules() as $sportSchedule) {
                 $sportVariant = $sportSchedule->createVariant();
                 if( $sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
                     $homeAways = $this->gamesToHomeAway($sportSchedule, $tmpPoule);
-                    $assignedCounter->assignHomeAways($homeAways);
+                    $allScheduleMaps->addHomeAways($homeAways);
                 }
             }
-            self::assertSame(0, $assignedCounter->getHomeAmountDifference() );
+            self::assertSame(0, $allScheduleMaps->getHomeCounterMap()->calculateReport()->getAmountDifference() );
         }
     }
 
@@ -326,16 +326,16 @@ class CreatorTest extends TestCase
         $tmpPoule = $input->getPoule(1);
         foreach( $schedules as $schedule) {
             $sportVariants = $schedule->createSportVariants();
-            $assignedCounter = new AssignedCounter($tmpPoule, $sportVariants);
+            $allScheduleMaps = new AllScheduleMaps($tmpPoule, $sportVariants);
             foreach( $schedule->getSportSchedules() as $sportSchedule) {
                 $sportVariant = $sportSchedule->createVariant();
                 if( $sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
                     $homeAways = $this->gamesToHomeAway($sportSchedule, $tmpPoule);
-                    $assignedCounter->assignHomeAways($homeAways);
+                    $allScheduleMaps->addHomeAways($homeAways);
                 }
             }
-            self::assertTrue($assignedCounter->getAgainstAmountDifference() <= 2 );
-            self::assertTrue($assignedCounter->getHomeAmountDifference() <= 1 );
+            self::assertTrue($allScheduleMaps->getAgainstCounterMap()->calculateReport()->getAmountDifference() <= 2 );
+            self::assertTrue($allScheduleMaps->getHomeCounterMap()->calculateReport()->getAmountDifference() <= 1 );
         }
     }
 

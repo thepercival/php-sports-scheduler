@@ -2,19 +2,17 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Combinations\Validator;
+namespace SportsScheduler\Combinations\Validators;
 
 use drupol\phpermutations\Iterators\Combinations as CombinationIt;
 use SportsHelpers\Against\Side;
-use SportsPlanning\PlaceCounter;
 use SportsPlanning\Combinations\PlaceCombination;
-use SportsScheduler\Combinations\Validator;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Place;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
 
-class With extends Validator
+class WithValidator extends Validator
 {
     public function __construct(protected Poule $poule, protected Sport $sport)
     {
@@ -61,8 +59,7 @@ class With extends Validator
                 if( $placeA === $placeB ) {
                     continue;
                 }
-                $placeCounterMapA = $this->placeCounterMaps[$placeA->getPlaceNr()];
-                $this->placeCounterMaps[$placeA->getPlaceNr()] = $placeCounterMapA->addPlace($placeB);
+                $this->placeCounterMaps[$placeA->getPlaceNr()]->addPlace($placeB);
 
 //                $placeCounterMapB = $this->placeCounterMaps[$placeB->getPlaceNr()];
 //                $this->placeCounterMaps[$placeB->getPlaceNr()] = $placeCounterMapB->addPlace($placeA);

@@ -316,9 +316,9 @@ class Helper
     {
         $maxNrOfBatchesToGo = $this->planning->getMaxNrOfBatches() - $batchNumber;
         $requiredPlaces = [];
-        foreach ($infoToAssign->getPlaceInfoMap() as $placeInfo) {
-            if ($placeInfo->getNrOfGames() >= $maxNrOfBatchesToGo) {
-                $requiredPlaces[] = $placeInfo->getPlace();
+        foreach ($infoToAssign->getPlaceInfoMap() as $placeGameCounter) {
+            if ($placeGameCounter->getNrOfGames() >= $maxNrOfBatchesToGo) {
+                $requiredPlaces[] = $placeGameCounter->getPlace();
             }
         }
         return $requiredPlaces;

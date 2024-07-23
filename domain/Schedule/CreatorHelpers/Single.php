@@ -6,13 +6,11 @@ namespace SportsScheduler\Schedule\CreatorHelpers;
 
 use drupol\phpermutations\Generators\Combinations as CombinationsGenerator;
 use Psr\Log\LoggerInterface;
-use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsHelpers\Sport\Variant\AllInOneGame;
 use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
-use SportsPlanning\Combinations\AssignedCounter;
+use SportsPlanning\Combinations\CombinationMapper;
 use SportsPlanning\Combinations\PlaceCombination;
-use SportsScheduler\GameRound\Creator\Single as SingleGameRoundCreator;
+use SportsPlanning\Counters\Maps\Schedule\AmountCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\TogetherCounterMap;
 use SportsPlanning\GameRound\Together as TogetherGameRound;
 use SportsPlanning\Place;
 use SportsPlanning\Poule;
@@ -20,6 +18,7 @@ use SportsPlanning\Schedule;
 use SportsPlanning\Schedule\Game;
 use SportsPlanning\Schedule\GamePlace;
 use SportsPlanning\Schedule\Sport as SportSchedule;
+use SportsScheduler\GameRound\Creator\Single as SingleGameRoundCreator;
 use SportsScheduler\Schedule\SportVariantWithNr;
 
 class Single
@@ -32,40 +31,37 @@ class Single
      * @param Schedule $schedule
      * @param Poule $poule
      * @param list<SportVariantWithNr> $singlesWithNr
-     * @param AssignedCounter $assignedCounter
+     * @return TogetherCounterMap
      */
     public function createSportSchedules(
         Schedule $schedule,
         Poule $poule,
-        array $singlesWithNr,
-        AssignedCounter $assignedCounter): void
+        array $singlesWithNr): TogetherCounterMap
     {
-        $sportVariants = array_map(function(SportVariantWithNr $sportVariantWithNr): SingleSportVariant|AgainstH2h|AgainstGpp|AllInOneGame{
-            return $sportVariantWithNr->sportVariant;
-        }, $singlesWithNr );
-
-        /** @psalm-suppress ArgumentTypeCoercion */
-        $singleAssignedCounter = new AssignedCounter($poule, $sportVariants);
+        $placeCounterMap = (new CombinationMapper())->initPlaceCounterMap($poule);
+        $amountCounterMap = new AmountCounterMap($placeCounterMap);
+        $togetherCounterMap = new TogetherCounterMap($poule);
         foreach ($singlesWithNr as $singleWithNr) {
             $sportVariant = $singleWithNr->sportVariant;
             if( !($sportVariant instanceof SingleSportVariant ) ) {
                 continue;
             }
             $sportSchedule = new SportSchedule($schedule, $singleWithNr->number, $sportVariant->toPersistVariant());
-            $gameRound = $this->generateGameRounds($poule, $sportVariant, $singleAssignedCounter);
+            $gameRound = $this->generateGameRounds($poule, $sportVariant, $amountCounterMap, $togetherCounterMap);
             $this->createGames($sportSchedule, $gameRound);
         }
-        $assignedCounter->setAssignedTogetherMap( $singleAssignedCounter->getAssignedTogetherMap() );
+        return $togetherCounterMap;
     }
 
     protected function generateGameRounds(
         Poule $poule,
         SingleSportVariant $sportVariant,
-        AssignedCounter $singleAssignedCounter
+        AmountCounterMap $amountCounterMap,
+        TogetherCounterMap $togetherCounterMap
     ): TogetherGameRound {
 
         $gameRoundCreator = new SingleGameRoundCreator($this->logger);
-        $gameRound = $gameRoundCreator->createGameRound($poule, $sportVariant, $singleAssignedCounter);
+        $gameRound = $gameRoundCreator->createGameRound($poule, $sportVariant, $amountCounterMap, $togetherCounterMap);
 
         // $gameRound = $this->getGameRound($poule, $sportVariant, $assignedCounter, $totalNrOfGamesPerPlace);
         return $gameRound;

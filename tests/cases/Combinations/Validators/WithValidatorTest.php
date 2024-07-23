@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Tests\Combinations\Validator;
+namespace SportsScheduler\Tests\Combinations\Validators;
 
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\SportRange;
-use SportsScheduler\Combinations\Validator\With as WithValidator;
+use SportsScheduler\Combinations\Validators\WithValidator;
 use SportsScheduler\Game\Creator as GameCreator;
 use SportsPlanning\Planning;
 use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class WithTest extends TestCase
+class WithValidatorTest extends TestCase
 {
     use PlanningCreator;
     use GppMarginCalculator;

@@ -154,11 +154,12 @@ class Service
         $newRefereePlaceMap = [];
         foreach ($refereePlaceMap as $refereePlace) {
             $place = $refereePlace->getPlace();
-            $newRefereePlace = new PlaceGameCounter($place, $refereePlace->getNrOfGames());
-            $newRefereePlaceMap[$newRefereePlace->getIndex()] = $newRefereePlace;
+            $newRefereePlaceCounter = new PlaceGameCounter($place, $refereePlace->getNrOfGames());
             if ($place === $assignPlace) {
-                $newRefereePlace->increment();
+                $newRefereePlaceCounter = $newRefereePlaceCounter->increment();
             }
+            $newRefereePlaceMap[$newRefereePlaceCounter->getIndex()] = $newRefereePlaceCounter;
+
         }
         uasort(
             $newRefereePlaceMap,

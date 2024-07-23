@@ -6,8 +6,12 @@ namespace SportsScheduler\Schedule\CreatorHelpers\Against;
 
 use Exception;
 use Psr\Log\LoggerInterface;
+use SportsHelpers\Against\Side;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsPlanning\Combinations\AssignedCounter;
+use SportsPlanning\Combinations\CombinationMapper;
+use SportsPlanning\Counters\Maps\Schedule\HomeCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\SideCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\TogetherCounterMap;
 use SportsScheduler\Combinations\HomeAwayCreator\H2h as H2hHomeAwayCreator;
 use SportsScheduler\GameRound\Creator\Against\H2h as AgainstH2hGameRoundCreator;
 use SportsPlanning\Poule;
@@ -28,18 +32,20 @@ class H2h extends AgainstHelper
      * @param Schedule $schedule
      * @param Poule $poule
      * @param list<SportVariantWithNr> $againstH2hsWithNr
-     * @param AssignedCounter $assignedCounter
+     * @param TogetherCounterMap $togetherCounterMap
      * @param AgainstDifferenceManager $againstGppDifferenceManager
+     * @return SideCounterMap
      * @throws Exception
      */
     public function createSportSchedules(
         Schedule $schedule,
         Poule $poule,
         array $againstH2hsWithNr,
-        AssignedCounter $assignedCounter,
         AgainstDifferenceManager $againstGppDifferenceManager
-    ): void
+    ): SideCounterMap
     {
+        $placeCounterMap = (new CombinationMapper())->initPlaceCounterMap($poule);
+        $homeCounterMap = new SideCounterMap(Side::Home, $placeCounterMap);
         $homeAwayCreator = new H2hHomeAwayCreator();
         $sportNr = 1;
         foreach ($againstH2hsWithNr as $againstH2hWithNr) {
@@ -54,12 +60,13 @@ class H2h extends AgainstHelper
                 $poule,
                 $sportVariant,
                 $homeAwayCreator,
-                $assignedCounter,
+                $homeCounterMap,
                 $againstGppDifferenceManager->getHomeRange($sportNr)
             );
 
             $this->createGames($sportSchedule, $gameRound);
         }
+        return $homeCounterMap;
     }
 
 //    public function setGamesPerPlaceMargin(int $margin): void {
