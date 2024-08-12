@@ -1,6 +1,6 @@
 <?php
 
-namespace SportsScheduler\Combinations\StatisticsCalculator;
+namespace SportsScheduler\Combinations\AgainstStatisticsCalculators;
 
 class LeastAmountAssigned
 {

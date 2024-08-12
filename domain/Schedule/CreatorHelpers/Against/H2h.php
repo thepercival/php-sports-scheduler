@@ -11,7 +11,7 @@ use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
 use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
 use SportsScheduler\Combinations\HomeAwayCreator\H2h as H2hHomeAwayCreator;
-use SportsScheduler\GameRound\Creator\Against\H2h as AgainstH2hGameRoundCreator;
+use SportsScheduler\GameRound\Creator\Against\AgainstH2HGameRoundCreator as AgainstH2hGameRoundCreator;
 use SportsPlanning\Poule;
 use SportsPlanning\Schedule;
 use SportsScheduler\Schedule\CreatorHelpers\AgainstDifferenceManager;

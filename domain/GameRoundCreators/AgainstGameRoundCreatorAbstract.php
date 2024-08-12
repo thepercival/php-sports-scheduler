@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\GameRound\Creator;
+namespace SportsScheduler\GameRoundCreators;
 
 use Psr\Log\LoggerInterface;
 use SportsPlanning\Counters\CounterForPlace;
@@ -15,7 +15,7 @@ use SportsPlanning\Output\Combinations\GameRoundOutput;
 use SportsPlanning\GameRound\Against as AgainstGameRound;
 use SportsPlanning\Poule;
 
-abstract class Against
+abstract class AgainstGameRoundCreatorAbstract
 {
     protected GameRoundOutput $gameRoundOutput;
 

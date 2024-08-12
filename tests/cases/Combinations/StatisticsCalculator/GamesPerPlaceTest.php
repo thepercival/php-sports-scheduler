@@ -16,7 +16,7 @@ use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as GppHomeAwayCre
 use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCombinationCounterMap;
 use SportsPlanning\Counters\Maps\PlaceCounterMap;
-use SportsScheduler\Combinations\StatisticsCalculator\Against\GamesPerPlace as GppStatisticsCalculator;
+use SportsScheduler\Combinations\AgainstStatisticsCalculators\Against\GamesPerPlace as GppStatisticsCalculator;
 use SportsPlanning\Input;
 use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsPlanning\Poule;

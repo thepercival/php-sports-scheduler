@@ -2,73 +2,67 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Combinations\StatisticsCalculator\Against;
+namespace SportsScheduler\Combinations\AgainstStatisticsCalculators;
 
 use Psr\Log\LoggerInterface;
-use SportsPlanning\Combinations\HomeAway;
-use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
-use SportsPlanning\Counters\Maps\PlaceCounterMap;
-use SportsScheduler\Combinations\StatisticsCalculator;
-use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
+use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\H2h as AgainstH2hWithNrOfPlaces;
+use SportsPlanning\Counters\Maps\Schedule\RangedPlaceNrCounterMap;
+use SportsPlanning\HomeAways\OneVsOneHomeAway;
 
-class H2h extends StatisticsCalculator
+class AgainstH2hStatisticsCalculator extends StatisticsCalculatorAbstract
 {
     public function __construct(
-        protected Againsth2hWithPoule $againstH2hWithPoule,
-        RangedPlaceCounterMap $rangedHomeCounterMap,
+        protected AgainstH2hWithNrOfPlaces $againstH2hWithNrOfPlaces,
+        RangedPlaceNrCounterMap $rangedHomeNrCounterMap,
         int $nrOfHomeAwaysAssigned,
-        protected PlaceCounterMap $amountCounterMapForSport,
         LoggerInterface $logger
     )
     {
-        parent::__construct($rangedHomeCounterMap, $nrOfHomeAwaysAssigned, $logger);
+        parent::__construct($rangedHomeNrCounterMap, $nrOfHomeAwaysAssigned, $logger);
     }
 
     public function allAssigned(): bool
     {
-        if ($this->nrOfHomeAwaysAssigned < $this->againstH2hWithPoule->getTotalNrOfGames()) {
+        if ($this->nrOfHomeAwaysAssigned < $this->againstH2hWithNrOfPlaces->getTotalNrOfGames()) {
             return false;
         }
         return true;
     }
 
-    public function addHomeAway(HomeAway $homeAway): self
+    public function addHomeAway(OneVsOneHomeAway $homeAway): self
     {
-        $amountCounterMapForSport = clone $this->amountCounterMapForSport;
-        foreach ($homeAway->getPlaces() as $place) {
-            $amountCounterMapForSport->addPlace($place);
-        }
-        $rangedHomeCounterMap = clone $this->rangedHomeCounterMap;
-        foreach ($homeAway->getHome()->getPlaces() as $place) {
-            $rangedHomeCounterMap->addPlace($place);
-        }
+//        $amountCounterMapForSport = clone $this->amountNrCounterMapForSport;
+//        foreach ($homeAway->getPlaces() as $place) {
+//            $amountCounterMapForSport->addPlace($place);
+//        }
+        $rangedHomeNrCounterMap = clone $this->rangedHomeNrCounterMap;
+        $rangedHomeNrCounterMap->addPlaceNr($homeAway->getHome());
 
         return new self(
-            $this->againstH2hWithPoule,
-            $rangedHomeCounterMap,
+            $this->againstH2hWithNrOfPlaces,
+            $rangedHomeNrCounterMap,
             $this->nrOfHomeAwaysAssigned + 1,
-            $amountCounterMapForSport,
+//            $amountCounterMapForSport,
             $this->logger
         );
     }
 
     /**
-     * @param list<HomeAway> $homeAways
-     * @param LoggerInterface $logger
-     * @return list<HomeAway>
+     * @param list<OneVsOneHomeAway> $homeAways
+     * @return list<OneVsOneHomeAway>
      */
-    public function sortHomeAways(array $homeAways, LoggerInterface $logger): array {
+    public function sortHomeAways(array $homeAways): array {
 //        $time_start = microtime(true);
 
         $leastAmountAssigned = [];
         // $leastHomeAmountAssigned = [];
         foreach($homeAways as $homeAway ) {
-            $leastAmountAssigned[$homeAway->getIndex()] = $this->getLeastAssigned($this->amountCounterMapForSport, $homeAway);
+            $leastAmountAssigned[$homeAway->getIndex()] = $this->getLeastAssigned($this->amountNrCounterMapForSport, $homeAway);
             // $leastHomeAmountAssigned[$homeAway->getIndex()] = $this->getLeastAssignedPlaces($this->assignedHomeMap, $homeAway->getHome()->getPlaces());
         }
         uasort($homeAways, function (
-            HomeAway $homeAwayA,
-            HomeAway $homeAwayB
+            OneVsOneHomeAway $homeAwayA,
+            OneVsOneHomeAway $homeAwayB
         ) use($leastAmountAssigned/*, $leastHomeAmountAssigned*/): int {
 
             $leastAmountAssignedA = $leastAmountAssigned[$homeAwayA->getIndex()];

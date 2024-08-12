@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Combinations;
+namespace SportsScheduler\Combinations\AgainstStatisticsCalculators;
 
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side;
@@ -13,9 +13,8 @@ use SportsPlanning\Counters\Maps\Schedule\RangedPlaceNrCounterMap;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
-use SportsScheduler\Combinations\StatisticsCalculator\LeastAmountAssigned;
 
-abstract class StatisticsCalculator
+abstract class StatisticsCalculatorAbstract
 {
     public function __construct(
         protected RangedPlaceNrCounterMap $rangedHomeNrCounterMap,
@@ -28,8 +27,6 @@ abstract class StatisticsCalculator
     public function getNrOfHomeAwaysAssigned(): int {
         return $this->nrOfHomeAwaysAssigned;
     }
-
-    abstract public function addHomeAway(OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway): self;
 
     abstract public function allAssigned(): bool;
 

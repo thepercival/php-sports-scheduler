@@ -2,18 +2,17 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\GameRound\Creator\Against;
+namespace SportsScheduler\GameRoundCreators;
 
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
+use SportsPlanning\Combinations\Amount\Range as AmountRange;
 use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
 use SportsPlanning\Schedule\GameRounds\AgainstGameRound;
 use SportsScheduler\Combinations\HomeAwayCreator\H2h as H2hHomeAwayCreator;
-use SportsScheduler\Combinations\StatisticsCalculator\Against\H2h as H2hStatisticsCalculator;
-use SportsScheduler\GameRound\Creator\Against as AgainstCreator;
-use SportsPlanning\Combinations\Amount\Range as AmountRange;
+use SportsScheduler\GameRound\Creator\AgainstGameRoundCreatorAbstract as AgainstCreator;
 
-class H2h extends AgainstCreator
+class AgainstH2hGameRoundCreator extends AgainstCreator
 {
     public function __construct(LoggerInterface $logger)
     {

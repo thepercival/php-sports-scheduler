@@ -16,7 +16,7 @@ use SportsPlanning\Schedule;
 use SportsPlanning\Schedule\Game;
 use SportsPlanning\Schedule\GamePlace;
 use SportsPlanning\Schedule\Sport as SportSchedule;
-use SportsScheduler\GameRound\Creator\Single as SingleGameRoundCreator;
+use SportsScheduler\GameRound\Creator\SingleGameRoundCreator as SingleGameRoundCreator;
 use SportsScheduler\Schedule\SportVariantWithNr;
 
 class Single

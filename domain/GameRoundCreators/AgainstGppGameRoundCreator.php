@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\GameRound\Creator\Against;
+namespace SportsScheduler\GameRoundCreators;
 
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
@@ -17,15 +17,15 @@ use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
 use SportsPlanning\Schedule\GameRounds\AgainstGameRound;
 use SportsScheduler\Combinations\HomeAwayBalancer;
 use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as GppHomeAwayCreator;
-use SportsScheduler\Combinations\StatisticsCalculator\Against\GamesPerPlace as GppStatisticsCalculator;
+use SportsScheduler\Combinations\AgainstStatisticsCalculators\Against\GamesPerPlace as GppStatisticsCalculator;
 use SportsScheduler\Exceptions\NoSolutionException;
 use SportsScheduler\Exceptions\TimeoutException;
-use SportsScheduler\GameRound\Creator\Against as AgainstCreator;
+use SportsScheduler\GameRound\Creator\AgainstGameRoundCreatorAbstract as AgainstCreator;
 use SportsPlanning\Counters\CounterForPlaceNr;
 use SportsPlanning\Poule;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
 
-class GamesPerPlace extends AgainstCreator
+class AgainstGppGameRoundCreator extends AgainstCreator
 {
     protected int $highestGameRoundNumberCompleted = 0;
     protected int $nrOfGamesPerGameRound = 0;

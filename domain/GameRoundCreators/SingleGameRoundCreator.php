@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\GameRound\Creator;
+namespace SportsScheduler\GameRoundCreators;
 
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Single as SingleWithNrOfPlaces;
 use SportsHelpers\SportRange;
+use SportsPlanning\Combinations\DuoPlaceNr;
 use SportsPlanning\Counters\Maps\Schedule\AmountNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
 use SportsPlanning\Schedule\GameRounds\TogetherGameRound;
@@ -17,7 +18,7 @@ use SportsPlanning\Output\Combinations\GameRoundOutput;
 use SportsPlanning\Place;
 use SportsPlanning\Poule;
 
-class Single
+class SingleGameRoundCreator
 {
     protected GameRoundOutput $gameRoundOutput;
 //    /**
@@ -126,26 +127,26 @@ class Single
     /**
      * @param AmountNrCounterMap $amountNrCounterMap
      * @param TogetherNrCounterMap $togetherNrCounterMap
-     * @param list<TogetherGameRoundGamePlace> $gamePlaces
-     * @return list<GamePlace>
+     * @param list<GameRoundTogetherGamePlace> $gamePlaces
+     * @return list<GameRoundTogetherGamePlace>
      */
     protected function sortGamePlaces(
-        AmountCounterMap $amountCounterMap,
-        TogetherCounterMap $togetherCounterMap,
+        AmountNrCounterMap $amountNrCounterMap,
+        TogetherNrCounterMap $togetherNrCounterMap,
         array $gamePlaces): array
     {
         uasort(
             $gamePlaces,
-            function (GamePlace $gamePlaceA, GamePlace $gamePlaceB) use ($amountCounterMap, $togetherCounterMap, $gamePlaces): int {
-                $nrOfAssignedGamesA = $amountCounterMap->count($gamePlaceA->getPlace());
-                $nrOfAssignedGamesB = $amountCounterMap->count($gamePlaceB->getPlace());
+            function (GameRoundTogetherGamePlace $gamePlaceA, GameRoundTogetherGamePlace $gamePlaceB) use ($amountNrCounterMap, $togetherNrCounterMap, $gamePlaces): int {
+                $nrOfAssignedGamesA = $amountNrCounterMap->count($gamePlaceA->getPlaceNr());
+                $nrOfAssignedGamesB = $amountNrCounterMap->count($gamePlaceB->getPlaceNr());
                 if ($nrOfAssignedGamesA !== $nrOfAssignedGamesB) {
                     return $nrOfAssignedGamesA - $nrOfAssignedGamesB;
                 }
                 $placesToCompareA = $this->getOtherGamePlaces($gamePlaceA, $gamePlaces);
-                $scoreA = $this->getScore($togetherCounterMap, $gamePlaceA->getPlace(), $placesToCompareA);
+                $scoreA = $this->getScore($togetherNrCounterMap, $gamePlaceA->getPlaceNr(), $placesToCompareA);
                 $placesToCompareB = $this->getOtherGamePlaces($gamePlaceB, $gamePlaces);
-                $scoreB = $this->getScore($togetherCounterMap, $gamePlaceB->getPlace(), $placesToCompareB);
+                $scoreB = $this->getScore($togetherNrCounterMap, $gamePlaceB->getPlaceNr(), $placesToCompareB);
                 return $scoreA - $scoreB;
             }
         );
@@ -190,11 +191,11 @@ class Single
 //    }
 
     /**
-     * @param GamePlace $gamePlace
-     * @param list<GamePlace> $gamePlaces
-     * @return list<GamePlace>
+     * @param GameRoundTogetherGamePlace $gamePlace
+     * @param list<GameRoundTogetherGamePlace> $gamePlaces
+     * @return list<GameRoundTogetherGamePlace>
      */
-    protected function getOtherGamePlaces(GamePlace $gamePlace, array $gamePlaces): array
+    protected function getOtherGamePlaces(GameRoundTogetherGamePlace $gamePlace, array $gamePlaces): array
     {
         $idx = array_search($gamePlace, $gamePlaces, true);
         if ($idx === false) {
@@ -205,20 +206,20 @@ class Single
     }
 
     /**
-     * @param TogetherCounterMap $togetherCounterMap
-     * @param Place $place
-     * @param list<GamePlace> $gamePlaces
+     * @param TogetherNrCounterMap $togetherNrCounterMap
+     * @param int $placeNr
+     * @param list<GameRoundTogetherGamePlace> $gamePlaces
      * @return int
      */
-    protected function getScore(TogetherCounterMap $togetherCounterMap, Place $place, array $gamePlaces): int
+    protected function getScore(TogetherNrCounterMap $togetherNrCounterMap, int $placeNr, array $gamePlaces): int
     {
         $score = 0;
         foreach ($gamePlaces as $gamePlace) {
-            if ($place === $gamePlace->getPlace()) {
+            if ($placeNr === $gamePlace->getPlaceNr()) {
                 return 100000;
             }
-            $placeCombination = new PlaceCombination([$place, $gamePlace->getPlace()]);
-            $score += $togetherCounterMap->count($placeCombination);
+            $duoPlaceNr = new DuoPlaceNr($placeNr, $gamePlace->getPlaceNr());
+            $score += $togetherNrCounterMap->count($duoPlaceNr);
         }
         return $score;
     }

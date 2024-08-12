@@ -15,7 +15,7 @@ use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
 use SportsScheduler\Schedule\CreatorHelpers\AgainstDifferenceManager;
 use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as GppHomeAwayCreator;
-use SportsScheduler\GameRound\Creator\Against\GamesPerPlace as AgainstGppGameRoundCreator;
+use SportsScheduler\GameRound\Creator\Against\AgainstGppGameRoundCreator as AgainstGppGameRoundCreator;
 use SportsPlanning\Poule;
 use SportsPlanning\Schedule;
 use SportsPlanning\Schedule\Sport as SportSchedule;

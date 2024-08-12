@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Combinations\StatisticsCalculator\Against;
+namespace SportsScheduler\Combinations\AgainstStatisticsCalculators;
 
 use Psr\Log\LoggerInterface;
 use SportsPlanning\Combinations\Amount\Range as AmountRange;
@@ -12,13 +12,9 @@ use SportsPlanning\Counters\Maps\Schedule\RangedPlaceNrCounterMap;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
-use SportsScheduler\Combinations\StatisticsCalculator;
-use SportsScheduler\Combinations\StatisticsCalculator\Against\GamesPerPlace as GppStatisticsCalculator;
-use SportsPlanning\Place;
-// use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
 
-class GamesPerPlace extends StatisticsCalculator
+class AgainstGppStatisticsCalculator extends StatisticsCalculatorAbstract
 {
     protected bool $checkOnWith;
 
