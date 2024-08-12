@@ -31,7 +31,6 @@ class GamesPerPlace extends AgainstHelper
 
     /**
      * @param Schedule $schedule
-     * @param Poule $poule
      * @param list<SportVariantWithNr> $againstGppsWithNr
      * @param SideCounterMap $homeCounterMap
      * @param TogetherCounterMap $togetherCounterMap
@@ -41,7 +40,6 @@ class GamesPerPlace extends AgainstHelper
      */
     public function createSportSchedules(
         Schedule                 $schedule,
-        Poule                    $poule,
         array                    $againstGppsWithNr,
         SideCounterMap           $homeCounterMap,
         TogetherCounterMap       $togetherCounterMap,
@@ -50,8 +48,8 @@ class GamesPerPlace extends AgainstHelper
     ): void
     {
         $homeAwayCreator = new GppHomeAwayCreator();
-
-        $allScheduleMaps = new AllScheduleMaps($poule, $this->getAllSportVariants($schedule, $againstGppsWithNr) );
+        $nrOfPlaces = $schedule->getNrOfPlaces();
+        $allScheduleMaps = new AllScheduleMaps($nrOfPlaces);
         $allScheduleMaps->setHomeCounterMap($homeCounterMap);
         $allScheduleMaps->setTogetherCounterMap($togetherCounterMap);
         $allScheduleMaps = clone $allScheduleMaps;

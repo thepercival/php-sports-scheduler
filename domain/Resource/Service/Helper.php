@@ -203,9 +203,9 @@ class Helper
             foreach ($sportInfo->getUniquePlacesCounters() as $uniquePlacesCounter) {
                 // all pouleplaces
                 $nrOfPlaces = count($uniquePlacesCounter->getPoule()->getPlaces());
-                $variantWithPoule = (new VariantCreator())->createWithPoule($nrOfPlaces, $sportInfo->getVariant());
+                $variantWithNrOfPlaces = (new VariantCreator())->createWithNrOfPlaces($nrOfPlaces, $sportInfo->getVariant());
                 $maxNrOfBatchGames = $simCalculator->getMaxNrOfGamesSimultaneously(
-                    $variantWithPoule, $this->input->getRefereeInfo()->selfRefereeInfo);
+                    $variantWithNrOfPlaces, $this->input->getRefereeInfo()->selfRefereeInfo);
 
                 $nrOfBatchesNeeded = (int)ceil($uniquePlacesCounter->getNrOfGames() / $maxNrOfBatchGames);
                 if ($nrOfBatchesNeeded > $maxNrOfBatchesToGo) {
@@ -214,9 +214,9 @@ class Helper
 
                 // only assigned places
                 $nrOfPlaces = $uniquePlacesCounter->getNrOfDistinctPlacesAssigned();
-                $variantWithPoule2 = (new VariantCreator())->createWithPoule($nrOfPlaces, $sportInfo->getVariant());
+                $variantWithNrOfPlaces2 = (new VariantCreator())->createWithNrOfPlaces($nrOfPlaces, $sportInfo->getVariant());
                 $selfRefereeInfo = new SelfRefereeInfo(SelfReferee::Disabled);
-                $maxNrOfBatchGames = $simCalculator->getMaxNrOfGamesSimultaneously($variantWithPoule2, $selfRefereeInfo);
+                $maxNrOfBatchGames = $simCalculator->getMaxNrOfGamesSimultaneously($variantWithNrOfPlaces2, $selfRefereeInfo);
                 $nrOfBatchesNeeded = (int)ceil($uniquePlacesCounter->getNrOfGames() / $maxNrOfBatchGames);
                 if ($nrOfBatchesNeeded > $maxNrOfBatchesToGo) {
                     return true;

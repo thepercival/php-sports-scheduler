@@ -120,14 +120,5 @@ class GamesPerPlaceTest extends TestCase
     ////        self::assertCount(6, $homes);
 //    }
 
-    protected function getLogger(): LoggerInterface
-    {
-        $logger = new Logger("test-logger");
-        $processor = new UidProcessor();
-        $logger->pushProcessor($processor);
 
-        $handler = new StreamHandler('php://stdout', Logger::INFO);
-        $logger->pushHandler($handler);
-        return $logger;
-    }
 }

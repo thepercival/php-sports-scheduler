@@ -27,6 +27,9 @@ use SportsScheduler\Schedule\Creator as ScheduleCreator;
 
 trait PlanningCreator
 {
+    use LoggerCreator;
+    use GppMarginCalculator;
+
     protected function getAgainstH2hSportVariant(
         int $nrOfHomePlaces = 1,
         int $nrOfAwayPlaces = 1,
@@ -95,17 +98,6 @@ trait PlanningCreator
         return new SportVariantWithFields($this->getAllInOneGameSportVariant($nrOfGamesPerPlace), $nrOfFields);
     }
 
-    protected function getLogger(): LoggerInterface
-    {
-        $logger = new Logger("test-logger");
-//        $processor = new UidProcessor();
-//        $logger->pushProcessor($processor);
-
-        $handler = new StreamHandler('php://stdout', Logger::INFO);
-        $logger->pushHandler($handler);
-        return $logger;
-    }
-
     protected function getDefaultNrOfReferees(): int
     {
         return 2;
@@ -156,19 +148,17 @@ trait PlanningCreator
             $planning->setTimeoutState($timeoutState);
         }
 
-        $scheduleCreator = new ScheduleCreator($this->getLogger());
+        $scheduleCreator = new ScheduleCreator($this->createLogger());
         if( $allowedGppMargin === null ) {
             $biggestPoule = $input->getPoule(1);
-            $sports = array_values($input->getSports()->toArray());
-            $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sports);
-            $allowedGppMargin = $scheduleCreator->getMaxGppMargin($sportVariantsWithNr, count($biggestPoule->getPlaces()));
+            $allowedGppMargin = $this->calculateMaxGppMargin($biggestPoule);
         }
         $schedules = $scheduleCreator->createFromInput($input, $allowedGppMargin);
 
-        $gameCreator = new GameCreator($this->getLogger());
+        $gameCreator = new GameCreator($this->createLogger());
         $gameCreator->createGames($planning, $schedules);
 
-        $gameAssigner = new GameAssigner($this->getLogger());
+        $gameAssigner = new GameAssigner($this->createLogger());
         if ($disableThrowOnTimeout) {
             $gameAssigner->disableThrowOnTimeout();
         }

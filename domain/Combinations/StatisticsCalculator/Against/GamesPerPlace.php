@@ -13,14 +13,15 @@ use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
 use SportsScheduler\Combinations\StatisticsCalculator;
 use SportsScheduler\Combinations\StatisticsCalculator\Against\GamesPerPlace as GppStatisticsCalculator;
 use SportsPlanning\Place;
-use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
+// use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
+use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
 
 class GamesPerPlace extends StatisticsCalculator
 {
     protected bool $checkOnWith;
 
     public function __construct(
-        protected AgainstGppWithPoule $againstGppWithPoule,
+        protected AgainstGppWithNrOfPlaces $againstGppWithNrOfPlaces,
         RangedPlaceCounterMap $rangedHomeCounterMap,
         int $nrOfHomeAwaysAssigned,
         protected RangedPlaceCounterMap $rangedAmountCounterMap,
@@ -30,11 +31,11 @@ class GamesPerPlace extends StatisticsCalculator
     )
     {
         parent::__construct($rangedHomeCounterMap,$nrOfHomeAwaysAssigned, $logger);
-        $this->checkOnWith = $againstGppWithPoule->getSportVariant()->hasMultipleSidePlaces();
+        $this->checkOnWith = $againstGppWithNrOfPlaces->getSportVariant()->hasMultipleSidePlaces();
     }
 
     public function getNrOfGamesToGo(): int {
-        return $this->againstGppWithPoule->getTotalNrOfGames() - $this->getNrOfHomeAwaysAssigned();
+        return $this->againstGppWithNrOfPlaces->getTotalNrOfGames() - $this->getNrOfHomeAwaysAssigned();
     }
 
     public function addHomeAway(HomeAway $homeAway): self
@@ -52,7 +53,7 @@ class GamesPerPlace extends StatisticsCalculator
         $rangedHomeCounterMap->addHomeAway($homeAway);
 
         return new self(
-            $this->againstGppWithPoule,
+            $this->againstGppWithNrOfPlaces,
             $rangedHomeCounterMap,
             $this->nrOfHomeAwaysAssigned + 1,
             $rangedAmountCounterMap,
@@ -64,7 +65,7 @@ class GamesPerPlace extends StatisticsCalculator
 
     public function allAssigned(): bool
     {
-        if ($this->nrOfHomeAwaysAssigned < $this->againstGppWithPoule->getTotalNrOfGames()) {
+        if ($this->nrOfHomeAwaysAssigned < $this->againstGppWithNrOfPlaces->getTotalNrOfGames()) {
             return false;
         }
 
@@ -130,7 +131,7 @@ class GamesPerPlace extends StatisticsCalculator
         }
 
         $nrOfGamesToGo = $this->getNrOfGamesToGo();
-        $nrOfPlacesGo = $nrOfGamesToGo * $this->againstGppWithPoule->getSportVariant()->getNrOfGamePlaces();
+        $nrOfPlacesGo = $nrOfGamesToGo * $this->againstGppWithNrOfPlaces->getSportVariant()->getNrOfGamePlaces();
         if( $this->rangedAmountCounterMap->withinRange($nrOfPlacesGo) ) {
             return true;
         }
@@ -164,7 +165,7 @@ class GamesPerPlace extends StatisticsCalculator
         }
 
         $nrOfGamesToGo = $this->getNrOfGamesToGo();
-        $nrOfPlaceCombinationsToGo = $nrOfGamesToGo * $this->againstGppWithPoule->getSportVariant()->getNrOfAgainstCombinationsPerGame();
+        $nrOfPlaceCombinationsToGo = $nrOfGamesToGo * $this->againstGppWithNrOfPlaces->getSportVariant()->getNrOfAgainstCombinationsPerGame();
         if( $this->rangedAgainstCounterMap->withinRange($nrOfPlaceCombinationsToGo) ) {
             return true;
         }
@@ -418,19 +419,19 @@ class GamesPerPlace extends StatisticsCalculator
         if( !$withDetails ) {
             return;
         }
-        foreach( $this->againstGppWithPoule->getPoule()->getPlaces() as $place ) {
-            $this->outputAgainstPlaceTotals($place, $prefix . '    ');
+        for( $placeNr = 1 ; $placeNr <= $this->againstGppWithNrOfPlaces->getNrOfPlaces() ; $placeNr++ ) {
+            $this->outputAgainstPlaceTotals($placeNr, $prefix . '    ');
         }
     }
 
-    private function outputAgainstPlaceTotals(Place $place, string $prefix): void {
-        $placeNr = $place->getPlaceNr() < 10 ? '0' . $place->getPlaceNr() : $place->getPlaceNr();
-        $out = $placeNr . " => ";
-        foreach( $this->againstGppWithPoule->getPoule()->getPlaces() as $opponent ) {
-            if( $opponent->getPlaceNr() <= $place->getPlaceNr() ) {
+    private function outputAgainstPlaceTotals(int  $placeNr, string $prefix): void {
+        $placeNrOutput = $placeNr < 10 ? '0' . $placeNr : $placeNr;
+        $out = $placeNrOutput . " => ";
+        for( $opponentNr = 1 ; $opponentNr <= $this->againstGppWithNrOfPlaces->getNrOfPlaces() ; $opponentNr++ ) {
+            if( $opponentNr <= $placeNr) {
                 $out .= '     ,';
             } else {
-                $opponentNr = $opponent->getPlaceNr() < 10 ? '0' . $opponent->getPlaceNr() : $opponent->getPlaceNr();
+                $opponentNrOutput = $opponentNr < 10 ? '0' . $opponentNr : $opponentNr;
                 $placeCombination = new PlaceCombination([$place, $opponent]);
                 $out .= '' . $opponentNr . ':' . $this->getOutputAmount($placeCombination) . ',';
             }

@@ -26,14 +26,13 @@ class AllInOneGame
 
     /**
      * @param Schedule $schedule
-     * @param Poule $poule
      * @param list<SportVariantWithNr> $allInOneGamesWithNr
      */
     public function createSportSchedules(
         Schedule $schedule,
-        Poule $poule,
         array $allInOneGamesWithNr): void
     {
+        $nrOfPlaces = $schedule->getNrOfPlaces();
         foreach ($allInOneGamesWithNr as $allInOneGameWithNr) {
             $sportVariant = $allInOneGameWithNr->sportVariant;
             if( !($sportVariant instanceof AllInOneGameBase ) ) {

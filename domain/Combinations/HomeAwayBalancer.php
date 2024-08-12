@@ -11,7 +11,6 @@ use SportsPlanning\Combinations\HomeAwaySearcher;
 use SportsPlanning\Combinations\PlaceCombination;
 use SportsPlanning\Counters\CounterForPlace;
 use SportsPlanning\Counters\Maps\PlaceCounterMap;
-use SportsPlanning\Counters\Maps\Schedule\HomeCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCombinationCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\SideCounterMap;
@@ -172,6 +171,7 @@ class HomeAwayBalancer
             $newSportHomeAways[] = $bestSSportHomeAway;
             $homeCounterMap->addHomeAway($bestSSportHomeAway);
             $awayCounterMap->addHomeAway($bestSSportHomeAway);
+            (new HomeAwayOutput())->outputHomeAways($newSportHomeAways, " while loop");
         }
 //        $homeCounterMap->output($this->logger, '', 'ha assigned home totals');
 //        $awayCounterMap->output($this->logger, '', 'ha assigned away totals');
@@ -570,6 +570,7 @@ class HomeAwayBalancer
         foreach( $sportHomeAwaysToAssign as $homeAway) {
 
             $homeCount = $this->countPlaceCombination($assignedHomeCounterMap, $homeAway->getHome());
+            $highestHomeCountSinglePlace = $this->calculateHighestSinglePlaceCount($assignedHomeCounterMap, $homeAway->getHome());
             $count =  $homeCount + $this->countPlaceCombination($assignedAwayCounterMap, $homeAway->getHome());
 
             if( $bestHomeAway === null || $homeCount < $lowestHomeCount) {
@@ -583,6 +584,7 @@ class HomeAwayBalancer
 
             $swappedHomeAway = $homeAway->swap();
             $swappedHomeCount = $this->countPlaceCombination($assignedHomeCounterMap, $swappedHomeAway->getHome());
+            $swappedHighestHomeCountSinglePlace = $this->calculateHighestSinglePlaceCount($assignedHomeCounterMap, $swappedHomeAway->getHome());
             $swappedCount =  $swappedHomeCount + $this->countPlaceCombination($assignedAwayCounterMap, $swappedHomeAway->getHome());
 
             if( $swappedHomeCount < $lowestHomeCount) {
@@ -590,7 +592,12 @@ class HomeAwayBalancer
                 $highestCount = $swappedCount;
                 $bestHomeAway = $homeAway;
                 $swapped = true;
-            } else if( $swappedHomeCount === $lowestHomeCount && $swappedHomeCount > $highestCount) {
+            } else if( $swappedHomeCount === $lowestHomeCount && $swappedCount > $highestCount) {
+                $highestCount = $swappedHomeCount;
+                $bestHomeAway = $homeAway;
+                $swapped = true;
+            } else if( $swappedHomeCount === $lowestHomeCount && $swappedCount === $highestCount
+                && $highestHomeCountSinglePlace > $swappedHighestHomeCountSinglePlace) {
                 $highestCount = $swappedHomeCount;
                 $bestHomeAway = $homeAway;
                 $swapped = true;
@@ -632,17 +639,17 @@ class HomeAwayBalancer
 //        return $lowestCount;
 //    }
 
-//    protected function getHighestPlaceCount(PlaceCounterMap $placeCounterMap, PlaceCombination $placeCombination): int {
-//
-//        $highestCount = 0;
-//        foreach( $placeCombination->getPlaces() as $place) {
-//            $count = $placeCounterMap->count($place);
-//            if( $highestCount === 0 || $count > $highestCount ) {
-//                $highestCount = $count;
-//            }
-//        }
-//        return $highestCount;
-//    }
+    protected function calculateHighestSinglePlaceCount(PlaceCounterMap $placeCounterMap, PlaceCombination $placeCombination): int {
+
+        $highestCount = 0;
+        foreach( $placeCombination->getPlaces() as $place) {
+            $count = $placeCounterMap->count($place);
+            if( $highestCount === 0 || $count > $highestCount ) {
+                $highestCount = $count;
+            }
+        }
+        return $highestCount;
+    }
 
     private function getHomeDifference(PlaceCounterMap $homePlaceCounterMap, HomeAway $sportHomeAway): int {
         $homeDiff = $this->countPlaceCombination($homePlaceCounterMap, $sportHomeAway->getHome())

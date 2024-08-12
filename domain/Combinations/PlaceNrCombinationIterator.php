@@ -12,12 +12,12 @@ use SportsPlanning\Poule;
 /**
  * @implements Iterator<string|int, PlaceCombination>
  */
-class PlaceCombinationIterator implements Iterator
+class PlaceNrCombinationIterator implements Iterator
 {
     /**
-     * @var list<PlaceIterator>
+     * @var list<PlaceNrIterator>
      */
-    protected array $placeIterators;
+    protected array $placeNrIterators;
     protected int $nrOfIncrements = 1;
 
     /**
@@ -27,21 +27,21 @@ class PlaceCombinationIterator implements Iterator
      */
     public function __construct(Poule $poule, array $startPlaces, protected int $maxNrOfIncrements)
     {
-        $this->placeIterators = array_map(fn (Place $place) => new PlaceIterator($poule, $place->getPlaceNr()), $startPlaces);
+        $this->placeNrIterators = array_map(fn (Place $place) => new PlaceNrIterator($poule, $place->getPlaceNr()), $startPlaces);
     }
 
     public function current(): PlaceCombination
     {
-        $places = array_map(fn (PlaceIterator $placeIterator) => $placeIterator->current(), $this->placeIterators);
+        $placeNrs = array_map(fn (PlaceNrIterator $placeIterator) => $placeIterator->current(), $this->placeNrIterators);
         return new PlaceCombination($places);
     }
 
     public function next(): void
     {
         $this->nrOfIncrements++;
-        foreach ($this->placeIterators as $placeIterator) {
+        foreach ($this->placeNrIterators as $placeNrIterator) {
             //   for( $i = 0 ; $i < $this->delta ;$i++) {
-            $placeIterator->next();
+            $placeNrIterator->next();
             //     }
         }
     }

@@ -25,10 +25,10 @@ use SportsPlanning\Planning;
 use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentsValidator;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
-use SportsHelpers\Sport\Variant\WithPoule\Against\H2h as AgainstH2hWithPoule;
-use SportsHelpers\Sport\Variant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
-use SportsHelpers\Sport\Variant\WithPoule\Single as SingleWithPoule;
-use SportsHelpers\Sport\Variant\WithPoule\AllInOneGame as AllInOneGameWithPoule;
+use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\H2h as AgainstH2hWithNrOfPlaces;
+use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
+use SportsHelpers\Sport\Variant\WithNrOfPlaces\Single as SingleWithNrOfPlaces;
+use SportsHelpers\Sport\Variant\WithNrOfPlaces\AllInOneGame as AllInOneGameWithNrOfPlaces;
 
 class Validator
 {
@@ -209,23 +209,23 @@ class Validator
 
         if ($sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
             if( $sportVariant instanceof AgainstH2h ) {
-                $againstWithPoule = new AgainstH2hWithPoule($nrOfPlaces, $sportVariant);
+                $againstWithNrOfPlaces = new AgainstH2hWithNrOfPlaces($nrOfPlaces, $sportVariant);
             } else {
-                $againstWithPoule = new AgainstGppWithPoule($nrOfPlaces, $sportVariant);
+                $againstWithNrOfPlaces = new AgainstGppWithNrOfPlaces($nrOfPlaces, $sportVariant);
             }
             foreach ($poule->getPlaces() as $place) {
                 $nrOfHomeSideGames[$place->getUniqueIndex()] = 0;
             }
             // if ($againstWithPoule instanceof AgainstH2hWithPoule || $againstWithPoule->allPlacesSameNrOfGamesAssignable()) {
                 if (// $sportVariant->hasMultipleSidePlaces() &&
-                    ($againstWithPoule instanceof AgainstH2hWithPoule || $againstWithPoule->allWithSameNrOfGamesAssignable())) {
+                    ($againstWithNrOfPlaces instanceof AgainstH2hWithNrOfPlaces || $againstWithNrOfPlaces->allWithSameNrOfGamesAssignable())) {
                     $withValidator = new WithValidator($poule, $sport);
                     $withValidator->addGames($planning);
                     if (!$withValidator->balanced()) {
                         return PlanningValidity::UNEQUAL_GAME_WITH;
                     }
                 }
-                if ($againstWithPoule instanceof AgainstH2hWithPoule || $againstWithPoule->allAgainstSameNrOfGamesAssignable()) {
+                if ($againstWithNrOfPlaces instanceof AgainstH2hWithNrOfPlaces || $againstWithNrOfPlaces->allAgainstSameNrOfGamesAssignable()) {
                     $againstValidator = new AgainstValidator($poule, $sport);
                     $againstValidator->addGames($planning);
                     if (!$againstValidator->balanced()) {
@@ -287,8 +287,8 @@ class Validator
             }
         }
 
-        $variantWithPoule = (new VariantCreator())->createWithPoule($nrOfPlaces, $sportVariant);
-        if (!($variantWithPoule instanceof AgainstGppWithPoule) || $variantWithPoule->allPlacesSameNrOfGamesAssignable()) {
+        $variantWithNrOfPlaces = (new VariantCreator())->createWithNrOfPlaces($nrOfPlaces, $sportVariant);
+        if (!($variantWithNrOfPlaces instanceof AgainstGppWithNrOfPlaces) || $variantWithNrOfPlaces->allPlacesSameNrOfGamesAssignable()) {
             $nrOfGamesFirstPlace = reset($nrOfGamesPerPlace);
             foreach ($nrOfGamesPerPlace as $nrOfGamesSomePlace) {
                 if ($nrOfGamesFirstPlace !== $nrOfGamesSomePlace) {
@@ -297,11 +297,11 @@ class Validator
             }
         }
 
-        if ($variantWithPoule instanceof SingleWithPoule || $variantWithPoule instanceof AllInOneGameWithPoule) {
+        if ($variantWithNrOfPlaces instanceof SingleWithNrOfPlaces || $variantWithNrOfPlaces instanceof AllInOneGameWithNrOfPlaces) {
             return PlanningValidity::VALID;
         }
-        if ($variantWithPoule instanceof AgainstGppWithPoule) {
-            if (!$variantWithPoule->allWithSameNrOfGamesAssignable(AgainstSide::Home)) {
+        if ($variantWithNrOfPlaces instanceof AgainstGppWithNrOfPlaces) {
+            if (!$variantWithNrOfPlaces->allWithSameNrOfGamesAssignable(AgainstSide::Home)) {
                 return PlanningValidity::VALID;
             }
         }

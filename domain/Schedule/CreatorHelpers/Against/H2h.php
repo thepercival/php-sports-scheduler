@@ -30,7 +30,6 @@ class H2h extends AgainstHelper
 
     /**
      * @param Schedule $schedule
-     * @param Poule $poule
      * @param list<SportVariantWithNr> $againstH2hsWithNr
      * @param TogetherCounterMap $togetherCounterMap
      * @param AgainstDifferenceManager $againstGppDifferenceManager
@@ -39,11 +38,11 @@ class H2h extends AgainstHelper
      */
     public function createSportSchedules(
         Schedule $schedule,
-        Poule $poule,
         array $againstH2hsWithNr,
         AgainstDifferenceManager $againstGppDifferenceManager
     ): SideCounterMap
     {
+        $nrOfPlaces = $schedule->getNrOfPlaces();
         $placeCounterMap = (new CombinationMapper())->initPlaceCounterMap($poule);
         $homeCounterMap = new SideCounterMap(Side::Home, $placeCounterMap);
         $homeAwayCreator = new H2hHomeAwayCreator();

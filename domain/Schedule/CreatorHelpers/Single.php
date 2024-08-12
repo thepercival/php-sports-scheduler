@@ -7,11 +7,9 @@ namespace SportsScheduler\Schedule\CreatorHelpers;
 use drupol\phpermutations\Generators\Combinations as CombinationsGenerator;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
-use SportsPlanning\Combinations\CombinationMapper;
-use SportsPlanning\Combinations\PlaceCombination;
-use SportsPlanning\Counters\Maps\Schedule\AmountCounterMap;
-use SportsPlanning\Counters\Maps\Schedule\TogetherCounterMap;
-use SportsPlanning\GameRound\Together as TogetherGameRound;
+use SportsPlanning\Counters\Maps\Schedule\AmountNrCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
+use SportsPlanning\Schedule\GameRounds\TogetherGameRound;
 use SportsPlanning\Place;
 use SportsPlanning\Poule;
 use SportsPlanning\Schedule;
@@ -29,18 +27,16 @@ class Single
 
     /**
      * @param Schedule $schedule
-     * @param Poule $poule
      * @param list<SportVariantWithNr> $singlesWithNr
-     * @return TogetherCounterMap
+     * @return TogetherNrCounterMap
      */
     public function createSportSchedules(
         Schedule $schedule,
-        Poule $poule,
-        array $singlesWithNr): TogetherCounterMap
+        array $singlesWithNr): TogetherNrCounterMap
     {
-        $placeCounterMap = (new CombinationMapper())->initPlaceCounterMap($poule);
-        $amountCounterMap = new AmountCounterMap($placeCounterMap);
-        $togetherCounterMap = new TogetherCounterMap($poule);
+        $nrOfPlaces = $schedule->getNrOfPlaces();
+        $amountCounterMap = new AmountNrCounterMap($nrOfPlaces);
+        $togetherCounterMap = new TogetherNrCounterMap($nrOfPlaces);
         foreach ($singlesWithNr as $singleWithNr) {
             $sportVariant = $singleWithNr->sportVariant;
             if( !($sportVariant instanceof SingleSportVariant ) ) {
@@ -145,7 +141,7 @@ class Single
             foreach ($gameRound->getGames() as $gameRoundGame) {
                 $game = new Game($sportSchedule);
                 foreach ($gameRoundGame->getGamePlaces() as $gameRoundGamePlace) {
-                    $gamePlace = new GamePlace($game, $gameRoundGamePlace->getPlace()->getPlaceNr());
+                    $gamePlace = new GamePlace($game, $gameRoundGamePlace->getPlaceNr());
                     $gamePlace->setGameRoundNumber($gameRoundGamePlace->getGameRoundNumber());
                 }
             }

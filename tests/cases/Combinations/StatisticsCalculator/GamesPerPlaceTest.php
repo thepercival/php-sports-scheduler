@@ -13,7 +13,6 @@ use SportsHelpers\SportRange;
 use SportsPlanning\Combinations\HomeAway;
 use SportsPlanning\Counters\Maps\Schedule\AllScheduleMaps;
 use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as GppHomeAwayCreator;
-use SportsPlanning\Combinations\Mapper;
 use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCombinationCounterMap;
 use SportsPlanning\Counters\Maps\PlaceCounterMap;
@@ -34,26 +33,27 @@ class GamesPerPlaceTest extends TestCase
     public function testSortHomeAway(): void {
 
         $sportVariant = $this->getAgainstGppSportVariant(2, 2, 26);
+        $againstGppMap = [1 => $sportVariant];
         $input = $this->createInput([18], [new SportVariantWithFields($sportVariant, 1)]);
         $poule = $input->getPoule(1);
-        $nrOfPlaces = count($poule->getPlaces());
         $variantWithPoule = new AgainstGppWithPoule($poule, $sportVariant);
         $allScheduleMaps = new AllScheduleMaps($poule, [$sportVariant]);
-        $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $inputSports = array_values($input->getSports()->toArray());
-        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($inputSports);
-        $againstGppsWithNr = $scheduleCreator->getAgainstGppSportVariantsWithNr($sportVariantsWithNr, $nrOfPlaces);
-        if( count($againstGppsWithNr) === 0 ) {
-            return;
-        }
+//        $scheduleCreator = new ScheduleCreator($this->createLogger());
+//        $inputSports = array_values($input->getSports()->toArray());
 
-        $allowedGppMargin = $this->getMaxGppMargin($poule, $this->getLogger() );
+//        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($inputSports);
+//        $againstGppsWithNr = $scheduleCreator->getAgainstGppSportVariantsWithNr($sportVariantsWithNr, $nrOfPlaces);
+//        if( count($againstGppsWithNr) === 0 ) {
+//            return;
+//        }
+
+        $allowedGppMargin = $this->calculateMaxGppMargin($poule);
 
         $differenceManager = new AgainstDifferenceManager(
-            $poule,
-            $againstGppsWithNr,
+            count($poule->getPlaces()),
+            $againstGppMap,
             $allowedGppMargin,
-            $this->getLogger());
+            $this->createLogger());
         $amountRange = $differenceManager->getAmountRange(1);
         $assignedMap = new RangedPlaceCounterMap($allScheduleMaps->getAmountCounterMap(),$amountRange );
         $againstAmountRange = $differenceManager->getAgainstRange(1);
@@ -75,14 +75,14 @@ class GamesPerPlaceTest extends TestCase
             $assignedMap,
             $assignedAgainstMap,
             $assignedWithMap,
-            $this->getLogger()
+            $this->createLogger()
         );
 
         $homeAwayCreator = new GppHomeAwayCreator();
         $homeAways = $this->createHomeAways($homeAwayCreator, $poule, $sportVariant);
 
         $time_start = microtime(true);
-        $statisticsCalculator->sortHomeAways($homeAways, $this->getLogger());
+        $statisticsCalculator->sortHomeAways($homeAways, $this->createLogger());
         // echo 'Total Execution Time: '. (microtime(true) - $time_start);
         self::assertLessThan(10.0, (microtime(true) - $time_start) );
     }
@@ -105,16 +105,5 @@ class GamesPerPlaceTest extends TestCase
             $homeAways = array_merge($homeAways, $homeAwayCreator->create($variantWithPoule));
         }
         return $homeAways;
-    }
-
-    protected function getLogger(): LoggerInterface
-    {
-        $logger = new Logger("test-logger");
-        $processor = new UidProcessor();
-        $logger->pushProcessor($processor);
-
-        $handler = new StreamHandler('php://stdout', Logger::INFO);
-        $logger->pushHandler($handler);
-        return $logger;
     }
 }

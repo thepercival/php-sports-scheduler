@@ -153,10 +153,10 @@ class PerformanceTest extends TestCase
 //        $input = $this->createInput([18], $sportVariants);
 //        $planning = new Planning($input, new SportRange(1, 1), 0);
 //
-//        $scheduleCreator = new ScheduleCreator($this->getLogger());
+//        $scheduleCreator = new ScheduleCreator($this->createLogger());
 //        $scheduleCreator->setAgainstGppMargin(1);
 //        $schedules = $scheduleCreator->createFromInput($input);
-//        $gameCreator = new GameCreator($this->getLogger());
+//        $gameCreator = new GameCreator($this->createLogger());
 //        $gameCreator->createGames($planning, $schedules);
 ////        (new PlanningOutput())->outputWithGames($planning, true);
 //

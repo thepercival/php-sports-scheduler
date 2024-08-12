@@ -115,12 +115,12 @@ class PreAssignSorter
         $this->muliplierMap = [];
         foreach ($input->getSports() as $sport) {
             $sportVariant = $sport->createVariant();
-            $sportVariantWithLargestPoule = (new VariantCreator())->createWithPoule($maxNrOfPlaces, $sportVariant);
-            $maxNrOfGamePlacesPerBatch = $sportVariantWithLargestPoule->getNrOfGamePlacesPerBatch();
+            $sportVariantWithLargestNrOfPlaces = (new VariantCreator())->createWithNrOfPlaces($maxNrOfPlaces, $sportVariant);
+            $maxNrOfGamePlacesPerBatch = $sportVariantWithLargestNrOfPlaces->getNrOfGamePlacesPerBatch();
             $this->muliplierMap[$sport->getNumber()] = [];
             foreach ($input->getPoules() as $poule) {
-                $variantWithPoule = (new VariantCreator())->createWithPoule(count($poule->getPlaces()), $sportVariant);
-                $nrOfGamePlacesPerBatch = $variantWithPoule->getNrOfGamePlacesPerBatch();
+                $variantWithNrOfPlaces = (new VariantCreator())->createWithNrOfPlaces(count($poule->getPlaces()), $sportVariant);
+                $nrOfGamePlacesPerBatch = $variantWithNrOfPlaces->getNrOfGamePlacesPerBatch();
                 // $nrOfGameRoundsPoule = $sportVariant->getNrOfGameRounds($poule->getPlaces()->count());
                 $this->muliplierMap[$sport->getNumber()][$poule->getNumber()] = $maxNrOfGamePlacesPerBatch / $nrOfGamePlacesPerBatch;
             }

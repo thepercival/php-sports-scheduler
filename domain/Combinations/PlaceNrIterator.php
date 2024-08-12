@@ -11,7 +11,7 @@ use SportsPlanning\Poule;
 /**
  * @implements Iterator<int, Place>
  */
-class PlaceIterator implements Iterator
+class PlaceNrIterator implements Iterator
 {
     private int $current;
 
