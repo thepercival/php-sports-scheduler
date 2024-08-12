@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Combinations\HomeAwayCreator;
 
-use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsPlanning\Combinations\HomeAway;
+use SportsHelpers\SportRange;
+use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsScheduler\Combinations\HomeAwayCreator;
-use SportsPlanning\Combinations\PlaceCombination;
-use SportsPlanning\Place;
-use SportsPlanning\Poule;
-use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
 
 final class H2h extends HomeAwayCreator
 {
@@ -20,59 +16,58 @@ final class H2h extends HomeAwayCreator
     }
 
     /**
-     * @param AgainstH2hWithPoule $againstH2hWithPoule
-     * @return list<HomeAway>
+     * @param int $nrOfPlaces
+     * @return list<OneVsOneHomeAway>
      */
-    public function createForOneH2H(AgainstH2hWithPoule $againstH2hWithPoule): array
+    public function createForOneH2H(int $nrOfPlaces): array
     {
-        $poule = $againstH2hWithPoule->getPoule();
-
         $homeAways = [];
 
-        /** @var list<Place|null> $schedulePlaces */
-        $schedulePlaces = array_values($poule->getPlaces()->toArray());
+        /** @var list<int|null> $schedulePlaceNrs */
+        $schedulePlaceNrs = (new SportRange(1, $nrOfPlaces))->toArray();
 
-        if (count($poule->getPlaces()) % 2 != 0) {
-            array_push($schedulePlaces, null);
+        if ($nrOfPlaces % 2 !== 0) {
+            $schedulePlaceNrs[] = null;
         }
-        $away = array_splice($schedulePlaces, (int)(count($schedulePlaces) / 2));
-        $home = $schedulePlaces;
+        $away = array_splice($schedulePlaceNrs, (int)(count($schedulePlaceNrs) / 2));
+        $home = $schedulePlaceNrs;
         for ($gameRoundNr = 0; $gameRoundNr < count($home) + count($away) - 1; $gameRoundNr++) {
             for ($gameNr = 0; $gameNr < count($home); $gameNr++) {
-                /** @var Place|null $homePlace */
-                $homePlace = $home[$gameNr];
-                /** @var Place|null $awayPlace */
-                $awayPlace = $away[$gameNr];
-                if ($homePlace === null || $awayPlace === null) {
+                /** @var int|null $homePlaceNr */
+                $homePlaceNr = $home[$gameNr];
+                /** @var int|null $awayPlaceNr */
+                $awayPlaceNr = $away[$gameNr];
+                if ($homePlaceNr === null || $awayPlaceNr === null) {
                     continue;
                 }
-                $homeAways[] = $this->createHomeAway($homePlace, $awayPlace);
+                $homeAways[] = $this->createHomeAway($homePlaceNr, $awayPlaceNr);
             }
             if (count($home) + count($away) - 1 > 2) {
                 $removedSecond = array_splice($home, 1, 1);
                 array_unshift($away, array_shift($removedSecond));
-                array_push($home, array_pop($away));
+                $home[] = array_pop($away);
             }
         }
 
         return $this->swap($homeAways);
     }
 
-    protected function createHomeAway(Place $home, Place $away): HomeAway
+    protected function createHomeAway(int $homePlaceNr, int $awayPlaceNr): OneVsOneHomeAway
     {
-        if ($this->shouldSwap($home, $away)) {
-            return new HomeAway(new PlaceCombination([$away]), new PlaceCombination([$home]));
+        $homeAway = new OneVsOneHomeAway($homePlaceNr, $awayPlaceNr);
+        if ($this->shouldSwap($homePlaceNr, $awayPlaceNr)) {
+            return $homeAway->swap();
         }
-        return new HomeAway(new PlaceCombination([$home]), new PlaceCombination([$away]));
+        return $homeAway;
     }
 
-    protected function shouldSwap(Place $home, Place $away): bool
+    protected function shouldSwap(int $homePlaceNr, int $awayPlaceNr): bool
     {
-        $even = (($home->getPlaceNr() + $away->getPlaceNr()) % 2) === 0;
-        if ($even && $home->getPlaceNr() < $away->getPlaceNr()) {
+        $even = (($homePlaceNr + $awayPlaceNr) % 2) === 0;
+        if ($even && $homePlaceNr < $awayPlaceNr) {
             return true;
         }
-        if (!$even && $home->getPlaceNr() > $away->getPlaceNr()) {
+        if (!$even && $homePlaceNr > $awayPlaceNr) {
             return true;
         }
         return false;

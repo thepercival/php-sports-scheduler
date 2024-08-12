@@ -11,8 +11,8 @@ use SportsHelpers\Sport\Variant\Single;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsPlanning\Counters\Maps\Schedule\AllScheduleMaps;
-use SportsPlanning\Counters\Maps\Schedule\SideCounterMap;
-use SportsPlanning\Counters\Maps\Schedule\TogetherCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
 use SportsScheduler\Schedule\CreatorHelpers\AgainstDifferenceManager;
 use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as GppHomeAwayCreator;
 use SportsScheduler\GameRound\Creator\Against\GamesPerPlace as AgainstGppGameRoundCreator;
@@ -32,8 +32,8 @@ class GamesPerPlace extends AgainstHelper
     /**
      * @param Schedule $schedule
      * @param list<SportVariantWithNr> $againstGppsWithNr
-     * @param SideCounterMap $homeCounterMap
-     * @param TogetherCounterMap $togetherCounterMap
+     * @param SideNrCounterMap $homeNrCounterMap
+     * @param TogetherNrCounterMap $togetherNrCounterMap
      * @param AgainstDifferenceManager $againstGppDifferenceManager
      * @param int|null $nrOfSecondsBeforeTimeout
      * @throws Exception
@@ -41,8 +41,8 @@ class GamesPerPlace extends AgainstHelper
     public function createSportSchedules(
         Schedule                 $schedule,
         array                    $againstGppsWithNr,
-        SideCounterMap           $homeCounterMap,
-        TogetherCounterMap       $togetherCounterMap,
+        SideNrCounterMap         $homeNrCounterMap,
+        TogetherNrCounterMap     $togetherNrCounterMap,
         AgainstDifferenceManager $againstGppDifferenceManager,
         int|null                 $nrOfSecondsBeforeTimeout
     ): void
@@ -50,8 +50,8 @@ class GamesPerPlace extends AgainstHelper
         $homeAwayCreator = new GppHomeAwayCreator();
         $nrOfPlaces = $schedule->getNrOfPlaces();
         $allScheduleMaps = new AllScheduleMaps($nrOfPlaces);
-        $allScheduleMaps->setHomeCounterMap($homeCounterMap);
-        $allScheduleMaps->setTogetherCounterMap($togetherCounterMap);
+        $allScheduleMaps->setHomeCounterMap($homeNrCounterMap);
+        $allScheduleMaps->setTogetherCounterMap($togetherNrCounterMap);
         $allScheduleMaps = clone $allScheduleMaps;
 
         foreach ($againstGppsWithNr as $againstGppWithNr) {
@@ -64,7 +64,7 @@ class GamesPerPlace extends AgainstHelper
 
             $gameRoundCreator = new AgainstGppGameRoundCreator($this->logger);
             $gameRound = $gameRoundCreator->createGameRound(
-                $poule,
+                $nrOfPlaces,
                 $sportVariant,
                 $homeAwayCreator,
                 $allScheduleMaps,

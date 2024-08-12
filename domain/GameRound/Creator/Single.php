@@ -7,12 +7,12 @@ namespace SportsScheduler\GameRound\Creator;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Single as SingleWithNrOfPlaces;
-use SportsPlanning\Combinations\PlaceCombination;
-use SportsPlanning\Counters\Maps\Schedule\AmountCounterMap;
-use SportsPlanning\Counters\Maps\Schedule\TogetherCounterMap;
-use SportsPlanning\GameRound\Together as TogetherGameRound;
-use SportsPlanning\GameRound\Together\Game;
-use SportsPlanning\GameRound\Together\GamePlace;
+use SportsHelpers\SportRange;
+use SportsPlanning\Counters\Maps\Schedule\AmountNrCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
+use SportsPlanning\Schedule\GameRounds\TogetherGameRound;
+use SportsPlanning\Schedule\GameRounds\GameRoundTogetherGamePlace;
+use SportsPlanning\Schedule\GameRounds\GameRoundTogetherGame;
 use SportsPlanning\Output\Combinations\GameRoundOutput;
 use SportsPlanning\Place;
 use SportsPlanning\Poule;
@@ -31,44 +31,42 @@ class Single
     }
 
     public function createGameRound(
-        Poule $poule,
+        int $nrOfPlaces,
         SingleSportVariant $sportVariant,
-        AmountCounterMap $amountCounterMap,
-        TogetherCounterMap $togetherCounterMap
+        AmountNrCounterMap $amountNrCounterMap,
+        TogetherNrCounterMap $togetherNrCounterMap
     ): TogetherGameRound {
-        $nrOfPlaces = count($poule->getPlaces());
         $variantWithNrOfPlaces = new SingleWithNrOfPlaces($nrOfPlaces, $sportVariant);
         $gameRound = new TogetherGameRound();
-        $places = $poule->getPlaces()->toArray();
+        $placeNrs = (new SportRange(1, $nrOfPlaces))->toArray();
         $remainingGamePlaces = [];
         $totalNrOfGamesPerPlace = $variantWithNrOfPlaces->getTotalNrOfGamesPerPlace();
         for ($gameRoundNumber = 1 ; $gameRoundNumber <= $totalNrOfGamesPerPlace ; $gameRoundNumber++) {
-            $gamePlaces = array_map(fn(Place $place) => new GamePlace($gameRoundNumber, $place), $places);
+            $gamePlaces = array_map(fn(int $placeNr) => new GameRoundTogetherGamePlace($gameRoundNumber, $placeNr), $placeNrs);
             $remainingGamePlaces = $this->assignGameRound(
                 $variantWithNrOfPlaces,
-                $amountCounterMap,
-                $togetherCounterMap,
+                $amountNrCounterMap,
+                $togetherNrCounterMap,
                 array_values($gamePlaces),
                 $remainingGamePlaces,
                 $gameRound
             );
-            foreach( $gameRound->toPlaces() as $place ) {
-                $amountCounterMap->addPlace($place);
+            foreach( $gameRound->convertToPlaceNrs() as $placeNr ) {
+                $amountNrCounterMap->addPlaceNr($placeNr);
             }
-            foreach( $gameRound->toPlaceCombinationsOfTwo() as $placeCombination ) {
-                $togetherCounterMap->addPlaceCombination($placeCombination);
+            foreach( $gameRound->convertToDuoPlaceNrs() as $duoPlaceNr ) {
+                $togetherNrCounterMap->addDuoPlaceNr($duoPlaceNr);
             }
             $gameRound = $gameRound->createNext();
         }
         if (count($remainingGamePlaces) > 0) {
-            $this->assignGameRound($variantWithNrOfPlaces, $amountCounterMap, $togetherCounterMap, $remainingGamePlaces, [], $gameRound, true);
-            foreach( $gameRound->toPlaces() as $place ) {
-                $amountCounterMap->addPlace($place);
+            $this->assignGameRound($variantWithNrOfPlaces, $amountNrCounterMap, $togetherNrCounterMap, $remainingGamePlaces, [], $gameRound, true);
+            foreach( $gameRound->convertToPlaceNrs() as $placeNr ) {
+                $amountNrCounterMap->addPlaceNr($placeNr);
             }
-            foreach( $gameRound->toPlaceCombinationsOfTwo() as $placeCombination ) {
-                $togetherCounterMap->addPlaceCombination($placeCombination);
+            foreach( $gameRound->convertToDuoPlaceNrs() as $duoPlaceNr ) {
+                $togetherNrCounterMap->addDuoPlaceNr($duoPlaceNr);
             }
-
         }
         if (count($gameRound->getLeaf()->getGames()) === 0) {
             $gameRound->getLeaf()->detachFromPrevious();
@@ -82,18 +80,18 @@ class Single
 
     /**
      * @param SingleWithNrOfPlaces $variantWithNrOfPlaces
-     * @param AmountCounterMap $amountCounterMap
-     * @param TogetherCounterMap $togetherCounterMap
-     * @param list<GamePlace> $unSortedGamePlaces
-     * @param list<GamePlace> $remainingGamePlaces
+     * @param AmountNrCounterMap $amountNrCounterMap
+     * @param TogetherNrCounterMap $togetherNrCounterMap
+     * @param list<GameRoundTogetherGamePlace> $unSortedGamePlaces
+     * @param list<GameRoundTogetherGamePlace> $remainingGamePlaces
      * @param TogetherGameRound $gameRound
      * @param bool $finalGameRound
-     * @return list<GamePlace>
+     * @return list<GameRoundTogetherGamePlace>
      */
     protected function assignGameRound(
         SingleWithNrOfPlaces $variantWithNrOfPlaces,
-        AmountCounterMap $amountCounterMap,
-        TogetherCounterMap $togetherCounterMap,
+        AmountNrCounterMap $amountNrCounterMap,
+        TogetherNrCounterMap $togetherNrCounterMap,
         array $unSortedGamePlaces,
         array $remainingGamePlaces,
         TogetherGameRound $gameRound,
@@ -101,11 +99,11 @@ class Single
     ): array {
         $newRemainingGamePlaces = [];
 
-        $choosableGamePlaces = $this->sortGamePlaces($amountCounterMap, $togetherCounterMap, $unSortedGamePlaces);
-        $remainingGamePlaces = $this->sortGamePlaces($amountCounterMap, $togetherCounterMap, $remainingGamePlaces);
+        $choosableGamePlaces = $this->sortGamePlaces($amountNrCounterMap, $togetherNrCounterMap, $unSortedGamePlaces);
+        $remainingGamePlaces = $this->sortGamePlaces($amountNrCounterMap, $togetherNrCounterMap, $remainingGamePlaces);
         $choosableGamePlaces = array_merge($remainingGamePlaces, $choosableGamePlaces);
         while (count($choosableGamePlaces) > 0) {
-            $bestGamePlace = $this->getBestGamePlace($togetherCounterMap, $newRemainingGamePlaces, $choosableGamePlaces);
+            $bestGamePlace = $this->getBestGamePlace($togetherNrCounterMap, $newRemainingGamePlaces, $choosableGamePlaces);
             if ($bestGamePlace === null) {
                 break;
             }
@@ -115,20 +113,20 @@ class Single
             }
             $newRemainingGamePlaces[] = $bestGamePlace;
             if (count($newRemainingGamePlaces) === $variantWithNrOfPlaces->getSportVariant()->getNrOfGamePlaces()) {
-                new Game($gameRound, $newRemainingGamePlaces);
+                new GameRoundTogetherGame($gameRound, $newRemainingGamePlaces);
                 $newRemainingGamePlaces = [];
             }
         }
         if ($finalGameRound && count($newRemainingGamePlaces) > 0) {
-            new Game($gameRound, $newRemainingGamePlaces);
+            new GameRoundTogetherGame($gameRound, $newRemainingGamePlaces);
         }
         return $newRemainingGamePlaces;
     }
 
     /**
-     * @param AmountCounterMap $amountCounterMap
-     * @param TogetherCounterMap $togetherCounterMap
-     * @param list<GamePlace> $gamePlaces
+     * @param AmountNrCounterMap $amountNrCounterMap
+     * @param TogetherNrCounterMap $togetherNrCounterMap
+     * @param list<TogetherGameRoundGamePlace> $gamePlaces
      * @return list<GamePlace>
      */
     protected function sortGamePlaces(

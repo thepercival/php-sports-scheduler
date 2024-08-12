@@ -133,11 +133,10 @@ class Creator
 
             $againstH2hsWithNr = $this->convertToAgainstH2hSportVariantsWithNr($sportVariantsWithNr);
 
-            $placeCounterMap = (new CombinationMapper())->initPlaceCounterMap($poule);
-            $homeCounterMap = new SideCounterMap(Side::Home, $placeCounterMap);
+            $homeNrCounterMap = new SideNrCounterMap(Side::Home, $nrOfPlaces);
             if( count($againstH2hsWithNr) > 0 ) {
                 $againstH2hHelper = new AgainstH2hCreatorHelper($this->logger);
-                $homeCounterMap = $againstH2hHelper->createSportSchedules(
+                $homeNrCounterMap = $againstH2hHelper->createSportSchedules(
                     $schedule,
                     $againstH2hsWithNr,
                     $differenceManager);
@@ -148,7 +147,7 @@ class Creator
                 $againstGppHelper->createSportSchedules(
                     $schedule,
                     $againstGppsWithNr,
-                    $homeCounterMap,
+                    $homeNrCounterMap,
                     $togetherCounterMap,
                     $differenceManager,
                     $nrOfSecondsBeforeTimeout);
@@ -192,8 +191,7 @@ class Creator
 
                 $differenceManager = new AgainstDifferenceManager($nrOfPlaces, $againstVariantMap, $allowedGppMargin, $this->logger);
 
-                $placeCounterMap = (new CombinationMapper())->initPlaceCounterMap($nrOfPlaces);
-                $homeCounterMap = new SideCounterMap(Side::Home, $placeCounterMap);
+                $homeCounterMap = new SideNrCounterMap(Side::Home, $nrOfPlaces);
                 $againstH2hsWithNr = $this->convertToAgainstH2hSportVariantsWithNr($againstVariantsWithNr);
                 if( count($againstH2hsWithNr) > 0 ) {
                     // @TODO CDK Against    => NVP

@@ -8,10 +8,8 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsPlanning\Combinations\CombinationMapper;
-use SportsPlanning\Counters\Maps\Schedule\HomeCounterMap;
-use SportsPlanning\Counters\Maps\Schedule\SideCounterMap;
-use SportsPlanning\Counters\Maps\Schedule\TogetherCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
 use SportsScheduler\Combinations\HomeAwayCreator\H2h as H2hHomeAwayCreator;
 use SportsScheduler\GameRound\Creator\Against\H2h as AgainstH2hGameRoundCreator;
 use SportsPlanning\Poule;
@@ -31,20 +29,18 @@ class H2h extends AgainstHelper
     /**
      * @param Schedule $schedule
      * @param list<SportVariantWithNr> $againstH2hsWithNr
-     * @param TogetherCounterMap $togetherCounterMap
      * @param AgainstDifferenceManager $againstGppDifferenceManager
-     * @return SideCounterMap
+     * @return SideNrCounterMap
      * @throws Exception
      */
     public function createSportSchedules(
         Schedule $schedule,
         array $againstH2hsWithNr,
         AgainstDifferenceManager $againstGppDifferenceManager
-    ): SideCounterMap
+    ): SideNrCounterMap
     {
         $nrOfPlaces = $schedule->getNrOfPlaces();
-        $placeCounterMap = (new CombinationMapper())->initPlaceCounterMap($poule);
-        $homeCounterMap = new SideCounterMap(Side::Home, $placeCounterMap);
+        $homeNrCounterMap = new SideNrCounterMap(Side::Home, $nrOfPlaces);
         $homeAwayCreator = new H2hHomeAwayCreator();
         $sportNr = 1;
         foreach ($againstH2hsWithNr as $againstH2hWithNr) {
@@ -56,16 +52,16 @@ class H2h extends AgainstHelper
 
             $gameRoundCreator = new AgainstH2hGameRoundCreator($this->logger);
             $gameRound = $gameRoundCreator->createGameRound(
-                $poule,
+                $nrOfPlaces,
                 $sportVariant,
                 $homeAwayCreator,
-                $homeCounterMap,
+                $homeNrCounterMap,
                 $againstGppDifferenceManager->getHomeRange($sportNr)
             );
 
             $this->createGames($sportSchedule, $gameRound);
         }
-        return $homeCounterMap;
+        return $homeNrCounterMap;
     }
 
 //    public function setGamesPerPlaceMargin(int $margin): void {

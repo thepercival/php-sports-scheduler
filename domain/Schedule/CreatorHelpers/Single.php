@@ -35,49 +35,49 @@ class Single
         array $singlesWithNr): TogetherNrCounterMap
     {
         $nrOfPlaces = $schedule->getNrOfPlaces();
-        $amountCounterMap = new AmountNrCounterMap($nrOfPlaces);
-        $togetherCounterMap = new TogetherNrCounterMap($nrOfPlaces);
+        $amountNrCounterMap = new AmountNrCounterMap($nrOfPlaces);
+        $togetherNrCounterMap = new TogetherNrCounterMap($nrOfPlaces);
         foreach ($singlesWithNr as $singleWithNr) {
             $sportVariant = $singleWithNr->sportVariant;
             if( !($sportVariant instanceof SingleSportVariant ) ) {
                 continue;
             }
             $sportSchedule = new SportSchedule($schedule, $singleWithNr->number, $sportVariant->toPersistVariant());
-            $gameRound = $this->generateGameRounds($poule, $sportVariant, $amountCounterMap, $togetherCounterMap);
+            $gameRound = $this->generateGameRounds($nrOfPlaces, $sportVariant, $amountNrCounterMap, $togetherNrCounterMap);
             $this->createGames($sportSchedule, $gameRound);
         }
-        return $togetherCounterMap;
+        return $togetherNrCounterMap;
     }
 
     protected function generateGameRounds(
-        Poule $poule,
+        int $nrOfPlaces,
         SingleSportVariant $sportVariant,
-        AmountCounterMap $amountCounterMap,
-        TogetherCounterMap $togetherCounterMap
+        AmountNrCounterMap $amountNrCounterMap,
+        TogetherNrCounterMap $togetherNrCounterMap
     ): TogetherGameRound {
 
         $gameRoundCreator = new SingleGameRoundCreator($this->logger);
-        $gameRound = $gameRoundCreator->createGameRound($poule, $sportVariant, $amountCounterMap, $togetherCounterMap);
+        $gameRound = $gameRoundCreator->createGameRound($nrOfPlaces, $sportVariant, $amountNrCounterMap, $togetherNrCounterMap);
 
         // $gameRound = $this->getGameRound($poule, $sportVariant, $assignedCounter, $totalNrOfGamesPerPlace);
         return $gameRound;
     }
 
-    /**
-     * @param CombinationsGenerator $combinations
-     * @return list<PlaceCombination>
-     */
-    protected function toPlaceCombinations(CombinationsGenerator $combinations): array
-    {
-        /** @var array<int, list<Place>> $combinationsTmp */
-        $combinationsTmp = $combinations->toArray();
-        return array_values(array_map(
-            function (array $places): PlaceCombination {
-                return new PlaceCombination($places);
-            },
-            $combinationsTmp
-        ));
-    }
+//    /**
+//     * @param CombinationsGenerator $combinations
+//     * @return list<PlaceCombination>
+//     */
+//    protected function toPlaceCombinations(CombinationsGenerator $combinations): array
+//    {
+//        /** @var array<int, list<Place>> $combinationsTmp */
+//        $combinationsTmp = $combinations->toArray();
+//        return array_values(array_map(
+//            function (array $places): PlaceCombination {
+//                return new PlaceCombination($places);
+//            },
+//            $combinationsTmp
+//        ));
+//    }
 
 //    /**
 //     * @param TogetherGameRound $gameRound

@@ -41,7 +41,7 @@ abstract class HomeAwayCreator
     {
         $swapped = [];
         foreach ($homeAways as $homeAway) {
-            array_push($swapped, $homeAway->swap());
+            $swapped[] = $homeAway->swap();
         }
         return $swapped;
     }

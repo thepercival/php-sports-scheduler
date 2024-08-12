@@ -10,20 +10,18 @@ use SportsHelpers\Against\Side;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\EquallyAssignCalculator;
 use SportsPlanning\Combinations\Amount\Range as AmountRange;
-use SportsPlanning\Combinations\CombinationMapper;
-use SportsPlanning\Combinations\HomeAway;
 use SportsPlanning\Counters\Maps\Schedule\AllScheduleMaps;
-use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCombinationCounterMap;
-use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
-use SportsPlanning\Counters\Maps\Schedule\SideCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\RangedDuoPlaceNrCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\RangedPlaceNrCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
+use SportsPlanning\Schedule\GameRounds\AgainstGameRound;
 use SportsScheduler\Combinations\HomeAwayBalancer;
 use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as GppHomeAwayCreator;
 use SportsScheduler\Combinations\StatisticsCalculator\Against\GamesPerPlace as GppStatisticsCalculator;
 use SportsScheduler\Exceptions\NoSolutionException;
 use SportsScheduler\Exceptions\TimeoutException;
-use SportsPlanning\GameRound\Against as AgainstGameRound;
 use SportsScheduler\GameRound\Creator\Against as AgainstCreator;
-use SportsPlanning\Counters\CounterForPlace;
+use SportsPlanning\Counters\CounterForPlaceNr;
 use SportsPlanning\Poule;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
 
@@ -65,19 +63,19 @@ class GamesPerPlace extends AgainstCreator
 //        if( $calculator->assignAgainstSportsEqually( count($poule->getPlaces()), [$againstGpp] ) ) {
 //
 //        }
-        $rangedAmountCounterMap = new RangedPlaceCounterMap($allScheduleMaps->getAmountCounterMap(),$amountRange);
-        $rangedWithCounterMap = new RangedPlaceCombinationCounterMap($allScheduleMaps->getWithCounterMap(),$withAmountRange);
-        $rangedAgainstCounterMap = new RangedPlaceCombinationCounterMap($allScheduleMaps->getAgainstCounterMap(),$againstAmountRange);
-        $rangedHomeCounterMap = new RangedPlaceCounterMap($allScheduleMaps->getHomeCounterMap(), $homeAmountRange);
-        $rangedAwayCounterMap = new RangedPlaceCounterMap($allScheduleMaps->getAwayCounterMap(), $homeAmountRange);
+        $rangedAmountNrCounterMap = new RangedPlaceNrCounterMap($allScheduleMaps->getAmountCounterMap(),$amountRange);
+        $rangedWithNrCounterMap = new RangedDuoPlaceNrCounterMap($allScheduleMaps->getWithCounterMap(),$withAmountRange);
+        $rangedAgainstNrCounterMap = new RangedDuoPlaceNrCounterMap($allScheduleMaps->getAgainstCounterMap(),$againstAmountRange);
+        $rangedHomeNrCounterMap = new RangedPlaceNrCounterMap($allScheduleMaps->getHomeCounterMap(), $homeAmountRange);
+        $rangedAwayNrCounterMap = new RangedPlaceNrCounterMap($allScheduleMaps->getAwayCounterMap(), $homeAmountRange);
 
         $statisticsCalculator = new GppStatisticsCalculator(
             $againstGppWithNrOfPlaces,
-            $rangedHomeCounterMap,
+            $rangedHomeNrCounterMap,
             0,
-            $rangedAmountCounterMap,
-            $rangedAgainstCounterMap,
-            $rangedWithCounterMap,
+            $rangedAmountNrCounterMap,
+            $rangedAgainstNrCounterMap,
+            $rangedWithNrCounterMap,
             $this->logger
         );
 

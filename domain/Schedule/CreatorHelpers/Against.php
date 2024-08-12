@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace SportsScheduler\Schedule\CreatorHelpers;
 
 use Psr\Log\LoggerInterface;
+use SportsHelpers\Against\Side;
 use SportsHelpers\Against\Side as AgainstSide;
-use SportsPlanning\GameRound\Against as AgainstGameRound;
+use SportsPlanning\HomeAways\OneVsOneHomeAway;
+use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\Schedule\Game;
 use SportsPlanning\Schedule\GamePlace;
+use SportsPlanning\Schedule\GameRounds\AgainstGameRound;
 use SportsPlanning\Schedule\Sport as SportSchedule;
 
 abstract class Against
@@ -22,10 +25,24 @@ abstract class Against
         while ($gameRound !== null) {
             foreach ($gameRound->getHomeAways() as $homeAway) {
                 $game = new Game($sportSchedule, $gameRound->getNumber());
-                foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
-                    foreach ($homeAway->get($side)->getPlaces() as $place) {
-                        $gamePlace = new GamePlace($game, $place->getPlaceNr());
+                if( $homeAway instanceof OneVsOneHomeAway ) {
+                    foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
+                        $gamePlace = new GamePlace($game, $homeAway->get($side));
                         $gamePlace->setAgainstSide($side);
+                    }
+                } else if( $homeAway instanceof OneVsTwoHomeAway ) {
+                    $gamePlace = new GamePlace($game, $homeAway->getHome());
+                    $gamePlace->setAgainstSide(AgainstSide::Home);
+                    foreach ($homeAway->getAway()->getPlaceNrs() as $placeNr) {
+                        $gamePlace = new GamePlace($game, $placeNr);
+                        $gamePlace->setAgainstSide(AgainstSide::Away);
+                    }
+                } else { // TwoVsTwoHomeAway
+                    foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
+                        foreach ($homeAway->get($side)->getPlaceNrs() as $placeNr) {
+                            $gamePlace = new GamePlace($game, $placeNr);
+                            $gamePlace->setAgainstSide($side);
+                        }
                     }
                 }
             }
