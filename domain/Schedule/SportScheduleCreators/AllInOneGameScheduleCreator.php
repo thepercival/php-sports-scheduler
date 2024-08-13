@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Schedule\CreatorHelpers;
+namespace SportsScheduler\Schedule\SportScheduleCreators;
 
 use Exception;
 use SportsHelpers\Sport\Variant\AllInOneGame as AllInOneGameBase;
@@ -18,7 +18,7 @@ use SportsPlanning\Schedule\Sport as SportSchedule;
 use SportsPlanning\Sport;
 use SportsScheduler\Schedule\SportVariantWithNr;
 
-class AllInOneGame
+class AllInOneGameScheduleCreator
 {
     public function __construct()
     {

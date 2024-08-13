@@ -10,7 +10,7 @@ use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as HomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayCreators\GamesPerPlaceHomeAwayCreator as HomeAwayCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
 use SportsPlanning\Output\Combinations\HomeAway as HomeAwayOutput;
@@ -109,7 +109,7 @@ class GamesPerPlaceTest extends TestCase
 //        $input = $this->createInput([7]);
 //        $poule = $input->getPoule(1);
 //        $creator = new HomeAwayCreator($poule, $sportVariant);
-//        $homeAways = $creator->createForOneH2H();
+//        $homeAways = $creator->createForOneH2h();
 //        (new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
 //        (new HomeAwayOutput($this->getLogger()))->outputTotals($homeAways);
 //        // self::assertCount(66, $homeAways);

@@ -5,16 +5,10 @@ declare(strict_types=1);
 namespace SportsScheduler\Tests\Schedule\CreatorHelpers;
 
 use PHPUnit\Framework\TestCase;
-use SportsHelpers\SelfReferee;
-use SportsHelpers\SelfRefereeInfo;
-use SportsHelpers\SportRange;
-use SportsPlanning\Output\PlanningOutput;
-use SportsPlanning\Referee\Info as RefereeInfo;
-use SportsScheduler\Resource\Service\InfoToAssign;
-use SportsScheduler\Schedule\CreatorHelpers\AgainstDifferenceManager;
+use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
+use SportsScheduler\Schedule\SportScheduleCreators\Helpers\AgainstDifferenceManager;
 use SportsScheduler\Schedule\SportVariantWithNr;
 use SportsScheduler\TestHelper\PlanningCreator;
-use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 
 class AgainstDifferenceManagerTest extends TestCase
 {

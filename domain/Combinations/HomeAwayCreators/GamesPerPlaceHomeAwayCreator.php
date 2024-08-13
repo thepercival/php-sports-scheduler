@@ -2,56 +2,56 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Combinations\HomeAwayCreator;
+namespace SportsScheduler\Combinations\HomeAwayCreators;
 
 use drupol\phpermutations\Iterators\Combinations as CombinationIt;
+use SportsHelpers\Against\Side;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
-use SportsPlanning\Combinations\HomeAway;
-use SportsScheduler\Combinations\HomeAwayCreator;
-use SportsPlanning\Combinations\PlaceCombination;
+use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
+use SportsHelpers\SportRange;
+use SportsPlanning\Counters\CounterForPlaceNr;
+use SportsPlanning\Counters\Maps\Schedule\AmountNrCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
+use SportsPlanning\HomeAways\OneVsOneHomeAway;
+use SportsPlanning\HomeAways\OneVsTwoHomeAway;
+use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
+use SportsScheduler\Combinations\HomeAwayCreators;
 use SportsPlanning\Place;
-use SportsPlanning\Counters\CounterForPlace;
 use SportsPlanning\Poule;
 
-final class GamesPerPlace extends HomeAwayCreator
+final class GamesPerPlaceHomeAwayCreator extends HomeAwayCreatorAbstract
 {
-    /**
-     * @var array<int, CounterForPlace>
-     */
-    protected array $gameCounterMap = [];
-    /**
-     * @var array<int, CounterForPlace>
-     */
-    protected array $homeCounterMap = [];
+    protected AmountNrCounterMap $amountNrCounterMap;
+    protected SideNrCounterMap $homeNrCounterMap;
 
     protected int $minNrOfHomeGamesPerPlace = 0;
     protected int $nrOfGamesPerPlace = 0;
 
     public function __construct()
     {
+        $this->amountNrCounterMap = new AmountNrCounterMap();
+        $this->homeNrCounterMap = new SideNrCounterMap(Side::Home);
         parent::__construct();
     }
 
     /**
-     * @param AgainstGppWithPoule $againstGppWithPoule
-     * @return list<HomeAway>
+     * @param AgainstGppWithNrOfPlaces $againstGppWithNrOfPlaces
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
-    public function create(AgainstGppWithPoule $againstGppWithPoule): array
+    public function create(AgainstGppWithNrOfPlaces $againstGppWithNrOfPlaces): array
     {
-        $poule = $againstGppWithPoule->getPoule();
-        $againstGpp = $againstGppWithPoule->getSportVariant();
-        $this->initCounters($againstGppWithPoule->getPoule());
+        $againstGpp = $againstGppWithNrOfPlaces->getSportVariant();
         $this->nrOfGamesPerPlace = $againstGpp->getNrOfGamesPerPlace();
         $this->minNrOfHomeGamesPerPlace = (int)floor($this->nrOfGamesPerPlace / 2);
 
         $homeAways = [];
+        $placeNrs = (new SportRange(1, $againstGppWithNrOfPlaces->getNrOfPlaces()))->toArray();
 
         /** @var \Iterator<string, list<Place>> $homeIt */
-        $homeIt = new CombinationIt($poule->getPlaceList(), $againstGpp->getNrOfHomePlaces());
+        $homeIt = new CombinationIt($placeNrs, $againstGpp->getNrOfHomePlaces());
         while ($homeIt->valid()) {
-            $homePlaceCombination = new PlaceCombination($homeIt->current());
-            $awayPlaces = array_diff($poule->getPlaceList(), $homeIt->current());
+            $homeDuoPlaceNr = new PlaceCombination($homeIt->current());
+            $awayPlaces = array_diff($placeNrs, $homeIt->current());
             /** @var \Iterator<string, list<Place>> $awayIt */
             $awayIt = new CombinationIt($awayPlaces, $againstGpp->getNrOfAwayPlaces());
             while ($awayIt->valid()) {
@@ -66,19 +66,6 @@ final class GamesPerPlace extends HomeAwayCreator
             $homeIt->next();
         }
         return $this->swap($homeAways);
-    }
-
-    /**
-     * @param Poule $poule
-     */
-    protected function initCounters(Poule $poule): void
-    {
-        $this->gameCounterMap = [];
-        $this->homeCounterMap = [];
-        foreach ($poule->getPlaces() as $place) {
-            $this->gameCounterMap[$place->getPlaceNr()] = new CounterForPlace($place);
-            $this->homeCounterMap[$place->getPlaceNr()] = new CounterForPlace($place);
-        }
     }
 
     protected function createHomeAway(

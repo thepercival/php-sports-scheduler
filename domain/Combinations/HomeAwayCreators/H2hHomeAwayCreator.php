@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Combinations\HomeAwayCreator;
+namespace SportsScheduler\Combinations\HomeAwayCreators;
 
 use SportsHelpers\SportRange;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
-use SportsScheduler\Combinations\HomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayCreators;
 
-final class H2h extends HomeAwayCreator
+final class H2hHomeAwayCreator extends HomeAwayCreatorAbstract
 {
     public function __construct()
     {
@@ -19,7 +19,7 @@ final class H2h extends HomeAwayCreator
      * @param int $nrOfPlaces
      * @return list<OneVsOneHomeAway>
      */
-    public function createForOneH2H(int $nrOfPlaces): array
+    public function createForOneH2h(int $nrOfPlaces): array
     {
         $homeAways = [];
 

@@ -7,27 +7,25 @@ namespace SportsScheduler\Schedule;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side;
 use SportsHelpers\PouleStructure;
+use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
+use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
 use SportsHelpers\Sport\Variant\AllInOneGame;
 use SportsHelpers\Sport\Variant\Single;
-use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\EquallyAssignCalculator;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
-// use SportsPlanning\Counters\AssignedCounter;
 use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
 use SportsPlanning\Input;
 use SportsPlanning\Poule;
-use SportsPlanning\Referee\Info;
 use SportsPlanning\Schedule;
+use SportsPlanning\Schedule\Name as ScheduleName;
 use SportsPlanning\Schedule\Sport as SportSchedule;
 use SportsPlanning\Sport;
-use SportsScheduler\Schedule\CreatorHelpers\Against\H2h as AgainstH2hCreatorHelper;
-use SportsScheduler\Schedule\CreatorHelpers\Against\GamesPerPlace as AgainstGppCreatorHelper;
-use SportsPlanning\Combinations\Amount\Range as AmountRange;
-use SportsScheduler\Schedule\CreatorHelpers\AgainstDifferenceManager;
-use SportsScheduler\Schedule\CreatorHelpers\AllInOneGame as AllInOneGameCreatorHelper;
-use SportsScheduler\Schedule\CreatorHelpers\Single as SingleCreatorHelper;
-use SportsPlanning\Schedule\Name as ScheduleName;
+use SportsScheduler\Schedule\SportScheduleCreators\AgainstGppScheduleCreator as AgainstGppCreatorHelper;
+use SportsScheduler\Schedule\SportScheduleCreators\AgainstH2HScheduleCreator as AgainstH2hCreatorHelper;
+use SportsScheduler\Schedule\SportScheduleCreators\AllInOneGameScheduleCreator as AllInOneGameCreatorHelper;
+use SportsScheduler\Schedule\SportScheduleCreators\Helpers\AgainstDifferenceManager;
+use SportsScheduler\Schedule\SportScheduleCreators\SingleScheduleCreator as SingleCreatorHelper;
+
+// use SportsPlanning\Counters\AssignedCounter;
 
 class Creator
 {

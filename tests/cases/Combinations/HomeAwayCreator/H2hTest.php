@@ -13,7 +13,7 @@ use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\VariantWithFields;
 use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsScheduler\Combinations\HomeAwayCreator\H2h as HomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayCreators\H2HHomeAwayCreator as HomeAwayCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 class H2hTest extends TestCase
@@ -27,7 +27,7 @@ class H2hTest extends TestCase
         $input = $this->createInput([2], [$sportVariantWithFields]);
         $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $homeAways = $creator->createForOneH2H(new AgainstH2hWithPoule($poule, $sportVariant));
+        $homeAways = $creator->createForOneH2h(new AgainstH2hWithPoule($poule, $sportVariant));
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(1, $homeAways);
     }
@@ -39,7 +39,7 @@ class H2hTest extends TestCase
         $input = $this->createInput([3],[$sportVariantWithFields]);
         $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $homeAways = $creator->createForOneH2H(new AgainstH2hWithPoule($poule, $sportVariant));
+        $homeAways = $creator->createForOneH2h(new AgainstH2hWithPoule($poule, $sportVariant));
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(3, $homeAways);
     }
@@ -51,7 +51,7 @@ class H2hTest extends TestCase
         $input = $this->createInput([4],[$sportVariantWithFields]);
         $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $homeAways = $creator->createForOneH2H(new AgainstH2hWithPoule($poule, $sportVariant));
+        $homeAways = $creator->createForOneH2h(new AgainstH2hWithPoule($poule, $sportVariant));
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(6, $homeAways);
     }
@@ -63,7 +63,7 @@ class H2hTest extends TestCase
         $input = $this->createInput([5], [$sportVariantWithFields]);
         $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $homeAways = $creator->createForOneH2H(new AgainstH2hWithPoule($poule, $sportVariant));
+        $homeAways = $creator->createForOneH2h(new AgainstH2hWithPoule($poule, $sportVariant));
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(10, $homeAways);
     }
@@ -74,7 +74,7 @@ class H2hTest extends TestCase
 //        $input = $this->createInput([7]);
 //        $poule = $input->getPoule(1);
 //        $creator = new HomeAwayCreator($poule, $sportVariant);
-//        $homeAways = $creator->createForOneH2H();
+//        $homeAways = $creator->createForOneH2h();
 //        (new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
 //        (new HomeAwayOutput($this->getLogger()))->outputTotals($homeAways);
 //        // self::assertCount(66, $homeAways);

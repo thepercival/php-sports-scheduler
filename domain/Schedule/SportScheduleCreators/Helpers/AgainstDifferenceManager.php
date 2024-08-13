@@ -1,16 +1,16 @@
 <?php
 
-namespace SportsScheduler\Schedule\CreatorHelpers;
+namespace SportsScheduler\Schedule\SportScheduleCreators\Helpers;
 
 use Psr\Log\LoggerInterface;
 use SportsHelpers\PouleStructure;
-use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\EquallyAssignCalculator;
-use SportsPlanning\Combinations\Amount;
-use SportsPlanning\Combinations\Amount\Range as AmountRange;
-use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
-use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\H2h as AgainstH2hWithNrOfPlaces;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
+use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\EquallyAssignCalculator;
+use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
+use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\H2h as AgainstH2hWithNrOfPlaces;
+use SportsPlanning\Combinations\Amount;
+use SportsPlanning\Combinations\Amount\Range as AmountRange;
 
 class AgainstDifferenceManager
 {
@@ -36,7 +36,7 @@ class AgainstDifferenceManager
 
     /**
      * @param int $nrOfPlaces
-     * @param non-empty-array<int, AgainstH2h|AgainstGpp> $againstVariantMap
+     * @param array<int, AgainstGpp|AgainstH2h> $againstVariantMap
      * @param int $allowedMargin
      * @param LoggerInterface $logger
      */
@@ -229,20 +229,20 @@ class AgainstDifferenceManager
 
     /**
      * @param int $nrOfPlaces
-     * @param non-empty-array<int, AgainstH2h|AgainstGpp> $againstVariantsMap
+     * @param array<int, AgainstH2h|AgainstGpp> $againstVariantMap
      * @return void
      */
-    private function initHomeAmountRangeForSports(int $nrOfPlaces, array $againstVariantsMap): void
+    private function initHomeAmountRangeForSports(int $nrOfPlaces, array $againstVariantMap): void
     {
-        $againstVariants = array_values($againstVariantsMap);
+        $againstVariants = array_values($againstVariantMap);
         $totalNrOfGames = $this->calculateAgainstTotalNrOfGames($nrOfPlaces, $againstVariants);
-        $nrOfAgainstVariants = count($againstVariantsMap);
+        $nrOfAgainstVariants = count($againstVariants);
         $allowedMarginCumulative = 0;
         $nrOfHomePlacesCumulative = 0;
         $againstVariantsCumulative = [];
 
         $counter = 0;
-        foreach ($againstVariantsMap as $sportNr => $againstVariant) {
+        foreach ($againstVariantMap as $sportNr => $againstVariant) {
 
 //            $againstVariant = $againstVariantWithNr->sportVariant;
 //            if( !($againstVariant instanceof AgainstH2h ) && !($againstVariant instanceof AgainstGpp ) ) {
@@ -261,12 +261,12 @@ class AgainstDifferenceManager
 
             // EXCEPTIONS BECAUSE TOO FEW
             $allowedMargin = $this->allowedMargin;
-            $exceptionHomeAwayMargin = $this->calculateExceptionHomeAwayMargin($nrOfPlaces, $againstVariantsCumulative);
-            if( $exceptionHomeAwayMargin !== null ) {
-                if( $exceptionHomeAwayMargin > $allowedMargin ) {
-                    $allowedMargin = $exceptionHomeAwayMargin;
-                }
-            }
+//            $exceptionHomeAwayMargin = $this->calculateExceptionHomeAwayMargin($nrOfPlaces, $againstVariantsCumulative);
+//            if( $exceptionHomeAwayMargin !== null ) {
+//                if( $exceptionHomeAwayMargin > $allowedMargin ) {
+//                    $allowedMargin = $exceptionHomeAwayMargin;
+//                }
+//            }
 
             $nrOfSportGames = $againstWithNrOfPlaces->getTotalNrOfGames();
             $isLastSportVariant = (++$counter === $nrOfAgainstVariants);
@@ -401,46 +401,30 @@ class AgainstDifferenceManager
         return new AgainstH2hWithNrOfPlaces($nrOfPlaces, $againstVariant);
     }
 
-    /**
-     * @param int $nrOfPlaces
-     * @param list<AgainstGpp|AgainstH2h> $againstVariants
-     * @return int|null
-     */
-    protected function calculateExceptionHomeAwayMargin(int $nrOfPlaces, array $againstVariants): int|null {
-        if ( $nrOfPlaces === 4 && $this->allAgainstVariantsHave4GamePlaces($againstVariants) ) {
-            $againstGpps = $this->filterAgainstGpps($againstVariants);
-            if( $this->sumAgainstNrOfGamesPerPlace($againstGpps) === 2 ||
-                $this->sumAgainstNrOfGamesPerPlace($againstGpps) === 3 ) {
-
-            }
-            return 1;
-        }
-        return null;
-    }
-
-    /**
-     * @param list<AgainstGpp|AgainstH2h> $againstVariants
-     * @return list<AgainstGpp>
-     */
-    protected function filterAgainstGpps(array $againstVariants): array {
-        $againstGpps = [];
-        foreach( $againstVariants as $againstVariant ) {
-            if (($againstVariant instanceof AgainstGpp)) {
-                $againstGpps[] = $againstVariant;
-            }
-        }
-        return $againstGpps;
-    }
-
+//    /**
+//     * @param int $nrOfPlaces
+//     * @param list<AgainstGpp> $againstGpps
+//     * @return int|null
+//     */
+//    protected function calculateExceptionHomeAwayMargin(int $nrOfPlaces, array $againstGpps): int|null {
+//        if ( $nrOfPlaces === 4 && $this->allAgainstGppsHave4GamePlaces($againstGpps) ) {
+//            if( $this->sumAgainstNrOfGamesPerPlace($againstGpps) === 2 ||
+//                $this->sumAgainstNrOfGamesPerPlace($againstGpps) === 3 ) {
+//
+//            }
+//            return 1;
+//        }
+//        return null;
+//    }
 
     /**
-     * @param list<AgainstH2h|AgainstGpp> $againstVariants
+     * @param list<AgainstGpp> $againstGpps
      * @return bool
      */
-    public function allAgainstVariantsHave4GamePlaces(array $againstVariants): bool {
-        return count(array_filter($againstVariants, function(AgainstH2h|AgainstGpp $againstVariant): bool {
+    public function allAgainstGppsHave4GamePlaces(array $againstGpps): bool {
+        return count(array_filter($againstGpps, function(AgainstGpp $againstVariant): bool {
                 return $againstVariant->getNrOfGamePlaces() === 4;
-            })) === count($againstVariants);
+            })) === count($againstGpps);
     }
 
     /**

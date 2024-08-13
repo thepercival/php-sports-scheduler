@@ -2,26 +2,19 @@
 
 namespace SportsScheduler\Tests\Combinations\StatisticsCalculator;
 
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
-use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
-use SportsHelpers\SportRange;
 use SportsPlanning\Combinations\HomeAway;
-use SportsPlanning\Counters\Maps\Schedule\AllScheduleMaps;
-use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as GppHomeAwayCreator;
-use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
-use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCombinationCounterMap;
 use SportsPlanning\Counters\Maps\PlaceCounterMap;
-use SportsScheduler\Combinations\AgainstStatisticsCalculators\Against\GamesPerPlace as GppStatisticsCalculator;
-use SportsPlanning\Input;
-use SportsScheduler\Schedule\Creator as ScheduleCreator;
+use SportsPlanning\Counters\Maps\Schedule\AllScheduleMaps;
+use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCombinationCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
 use SportsPlanning\Poule;
-use SportsScheduler\Schedule\CreatorHelpers\AgainstDifferenceManager;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
+use SportsScheduler\Combinations\AgainstStatisticsCalculators\Against\GamesPerPlace as GppStatisticsCalculator;
+use SportsScheduler\Combinations\HomeAwayCreators\GamesPerPlaceHomeAwayCreator as GppHomeAwayCreator;
+use SportsScheduler\Schedule\SportScheduleCreators\Helpers\AgainstDifferenceManager;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 

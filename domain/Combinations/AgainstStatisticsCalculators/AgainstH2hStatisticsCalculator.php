@@ -36,7 +36,7 @@ class AgainstH2hStatisticsCalculator extends StatisticsCalculatorAbstract
 //            $amountCounterMapForSport->addPlace($place);
 //        }
         $rangedHomeNrCounterMap = clone $this->rangedHomeNrCounterMap;
-        $rangedHomeNrCounterMap->addPlaceNr($homeAway->getHome());
+        $rangedHomeNrCounterMap->incrementPlaceNr($homeAway->getHome());
 
         return new self(
             $this->againstH2hWithNrOfPlaces,

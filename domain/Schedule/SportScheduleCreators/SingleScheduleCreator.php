@@ -2,24 +2,21 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Schedule\CreatorHelpers;
+namespace SportsScheduler\Schedule\SportScheduleCreators;
 
-use drupol\phpermutations\Generators\Combinations as CombinationsGenerator;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
 use SportsPlanning\Counters\Maps\Schedule\AmountNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
 use SportsPlanning\Schedule\GameRounds\TogetherGameRound;
-use SportsPlanning\Place;
-use SportsPlanning\Poule;
 use SportsPlanning\Schedule;
 use SportsPlanning\Schedule\Game;
 use SportsPlanning\Schedule\GamePlace;
 use SportsPlanning\Schedule\Sport as SportSchedule;
-use SportsScheduler\GameRound\Creator\SingleGameRoundCreator as SingleGameRoundCreator;
+use SportsScheduler\GameRoundCreators\SingleGameRoundCreator;
 use SportsScheduler\Schedule\SportVariantWithNr;
 
-class Single
+class SingleScheduleCreator
 {
     public function __construct(protected LoggerInterface $logger)
     {

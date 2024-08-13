@@ -14,18 +14,20 @@ use SportsPlanning\Counters\Maps\Schedule\AllScheduleMaps;
 use SportsPlanning\Counters\Maps\Schedule\RangedDuoPlaceNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\RangedPlaceNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
+use SportsPlanning\HomeAways\OneVsOneHomeAway;
+use SportsPlanning\HomeAways\OneVsTwoHomeAway;
+use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
 use SportsPlanning\Schedule\GameRounds\AgainstGameRound;
 use SportsScheduler\Combinations\HomeAwayBalancer;
-use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as GppHomeAwayCreator;
-use SportsScheduler\Combinations\AgainstStatisticsCalculators\Against\GamesPerPlace as GppStatisticsCalculator;
+use SportsScheduler\Combinations\HomeAwayCreators\GamesPerPlaceHomeAwayCreator as GppHomeAwayCreator;
+use SportsScheduler\Combinations\AgainstStatisticsCalculators\AgainstGppStatisticsCalculator;
 use SportsScheduler\Exceptions\NoSolutionException;
 use SportsScheduler\Exceptions\TimeoutException;
-use SportsScheduler\GameRound\Creator\AgainstGameRoundCreatorAbstract as AgainstCreator;
 use SportsPlanning\Counters\CounterForPlaceNr;
 use SportsPlanning\Poule;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
 
-class AgainstGppGameRoundCreator extends AgainstCreator
+class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
 {
     protected int $highestGameRoundNumberCompleted = 0;
     protected int $nrOfGamesPerGameRound = 0;
@@ -278,7 +280,7 @@ class AgainstGppGameRoundCreator extends AgainstCreator
     /**
      * @param GppHomeAwayCreator $homeAwayCreator
      * @param AgainstGppWithNrOfPlaces $againstGppWithNrOfPlaces
-     * @return list<HomeAway>
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
     protected function createHomeAways(
         GppHomeAwayCreator $homeAwayCreator,
@@ -325,17 +327,17 @@ class AgainstGppGameRoundCreator extends AgainstCreator
     }
 
     /**
-     * @param list<HomeAway> $homeAways
-     * @return list<HomeAway>
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
     private function initHomeAways(array $homeAways): array {
-        /** @var list<HomeAway> $newHomeAways */
+        /** @var list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $newHomeAways */
         $newHomeAways = [];
         while( $homeAway = array_shift($homeAways) ) {
             if( (count($homeAways) % 2) === 0 ) {
                 array_unshift($newHomeAways, $homeAway);
             } else {
-                array_push($newHomeAways, $homeAway);
+                $newHomeAways[] = $homeAway;
             }
         }
 
@@ -353,7 +355,7 @@ class AgainstGppGameRoundCreator extends AgainstCreator
 
     /**
      * @param AgainstGameRound $gameRound
-     * @param list<HomeAway> $swappedHomeAways
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $swappedHomeAways
      * @return void
      */
     protected function updateWithSwappedHomeAways(AgainstGameRound $gameRound, array $swappedHomeAways): void {

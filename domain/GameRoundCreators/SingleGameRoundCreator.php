@@ -53,20 +53,20 @@ class SingleGameRoundCreator
                 $gameRound
             );
             foreach( $gameRound->convertToPlaceNrs() as $placeNr ) {
-                $amountNrCounterMap->addPlaceNr($placeNr);
+                $amountNrCounterMap->incrementPlaceNr($placeNr);
             }
             foreach( $gameRound->convertToDuoPlaceNrs() as $duoPlaceNr ) {
-                $togetherNrCounterMap->addDuoPlaceNr($duoPlaceNr);
+                $togetherNrCounterMap->incrementDuoPlaceNr($duoPlaceNr);
             }
             $gameRound = $gameRound->createNext();
         }
         if (count($remainingGamePlaces) > 0) {
             $this->assignGameRound($variantWithNrOfPlaces, $amountNrCounterMap, $togetherNrCounterMap, $remainingGamePlaces, [], $gameRound, true);
             foreach( $gameRound->convertToPlaceNrs() as $placeNr ) {
-                $amountNrCounterMap->addPlaceNr($placeNr);
+                $amountNrCounterMap->incrementPlaceNr($placeNr);
             }
             foreach( $gameRound->convertToDuoPlaceNrs() as $duoPlaceNr ) {
-                $togetherNrCounterMap->addDuoPlaceNr($duoPlaceNr);
+                $togetherNrCounterMap->incrementDuoPlaceNr($duoPlaceNr);
             }
         }
         if (count($gameRound->getLeaf()->getGames()) === 0) {
@@ -154,20 +154,20 @@ class SingleGameRoundCreator
     }
 
     /**
-     * @param TogetherCounterMap $togetherCounterMap
-     * @param list<GamePlace> $gamePlaces
-     * @param list<GamePlace> $choosableGamePlaces
-     * @return GamePlace|null
+     * @param TogetherNrCounterMap $togetherCounterMap
+     * @param list<GameRoundTogetherGamePlace> $gamePlaces
+     * @param list<GameRoundTogetherGamePlace> $choosableGamePlaces
+     * @return GameRoundTogetherGamePlace|null
      */
     protected function getBestGamePlace(
-        TogetherCounterMap $togetherCounterMap,
+        TogetherNrCounterMap $togetherCounterMap,
         array $gamePlaces,
         array $choosableGamePlaces
-    ): GamePlace|null {
+    ): GameRoundTogetherGamePlace|null {
         $bestGamePlace = null;
         $lowestScore = null;
         foreach ($choosableGamePlaces as $choosableGamePlace) {
-            $score = $this->getScore($togetherCounterMap, $choosableGamePlace->getPlace(), $gamePlaces);
+            $score = $this->getScore($togetherCounterMap, $choosableGamePlace->getPlaceNr(), $gamePlaces);
             if ($lowestScore === null || $score < $lowestScore) {
                 $lowestScore = $score;
                 $bestGamePlace = $choosableGamePlace;

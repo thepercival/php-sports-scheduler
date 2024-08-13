@@ -2,15 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Combinations;
+namespace SportsScheduler\Combinations\HomeAwayCreators;
 
-use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\WithPoule as VariantWithPoule;
 use SportsPlanning\Combinations\HomeAway;
-use SportsPlanning\Poule;
 
-abstract class HomeAwayCreator
+abstract class HomeAwayCreatorAbstract
 {
     private bool $swap = false;
     // protected VariantWithPoule $variantWithPoule;
@@ -21,8 +18,8 @@ abstract class HomeAwayCreator
     }
 
     /**
-     * @param list<HomeAway> $homeAways
-     * @return list<HomeAway>
+     * @param HomeAway $homeAways
+     * @return HomeAway
      */
     protected function swap(array $homeAways): array
     {
@@ -34,8 +31,8 @@ abstract class HomeAwayCreator
     }
 
     /**
-     * @param list<HomeAway> $homeAways
-     * @return list<HomeAway>
+     * @param HomeAway $homeAways
+     * @return HomeAway
      */
     private function swapHomeAways(array $homeAways): array
     {
