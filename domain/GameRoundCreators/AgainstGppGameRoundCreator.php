@@ -99,12 +99,16 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
         }
         $homeAwayBalancer = new HomeAwayBalancer($this->logger);
 
-        $homeCounterMapCopy = $rangedHomeNrCounterMap->cloneMap();
-        $awayCounterMapCopy = $rangedAwayNrCounterMap->cloneMap();
+
+        $homeNrCounterMapCopy = $rangedHomeNrCounterMap->cloneSideNrCounterMap();
+
+        $awayNrCounterMapCopy = new SideNrCounterMap(Side::Away);
+        $awayNrCounterMapCopy->addMap($rangedAwayNrCounterMap->cloneMap());
+
         $swappedHomeAways = $homeAwayBalancer->balance2(
-            $homeCounterMapCopy,
+            $homeNrCounterMapCopy,
             $rangedHomeNrCounterMap->getAllowedRange(),
-            $awayCounterMapCopy,
+            $awayNrCounterMapCopy,
             $gameRound->getAllHomeAways()
         );
         $this->updateWithSwappedHomeAways($gameRound, $swappedHomeAways);

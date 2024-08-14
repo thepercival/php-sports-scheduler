@@ -5,46 +5,26 @@ declare(strict_types=1);
 namespace SportsScheduler\Combinations\Validators;
 
 use SportsHelpers\Against\Side;
+use SportsPlanning\Counters\Maps\DuoPlaceNrCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\AgainstNrCounterMap;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
 
-class AgainstValidator extends Validator
+class AgainstValidator extends ValidatorAbstract
 {
-    public function __construct(protected Poule $poule, protected Sport $sport)
+    protected AgainstNrCounterMap $againstNrCounterMap;
+
+    public function __construct()
     {
-        parent::__construct($poule, $sport);
+        parent::__construct();
     }
 
-    public function addGame(AgainstGame $game): void
+    public function balanced(): bool
     {
-        if ($game->getSport() !== $this->sport) {
-            return;
-        }
+        return $this->duoPlaceNrCounterMapIsBalanced($this->againstNrCounterMap);
+    }
 
-        foreach( $game->getSidePlaces(Side::Home) as $homeGamePlace ) {
-
-            $placeCounterMap = $this->placeCounterMaps[$homeGamePlace->getPlace()->getPlaceNr()];
-//            if ($placeCounterMap === null ) {
-//                throw new \Exception('placeCounter not found');
-//            }
-            foreach( $game->getSidePlaces(Side::Away) as $awayGamePlace ) {
-                $placeCounterMap->addPlace($awayGamePlace->getPlace());
-            }
-            $this->placeCounterMaps[$homeGamePlace->getPlace()->getPlaceNr()] = $placeCounterMap;
-        }
-
-        foreach( $game->getSidePlaces(Side::Away) as $awayGamePlace ) {
-
-            $placeCounterMap = $this->placeCounterMaps[$awayGamePlace->getPlace()->getPlaceNr()];
-//            if ($placeCounterMap === null ) {
-//                throw new \Exception('placeCounter not found');
-//            }
-            foreach( $game->getSidePlaces(Side::Home) as $homeGamePlace ) {
-                $placeCounterMap->addPlace($homeGamePlace->getPlace());
-            }
-            $this->placeCounterMaps[$awayGamePlace->getPlace()->getPlaceNr()] = $placeCounterMap;
-        }
 
 //        $homeAway = new HomeAway(
 //            new PlaceCombination( array_values(
@@ -71,7 +51,7 @@ class AgainstValidator extends Validator
 //        if (isset($this->counters[$awayPlaceCombination->getIndex()])) {
 //            $this->counters[$awayPlaceCombination->getIndex()]->addCombination($homePlaceCombination);
 //        }
-    }
+//    }
 
 //    public function balanced(): bool
 //    {

@@ -6,66 +6,50 @@ namespace SportsScheduler\Combinations\Validators;
 
 use drupol\phpermutations\Iterators\Combinations as CombinationIt;
 use SportsHelpers\Against\Side;
-use SportsPlanning\Combinations\PlaceCombination;
+use SportsHelpers\Sport\Variant\Single;
+use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
+use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
+use SportsPlanning\Counters\Maps\Schedule\WithNrCounterMap;
 use SportsPlanning\Game\Against as AgainstGame;
+use SportsPlanning\HomeAways\OneVsOneHomeAway;
+use SportsPlanning\HomeAways\OneVsTwoHomeAway;
+use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
 use SportsPlanning\Place;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
 
-class WithValidator extends Validator
+class WithValidator extends ValidatorAbstract
 {
-    public function __construct(protected Poule $poule, protected Sport $sport)
+    protected WithNrCounterMap $withNrCounterMap;
+
+    public function __construct()
     {
-        parent::__construct($poule, $sport);
+        parent::__construct();
     }
 
-    /**
-     * @param Place $place
-     * @param list<Place> $places
-     * @param int $nrOfPlaces
-     * @return list<PlaceCombination>
-     */
-    protected function getWithCombinations(Place $place, array $places, int $nrOfPlaces): array
+    public function balanced(): bool
     {
-        $placesMinPlace = array_values(array_filter($places, function (Place $placeIt) use ($place): bool {
-            return $placeIt !== $place;
-        }));
-        $combinationIt = new CombinationIt($placesMinPlace, $nrOfPlaces - 1);
-        /** @var array<int, list<Place>> $allCombinations */
-        $allCombinations = $combinationIt->toArray();
-        return array_values(array_map(function (array $combinations): PlaceCombination {
-            return new PlaceCombination($combinations);
-        }, $allCombinations));
+        return $this->duoPlaceNrCounterMapIsBalanced($this->withNrCounterMap);
     }
 
-    public function addGame(AgainstGame $game): void
-    {
-        if ($game->getSport() !== $this->sport) {
-            return;
-        }
-        $homePlaceCombination = $this->getPlaceCombination($game, Side::Home);
-        $awayPlaceCombination = $this->getPlaceCombination($game, Side::Away);
-
-        $this->addCombinations($homePlaceCombination);
-        $this->addCombinations($awayPlaceCombination);
-    }
-
-    private function addCombinations(PlaceCombination $placeCombination): void
-    {
-        $placesA = $placeCombination->getPlaces();
-        $placesB = $placeCombination->getPlaces();
-        foreach ($placesA as $placeA) {
-            foreach ($placesB as $placeB) {
-                if( $placeA === $placeB ) {
-                    continue;
-                }
-                $this->placeCounterMaps[$placeA->getPlaceNr()]->addPlace($placeB);
-
-//                $placeCounterMapB = $this->placeCounterMaps[$placeB->getPlaceNr()];
-//                $this->placeCounterMaps[$placeB->getPlaceNr()] = $placeCounterMapB->addPlace($placeA);
-            }
-        }
-    }
+//    /**
+//     * @param Place $place
+//     * @param list<Place> $places
+//     * @param int $nrOfPlaces
+//     * @return list<PlaceCombination>
+//     */
+//    protected function getWithCombinations(Place $place, array $places, int $nrOfPlaces): array
+//    {
+//        $placesMinPlace = array_values(array_filter($places, function (Place $placeIt) use ($place): bool {
+//            return $placeIt !== $place;
+//        }));
+//        $combinationIt = new CombinationIt($placesMinPlace, $nrOfPlaces - 1);
+//        /** @var array<int, list<Place>> $allCombinations */
+//        $allCombinations = $combinationIt->toArray();
+//        return array_values(array_map(function (array $combinations): PlaceCombination {
+//            return new PlaceCombination($combinations);
+//        }, $allCombinations));
+//    }
 
 
 //

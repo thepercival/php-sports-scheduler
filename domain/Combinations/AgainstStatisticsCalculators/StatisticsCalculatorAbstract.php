@@ -98,6 +98,7 @@ abstract class StatisticsCalculatorAbstract
         $header = 'HomeTotals : ';
         $allowedRange = $this->rangedHomeNrCounterMap->getAllowedRange();
         $header .= ' allowedRange : ' . $allowedRange;
+
         $rangedHomeCounterReport = $this->rangedHomeNrCounterMap->calculateReport();
         $nrOfPossiblities = $rangedHomeCounterReport->getNOfPossibleCombinations();
         $header .= ', belowMinimum(total) : ' . $rangedHomeCounterReport->getTotalBelowMinimum();

@@ -219,15 +219,15 @@ class Validator
             // if ($againstWithPoule instanceof AgainstH2hWithPoule || $againstWithPoule->allPlacesSameNrOfGamesAssignable()) {
                 if (// $sportVariant->hasMultipleSidePlaces() &&
                     ($againstWithNrOfPlaces instanceof AgainstH2hWithNrOfPlaces || $againstWithNrOfPlaces->allWithSameNrOfGamesAssignable())) {
-                    $withValidator = new WithValidator($poule, $sport);
-                    $withValidator->addGames($planning);
+                    $withValidator = new WithValidator();
+                    $withValidator->addGames($planning, $poule, $sport);
                     if (!$withValidator->balanced()) {
                         return PlanningValidity::UNEQUAL_GAME_WITH;
                     }
                 }
                 if ($againstWithNrOfPlaces instanceof AgainstH2hWithNrOfPlaces || $againstWithNrOfPlaces->allAgainstSameNrOfGamesAssignable()) {
-                    $againstValidator = new AgainstValidator($poule, $sport);
-                    $againstValidator->addGames($planning);
+                    $againstValidator = new AgainstValidator();
+                    $againstValidator->addGames($planning, $poule, $sport);
                     if (!$againstValidator->balanced()) {
                         return PlanningValidity::UNEQUAL_GAME_AGAINST;
                     }
