@@ -2,18 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Combinations\HomeAwayCreators;
+namespace SportsScheduler\Combinations\HomeAwayGenerators;
 
 use SportsHelpers\SportRange;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
-use SportsScheduler\Combinations\HomeAwayCreators;
 
-final class H2hHomeAwayCreator extends HomeAwayCreatorAbstract
+final class H2hHomeAwayGenerator
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    private bool $swap = false;
 
     /**
      * @param int $nrOfPlaces
@@ -71,5 +67,31 @@ final class H2hHomeAwayCreator extends HomeAwayCreatorAbstract
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param list<OneVsOneHomeAway> $homeAways
+     * @return list<OneVsOneHomeAway>
+     */
+    protected function swap(array $homeAways): array
+    {
+        if ($this->swap === true) {
+            $homeAways = $this->swapHomeAways($homeAways);
+        }
+        $this->swap = !$this->swap;
+        return $homeAways;
+    }
+
+    /**
+     * @param list<OneVsOneHomeAway> $homeAways
+     * @return list<OneVsOneHomeAway>
+     */
+    private function swapHomeAways(array $homeAways): array
+    {
+        $swapped = [];
+        foreach ($homeAways as $homeAway) {
+            $swapped[] = $homeAway->swap();
+        }
+        return $swapped;
     }
 }

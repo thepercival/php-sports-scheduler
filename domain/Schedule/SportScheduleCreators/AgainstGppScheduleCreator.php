@@ -8,9 +8,7 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side as AgainstSide;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsHelpers\Sport\Variant\AllInOneGame;
-use SportsHelpers\Sport\Variant\Single;
+use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
 use SportsPlanning\Counters\Maps\Schedule\AllScheduleMaps;
 use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
@@ -21,7 +19,7 @@ use SportsPlanning\Schedule\Game;
 use SportsPlanning\Schedule\GamePlace;
 use SportsPlanning\Schedule\GameRounds\AgainstGameRound;
 use SportsPlanning\Schedule\Sport as SportSchedule;
-use SportsScheduler\Combinations\HomeAwayCreators\GamesPerPlaceHomeAwayCreator as GppHomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator as GppHomeAwayCreator;
 use SportsScheduler\GameRoundCreators\AgainstGppGameRoundCreator;
 use SportsScheduler\Schedule\SportScheduleCreators\Helpers\AgainstDifferenceManager;
 use SportsScheduler\Schedule\SportVariantWithNr;
@@ -67,8 +65,7 @@ class AgainstGppScheduleCreator
 
             $gameRoundCreator = new AgainstGppGameRoundCreator($this->logger);
             $gameRound = $gameRoundCreator->createGameRound(
-                $nrOfPlaces,
-                $againstGpp,
+                new AgainstGppWithNrOfPlaces($nrOfPlaces, $againstGpp),
                 $homeAwayCreator,
                 $allScheduleMaps,
                 $againstGppDifferenceManager->getAmountRange($sportNr),

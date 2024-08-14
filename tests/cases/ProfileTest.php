@@ -15,7 +15,7 @@ use SportsPlanning\Input;
 use SportsPlanning\Poule;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
 use SportsScheduler\Combinations\AgainstStatisticsCalculators\Against\GamesPerPlace as GppStatisticsCalculator;
-use SportsScheduler\Combinations\HomeAwayCreators\GamesPerPlaceHomeAwayCreator as GppHomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator as GppHomeAwayCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 // cachegrind output default to /tmp

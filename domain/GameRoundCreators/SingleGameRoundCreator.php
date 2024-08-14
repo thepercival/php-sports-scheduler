@@ -48,7 +48,7 @@ class SingleGameRoundCreator
                 $variantWithNrOfPlaces,
                 $amountNrCounterMap,
                 $togetherNrCounterMap,
-                array_values($gamePlaces),
+                $gamePlaces,
                 $remainingGamePlaces,
                 $gameRound
             );

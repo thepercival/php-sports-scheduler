@@ -17,7 +17,7 @@ use SportsPlanning\Schedule\Game;
 use SportsPlanning\Schedule\GamePlace;
 use SportsPlanning\Schedule\GameRounds\AgainstGameRound;
 use SportsPlanning\Schedule\Sport as SportSchedule;
-use SportsScheduler\Combinations\HomeAwayCreators\H2HHomeAwayCreator as H2hHomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayGenerators\H2hHomeAwayGenerator;
 use SportsScheduler\GameRoundCreators\AgainstH2hGameRoundCreator;
 use SportsScheduler\Schedule\SportScheduleCreators\Helpers\AgainstDifferenceManager;
 use SportsScheduler\Schedule\SportVariantWithNr;
@@ -43,7 +43,7 @@ class AgainstH2hScheduleCreator
     {
         $nrOfPlaces = $schedule->getNrOfPlaces();
         $homeNrCounterMap = new SideNrCounterMap(Side::Home, $nrOfPlaces);
-        $homeAwayCreator = new H2hHomeAwayCreator();
+        $homeAwayCreator = new H2hHomeAwayGenerator();
         $sportNr = 1;
         foreach ($sportVariantsWithNr as $sportVariantWithNr) {
             $againstH2h = $sportVariantWithNr->sportVariant;

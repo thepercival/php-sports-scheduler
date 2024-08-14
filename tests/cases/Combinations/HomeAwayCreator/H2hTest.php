@@ -13,7 +13,7 @@ use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\VariantWithFields;
 use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsScheduler\Combinations\HomeAwayCreators\H2HHomeAwayCreator as HomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayGenerators\H2HHomeAwayGenerator as HomeAwayCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 class H2hTest extends TestCase

@@ -19,9 +19,9 @@ use SportsPlanning\Schedule;
 use SportsPlanning\Schedule\Name as ScheduleName;
 use SportsPlanning\Schedule\Sport as SportSchedule;
 use SportsPlanning\Sport;
-use SportsScheduler\Schedule\SportScheduleCreators\AgainstGppScheduleCreator as AgainstGppCreatorHelper;
-use SportsScheduler\Schedule\SportScheduleCreators\AgainstH2HScheduleCreator as AgainstH2hCreatorHelper;
-use SportsScheduler\Schedule\SportScheduleCreators\AllInOneGameScheduleCreator as AllInOneGameCreatorHelper;
+use SportsScheduler\Schedule\SportScheduleCreators\AgainstGppScheduleCreator;
+use SportsScheduler\Schedule\SportScheduleCreators\AgainstH2hScheduleCreator;
+use SportsScheduler\Schedule\SportScheduleCreators\AllInOneGameScheduleCreator;
 use SportsScheduler\Schedule\SportScheduleCreators\Helpers\AgainstDifferenceManager;
 use SportsScheduler\Schedule\SportScheduleCreators\SingleScheduleCreator as SingleCreatorHelper;
 
@@ -112,7 +112,7 @@ class Creator
             $schedules[$nrOfPlaces] = $schedule;
 
             $allInOneGameSportVariantsWithNr = $this->getAllInOneGameSportVariantsWithNr($sportVariantsWithNr);
-            (new AllInOneGameCreatorHelper())->createSportSchedules($schedule, $allInOneGameSportVariantsWithNr);
+            (new AllInOneGameScheduleCreator())->createSportSchedules($schedule, $allInOneGameSportVariantsWithNr);
 
             $singleSportVariantsWithNr = $this->convertToSingleSportVariantsWithNr($sportVariantsWithNr);
             $singleHelper = new SingleCreatorHelper($this->logger);
@@ -133,16 +133,16 @@ class Creator
 
             $homeNrCounterMap = new SideNrCounterMap(Side::Home, $nrOfPlaces);
             if( count($againstH2hsWithNr) > 0 ) {
-                $againstH2hHelper = new AgainstH2hCreatorHelper($this->logger);
-                $homeNrCounterMap = $againstH2hHelper->createSportSchedules(
+                $againstH2hScheduleCreator = new AgainstH2hScheduleCreator($this->logger);
+                $homeNrCounterMap = $againstH2hScheduleCreator->createSportSchedules(
                     $schedule,
                     $againstH2hsWithNr,
                     $differenceManager);
             }
             $againstGppsWithNr = $this->convertToAgainstGppSportVariantsWithNr($sportVariantsWithNr, $nrOfPlaces);
             if( count($againstGppsWithNr) > 0) {
-                $againstGppHelper = new AgainstGppCreatorHelper($this->logger);
-                $againstGppHelper->createSportSchedules(
+                $againstGppScheduleCreator = new AgainstGppScheduleCreator($this->logger);
+                $againstGppScheduleCreator->createSportSchedules(
                     $schedule,
                     $againstGppsWithNr,
                     $homeNrCounterMap,
@@ -170,7 +170,7 @@ class Creator
         // AllInOneGame
         {
             $allInOneGameSportVariantMap = $this->getAllInOneGameSportVariantsWithNr($sportVariantsWithNr);
-            (new AllInOneGameCreatorHelper())->createSportSchedules($newSchedule, $allInOneGameSportVariantMap);
+            (new AllInOneGameScheduleCreator())->createSportSchedules($newSchedule, $allInOneGameSportVariantMap);
         }
 
         // Single
@@ -196,14 +196,14 @@ class Creator
                     // @TODO CDK With       => Deze vullen voor together
                     // @TODO CDK Home       => NVP
                     // Pas counter toe als voor de sport het item op ongelijk uitkomt
-                    $againstH2hHelper = new AgainstH2hCreatorHelper($this->logger);
-                    $homeCounterMap = $againstH2hHelper->createSportSchedules(
+                    $againstH2hScheduleCreator = new AgainstH2hScheduleCreator($this->logger);
+                    $homeCounterMap = $againstH2hScheduleCreator->createSportSchedules(
                         $newSchedule, $againstH2hsWithNr, $differenceManager);
                 }
                 $againstGppsWithNr = $this->convertToAgainstGppSportVariantsWithNr($againstVariantsWithNr, $schedule->getNrOfPlaces());
                 if( count($againstGppsWithNr) > 0 ) {
-                    $againstGppHelper = new AgainstGppCreatorHelper($this->logger);
-                    $againstGppHelper->createSportSchedules(
+                    $againstGppScheduleCreator = new AgainstGppScheduleCreator($this->logger);
+                    $againstGppScheduleCreator->createSportSchedules(
                         $newSchedule, $againstGppsWithNr,
                         $homeCounterMap, $togetherCounterMap,
                         $differenceManager, $nrOfSecondsBeforeTimeout);
@@ -213,9 +213,6 @@ class Creator
 
         return $newSchedule;
     }
-
-
-
 
     /**
      * @param list<SportVariantWithNr> $sportVariantsWithNr

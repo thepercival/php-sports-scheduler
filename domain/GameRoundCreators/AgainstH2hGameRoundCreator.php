@@ -14,7 +14,7 @@ use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsPlanning\Schedule\GameRounds\AgainstGameRound;
 use SportsScheduler\Combinations\AgainstStatisticsCalculators\AgainstH2hStatisticsCalculator;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\H2h as AgainstH2hWithNrOfPlaces;
-use SportsScheduler\Combinations\HomeAwayCreators\H2HHomeAwayCreator as H2hHomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayGenerators\H2hHomeAwayGenerator;
 
 class AgainstH2hGameRoundCreator extends AgainstGameRoundCreatorAbstract
 {
@@ -24,11 +24,11 @@ class AgainstH2hGameRoundCreator extends AgainstGameRoundCreatorAbstract
     }
 
     public function createGameRound(
-        int $nrOfPlaces,
-        AgainstH2h $againstH2h,
-        H2hHomeAwayCreator $homeAwayCreator,
-        SideNrCounterMap $homeNrCounterMap,
-        AmountRange $homeAmountRange
+        int                  $nrOfPlaces,
+        AgainstH2h           $againstH2h,
+        H2hHomeAwayGenerator $homeAwayCreator,
+        SideNrCounterMap     $homeNrCounterMap,
+        AmountRange          $homeAmountRange
     ): AgainstGameRound {
         $againstH2hWithNrOfPlaces = new AgainstH2hWithNrOfPlaces($nrOfPlaces, $againstH2h);
         $gameRound = new AgainstGameRound();
@@ -57,7 +57,7 @@ class AgainstH2hGameRoundCreator extends AgainstGameRoundCreatorAbstract
 
     /**
      * @param AgainstH2hWithNrOfPlaces $againstH2hWithNrOfPlaces
-     * @param H2hHomeAwayCreator $homeAwayCreator
+     * @param H2HHomeAwayGenerator $homeAwayCreator
      * @param list<OneVsOneHomeAway> $homeAwaysForGameRound
      * @param list<OneVsOneHomeAway> $homeAways
      * @param AgainstH2hStatisticsCalculator $statisticsCalculator,
@@ -66,13 +66,13 @@ class AgainstH2hGameRoundCreator extends AgainstGameRoundCreatorAbstract
      * @return bool
      */
     protected function assignGameRound(
-        AgainstH2hWithNrOfPlaces $againstH2hWithNrOfPlaces,
-        H2hHomeAwayCreator $homeAwayCreator,
-        array $homeAwaysForGameRound,
-        array $homeAways,
+        AgainstH2hWithNrOfPlaces       $againstH2hWithNrOfPlaces,
+        H2HHomeAwayGenerator           $homeAwayCreator,
+        array                          $homeAwaysForGameRound,
+        array                          $homeAways,
         AgainstH2hStatisticsCalculator $statisticsCalculator,
-        AgainstGameRound $gameRound,
-        int $nrOfHomeAwaysTried = 0
+        AgainstGameRound               $gameRound,
+        int                            $nrOfHomeAwaysTried = 0
     ): bool {
         if ($statisticsCalculator->allAssigned()) {
             return true;

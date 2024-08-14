@@ -10,7 +10,7 @@ use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsScheduler\Combinations\HomeAwayCreators\GamesPerPlaceHomeAwayCreator as HomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator as HomeAwayCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
 use SportsPlanning\Output\Combinations\HomeAway as HomeAwayOutput;

@@ -5,17 +5,14 @@ namespace SportsScheduler\Combinations;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side;
 use SportsPlanning\Combinations\Amount\Range;
-use SportsPlanning\Combinations\CombinationMapper;
-use SportsPlanning\Combinations\HomeAway;
-use SportsPlanning\Combinations\HomeAwaySearcher;
-use SportsPlanning\Combinations\PlaceCombination;
-use SportsPlanning\Counters\CounterForPlace;
-use SportsPlanning\Counters\Maps\PlaceCounterMap;
-use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCombinationCounterMap;
-use SportsPlanning\Counters\Maps\Schedule\RangedPlaceCounterMap;
-use SportsPlanning\Counters\Maps\Schedule\SideCounterMap;
-use SportsPlanning\Counters\Reports\PlaceCombinationCountersReport;
-use SportsPlanning\Counters\Maps\PlaceCombinationCounterMap;
+use SportsPlanning\Combinations\DuoPlaceNr;
+use SportsPlanning\Counters\Maps\PlaceNrCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\RangedPlaceNrCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
+use SportsPlanning\HomeAways\HomeAwaySearcher;
+use SportsPlanning\HomeAways\OneVsOneHomeAway;
+use SportsPlanning\HomeAways\OneVsTwoHomeAway;
+use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
 use SportsPlanning\Output\Combinations\HomeAwayOutput;
 use SportsPlanning\Place;
 
@@ -27,49 +24,49 @@ class HomeAwayBalancer
 
 
     /**
-     * @param SideCounterMap $homeCounterMapFromPreviousSports
-     * @param SideCounterMap $awayCounterMapFromPreviousSports
-     * @param list<HomeAway> $sportHomeAways
-     * @return list<HomeAway>
+     * @param SideNrCounterMap $homeNrCounterMapFromPreviousSports
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $sportHomeAways
+     * @param SideNrCounterMap $awayNrCounterMapFromPreviousSports
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
     public function balance2(
-        SideCounterMap $homeCounterMapFromPreviousSports,
+        SideNrCounterMap $homeNrCounterMapFromPreviousSports,
         Range $allowedHomeRange,
-        SideCounterMap $awayCounterMapFromPreviousSports,
+        SideNrCounterMap $awayNrCounterMapFromPreviousSports,
         array $sportHomeAways): array {
-        $sportHomeAwaysAfterAdding = $this->addHomeAwaysToExisting(
-            $homeCounterMapFromPreviousSports,
-            $awayCounterMapFromPreviousSports,
+        $sportHomeAwaysAfterAdding = $this->addHomeAwaysToPreviousSports(
+            clone $homeNrCounterMapFromPreviousSports,
+            clone $awayNrCounterMapFromPreviousSports,
             $sportHomeAways
         );
 
         // $sportHomeAwaysAfterAdding
         // Adding => Start
-        $homeCounterMap = clone $homeCounterMapFromPreviousSports;
-        $homeCounterMap->addHomeAways($sportHomeAwaysAfterAdding);
-        $awayCounterMap = clone $awayCounterMapFromPreviousSports;
-        $awayCounterMap->addHomeAways($sportHomeAwaysAfterAdding);
-        $rangedHomeCounterMap = new RangedPlaceCounterMap($homeCounterMap, $allowedHomeRange );
-        if ( $rangedHomeCounterMap->withinRange(0) ) {
+        $homeNrCounterMapCumulative = clone $homeNrCounterMapFromPreviousSports;
+        $homeNrCounterMapCumulative->addHomeAways($sportHomeAwaysAfterAdding);
+        $awayNrCounterMapCumulative = clone $awayNrCounterMapFromPreviousSports;
+        $awayNrCounterMapCumulative->addHomeAways($sportHomeAwaysAfterAdding);
+        $rangedHomeNrCounterMapCumulative = new RangedPlaceNrCounterMap($homeNrCounterMapCumulative, $allowedHomeRange );
+        if ( $rangedHomeNrCounterMapCumulative->withinRange(0) ) {
             return $sportHomeAwaysAfterAdding;
         }
 
-        $homeCounterReport = $rangedHomeCounterMap->calculateReport();
+        $homeCounterReportCumulative = $rangedHomeNrCounterMapCumulative->calculateReport();
 
-        $homeCounterMap->output($this->logger, '', 'ha after swapping');
+        $homeNrCounterMapCumulative->output($this->logger, '', 'ha after swapping');
         (new HomeAwayOutput())->outputHomeAways($sportHomeAwaysAfterAdding,'ha after adding');
 
-        if( $homeCounterReport->getTotalAboveMaximum() === 1 && $homeCounterReport->getTotalBelowMinimum() === 1 ) {
+        if( $homeCounterReportCumulative->getTotalAboveMaximum() === 1 && $homeCounterReportCumulative->getTotalBelowMinimum() === 1 ) {
             $homeAwaysToSwap = $this->getHomeAwaysToSwapOneTooManyOneTooFew(
-                $rangedHomeCounterMap, $sportHomeAwaysAfterAdding
+                $rangedHomeNrCounterMapCumulative, $sportHomeAwaysAfterAdding
             );
             $correctHomeAways = $sportHomeAwaysAfterAdding;
-            $this->swapHomeAways($homeCounterMap, $awayCounterMap, $correctHomeAways, $homeAwaysToSwap);
+            $this->swapHomeAways($homeNrCounterMapCumulative, $awayNrCounterMapCumulative, $correctHomeAways, $homeAwaysToSwap);
 
-//            $homeCounterMap = $this->createSideCounterMap(Side::Home, $correctHomeAways);
+//            $homeCounterMap = $this->createSideNrCounterMap(Side::Home, $correctHomeAways);
 
 
-            $rangedHomeCounterMap = new RangedPlaceCounterMap($homeCounterMap, $allowedHomeRange );
+            $rangedHomeCounterMap = new RangedPlaceNrCounterMap($homeNrCounterMapCumulative, $allowedHomeRange );
             if ( !$rangedHomeCounterMap->withinRange(0) ) {
                 throw new \Exception('should be in range');
             }
@@ -141,20 +138,20 @@ class HomeAwayBalancer
     }
 
     /**
-     * @param SideCounterMap $homeCounterMapFromPreviousSports
-     * @param SideCounterMap $awayCounterMapFromPreviousSports
-     * @param list<HomeAway> $sportHomeAways
-     * @return list<HomeAway>
+     * @param SidenrCounterMap $homeNrCounterMapFromPreviousSports
+     * @param SidenrCounterMap $awayNrCounterMapFromPreviousSports
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $sportHomeAways
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
-    private function addHomeAwaysToExisting(
-        SideCounterMap $homeCounterMapFromPreviousSports,
-        SideCounterMap $awayCounterMapFromPreviousSports,
+    private function addHomeAwaysToPreviousSports(
+        SideNrCounterMap $homeNrCounterMapFromPreviousSports,
+        SideNrCounterMap $awayNrCounterMapFromPreviousSports,
         array $sportHomeAways): array {
 
         $newSportHomeAways = [];
 
-        $homeCounterMap = clone $homeCounterMapFromPreviousSports;
-        $awayCounterMap = clone $awayCounterMapFromPreviousSports;
+        $homeCounterMap = clone $homeNrCounterMapFromPreviousSports;
+        $awayCounterMap = clone $awayNrCounterMapFromPreviousSports;
 
 //        $homeCounterMap->output($this->logger, '', 'ha assigned home totals');
 //        $awayCounterMap->output($this->logger, '', 'ha assigned away totals');
@@ -182,29 +179,30 @@ class HomeAwayBalancer
     }
 
     /**
-     * @param RangedPlaceCounterMap $rangedHomeCounterMap
-     * @param list<HomeAway> $homeAways
-     * @return list<HomeAway>
+     * @param RangedPlaceNrCounterMap $rangedHomeNrCounterMap
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      * @throws \Exception
      */
     private function getHomeAwaysToSwapOneTooManyOneTooFew(
-        RangedPlaceCounterMap $rangedHomeCounterMap, array $homeAways): array {
-        $placesOneTimeTooManyHome = $rangedHomeCounterMap->getPlacesAboveMaximum();
-        $placeOneTimeTooManyHome = reset($placesOneTimeTooManyHome);
-        if( count($placesOneTimeTooManyHome) !== 1 || $placeOneTimeTooManyHome === false) {
+        RangedPlaceNrCounterMap $rangedHomeNrCounterMap,
+        array $homeAways): array {
+        $placeNrsOneTimeTooManyHome = $rangedHomeNrCounterMap->getPlaceNrsAboveMaximum();
+        $placeNrOneTimeTooManyHome = reset($placeNrsOneTimeTooManyHome);
+        if( count($placeNrsOneTimeTooManyHome) !== 1 || $placeNrOneTimeTooManyHome === false) {
             throw new \Exception('there should be 1 place above the maximum');
         }
-        $placesOneTimeTooFewHome = $rangedHomeCounterMap->getPlacesBelowMinimum();
-        $placeOneTimeTooFewHome = reset($placesOneTimeTooFewHome);
-        if( count($placesOneTimeTooFewHome) !== 1 || $placeOneTimeTooFewHome === false ) {
+        $placeNrsOneTimeTooFewHome = $rangedHomeNrCounterMap->getPlaceNrsBelowMinimum();
+        $placeNrOneTimeTooFewHome = reset($placeNrsOneTimeTooFewHome);
+        if( count($placeNrsOneTimeTooFewHome) !== 1 || $placeNrOneTimeTooFewHome === false ) {
             throw new \Exception('there should be 1 place above the maximum');
         }
 
-        $awayPlaces = [$placeOneTimeTooManyHome, $placeOneTimeTooFewHome];
-        $swappableHomeAways = (new HomeAwaySearcher())->getHomeAwaysBySide($homeAways, Side::Away, $awayPlaces);
+        $awayPlaceNrs = [$placeNrOneTimeTooManyHome, $placeNrOneTimeTooFewHome];
+        $swappableHomeAways = (new HomeAwaySearcher())->getHomeAwaysBySide($homeAways, Side::Away, $awayPlaceNrs);
         foreach( $swappableHomeAways as $swappableHomeAway) {
             $swappableHomeAwaysStepTwo = $this->getHomeAwaysToSwapOneTooManyOneTooFewStepTwo(
-                $rangedHomeCounterMap, $homeAways, $swappableHomeAway->getPlaces(Side::Home), $placeOneTimeTooManyHome
+                $rangedHomeNrCounterMap, $homeAways, $swappableHomeAway->convertToPlaceNrs(Side::Home), $placeNrOneTimeTooManyHome
             );
             if( $swappableHomeAwaysStepTwo === null ) {
                 continue;
@@ -215,16 +213,18 @@ class HomeAwayBalancer
     }
 
     /**
-     * @param RangedPlaceCounterMap $rangedHomeCounterMap
-     * @param list<HomeAway> $homeAways
-     * @param list<Place> $previousHomePlaces
-     * @param Place $placeOneTimeTooManyHome
-     * @return list<HomeAway>|null
+     * @param RangedPlaceNrCounterMap $rangedHomeNrCounterMap
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
+     * @param list<int> $previousHomePlaceNrs
+     * @param int $placeNrOneTimeTooManyHome
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>|null
      * @throws \Exception
      */
     private function getHomeAwaysToSwapOneTooManyOneTooFewStepTwo(
-        RangedPlaceCounterMap $rangedHomeCounterMap, array $homeAways,
-        array $previousHomePlaces, Place $placeOneTimeTooManyHome): array|null {
+        RangedPlaceNrCounterMap $rangedHomeNrCounterMap,
+        array $homeAways,
+        array $previousHomePlaceNrs,
+        int $placeNrOneTimeTooManyHome): array|null {
 
         $homeAwaysWithTooManyHome = (new HomeAwaySearcher())->getHomeAwaysByPlace($homeAways, Side::Home, $placeOneTimeTooManyHome);
         $firstPreviousHomePlace = $previousHomePlaces[0];
@@ -246,17 +246,20 @@ class HomeAwayBalancer
     }
 
     /**
-     * @param PlaceCounterMap $homeCounterMap
-     * @param list<HomeAway> $sportHomeAways
-     * @return list<HomeAway>
+     * @param SideNrCounterMap $homeNrCounterMap
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $sportHomeAways
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
-    private function getHomeAwaysWithAtLeastTwoDifference(PlaceCounterMap $homeCounterMap, array $sportHomeAways): array {
-        $filteredHomeAway = array_filter( $sportHomeAways, function(HomeAway $homeAway) use ($homeCounterMap): bool {
-            return $this->getHomeDifference($homeCounterMap, $homeAway) > 1;
+    private function getHomeAwaysWithAtLeastTwoDifference(SideNrCounterMap $homeNrCounterMap, array $sportHomeAways): array {
+        $filteredHomeAway = array_filter( $sportHomeAways, function(
+            OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway) use ($homeNrCounterMap): bool {
+            return $this->getHomeDifference($homeNrCounterMap, $homeAway) > 1;
         });
-        uasort($filteredHomeAway, function (HomeAway $homeAwayA,HomeAway $homeAwayB) use ($homeCounterMap): int {
-            return $this->getHomeDifference($homeCounterMap, $homeAwayA)
-                - $this->getHomeDifference($homeCounterMap, $homeAwayB);
+        uasort($filteredHomeAway, function (
+            OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAwayA,
+            OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAwayB) use ($homeNrCounterMap): int {
+            return $this->getHomeDifference($homeNrCounterMap, $homeAwayA)
+                - $this->getHomeDifference($homeNrCounterMap, $homeAwayB);
         });
         // $logger->info("sorted homeaways in " . (microtime(true) - $time_start));
         // (new HomeAway($logger))->outputHomeAways(array_values($homeAways));
@@ -264,15 +267,15 @@ class HomeAwayBalancer
     }
 
     /**
-     * @param PlaceCounterMap $homePlaceCounterMap
-     * @param PlaceCounterMap $awayPlaceCounterMap
-     * @param list<HomeAway> $sportHomeAways
-     * @param list<HomeAway> $homeAwaysToSwap
+     * @param PlaceNrCounterMap $homePlaceNrCounterMap
+     * @param PlaceNrCounterMap $awayPlaceNrCounterMap
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $sportHomeAways
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAwaysToSwap
      * @return void
      */
     protected function swapHomeAways(
-        PlaceCounterMap $homePlaceCounterMap,
-        PlaceCounterMap $awayPlaceCounterMap,
+        PlaceNrCounterMap $homePlaceNrCounterMap,
+        PlaceNrCounterMap $awayPlaceNrCounterMap,
         array &$sportHomeAways, array $homeAwaysToSwap): void {
 
         foreach( $homeAwaysToSwap as $homeAwayToSwap) {
@@ -282,26 +285,26 @@ class HomeAwayBalancer
             }
             array_splice($sportHomeAways, $key, 1);
             foreach( $homeAwayToSwap->getHome()->getPlaces() as $homePlace) {
-                $homePlaceCounterMap->removePlace($homePlace);
+                $homePlaceNrCounterMap->removePlace($homePlace);
             }
             foreach( $homeAwayToSwap->getAway()->getPlaces() as $awayPlace) {
-                $awayPlaceCounterMap->removePlace($awayPlace);
+                $awayPlaceNrCounterMap->removePlace($awayPlace);
             }
             $swappedHomeAway = $homeAwayToSwap->swap();
             foreach( $swappedHomeAway->getHome()->getPlaces() as $homePlace) {
-                $homePlaceCounterMap->addPlace($homePlace);
+                $homePlaceNrCounterMap->addPlace($homePlace);
             }
             foreach( $swappedHomeAway->getAway()->getPlaces() as $awayPlace) {
-                $awayPlaceCounterMap->addPlace($awayPlace);
+                $awayPlaceNrCounterMap->addPlace($awayPlace);
             }
             $sportHomeAways[] = $swappedHomeAway;
         }
     }
 
     /**
-     * @param list<HomeAway> $sportHomeAways
-     * @param list<HomeAway> $newHomeAways
-     * @return list<HomeAway>
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $sportHomeAways
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $newHomeAways
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
     protected function getSwapped(array $sportHomeAways, array $newHomeAways ): array {
         $swappedHomeAways = [];
@@ -326,11 +329,11 @@ class HomeAwayBalancer
     }
 
     /**
-     * @param list<HomeAway> $homeAways
-     * @return list<HomeAway>
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
     protected function getSwappedHomeAways(array $homeAways): array {
-        return array_map(function(HomeAway $homeAway): HomeAway {
+        return array_map(function(OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway): OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway {
             return $homeAway->swap();
         }, $homeAways );
     }
@@ -492,17 +495,17 @@ class HomeAwayBalancer
 //    }
 
     /**
-     * @param list<HomeAway> $homeAways
-     * @param list<HomeAway> $otherHomeAways
-     * @param Place $targetPlace
-     * @param list<HomeAway> $route
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $otherHomeAways
+     * @param int $targetPlaceNr
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $route
      * @param int $maxRouteLength
-     * @return list<HomeAway>|null
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>|null
      */
     protected function getSwapRouteHelper(
         array $homeAways,
         array $otherHomeAways,
-        Place $targetPlace,
+        int $targetPlaceNr,
         array $route,
         int $maxRouteLength): array|null {
 
@@ -516,13 +519,13 @@ class HomeAwayBalancer
         foreach( $homeAways as $homeAway) {
             $routeToTry = $route;
             $routeToTry[] = $homeAway;
-            if( $homeAway->hasPlace($targetPlace, Side::Away)) {
+            if( $homeAway->hasPlaceNr($targetPlaceNr, Side::Away)) {
                 return $routeToTry;
             }
             $newHomeHomeAways = $this->getHomeAwaysWithAPlaceAtSide(Side::Home, $homeAway->getAway(), $otherHomeAways);
-            $newOtherHomeAways = $this->getHomeAwaysWithNotAPlaceAtSide(Side::Home, $homeAway->getAway(), $otherHomeAways);
+            $newOtherHomeAways = $this->getHomeAwaysWithNotSomePlaceAtSide(Side::Home, $homeAway->getAway(), $otherHomeAways);
 
-            $finalRoute = $this->getSwapRouteHelper($newHomeHomeAways, $newOtherHomeAways, $targetPlace, $routeToTry, $maxRouteLength);
+            $finalRoute = $this->getSwapRouteHelper($newHomeHomeAways, $newOtherHomeAways, $targetPlaceNr, $routeToTry, $maxRouteLength);
             if( $finalRoute !== null) {
                 return $finalRoute;
             }
@@ -549,17 +552,17 @@ class HomeAwayBalancer
      *
      * BIJ VERGELIJKEN WELKE WEDSTRIJD HET BESTE IS:     *
      * TOTAAL HET MINST THUIS, GELIJK ? => DE MEESTE WEDSTRIJDEN HEEFT GESPEELD
-     * @param SideCounterMap $assignedHomeCounterMap
-     * @param SideCounterMap $assignedAwayCounterMap
-     * @param list<HomeAway> $sportHomeAwaysToAssign
+     * @param SideNrCounterMap $assignedHomeNrCounterMap
+     * @param SideNrCounterMap $assignedAwayNrCounterMap
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $sportHomeAwaysToAssign
      * @param bool $swapped
-     * @return HomeAway|null
+     * @return OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway|null
      */
     protected function getBestHomeAway(
-        PlaceCounterMap $assignedHomeCounterMap,
-        PlaceCounterMap $assignedAwayCounterMap,
+        SideNrCounterMap $assignedHomeNrCounterMap,
+        SideNrCounterMap $assignedAwayNrCounterMap,
         array $sportHomeAwaysToAssign,
-        bool &$swapped): HomeAway|null {
+        bool &$swapped): OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway|null {
         $swapped = false;
         if( count($sportHomeAwaysToAssign) === 0) {
             return null;
@@ -569,9 +572,9 @@ class HomeAwayBalancer
         $highestCount = null;
         foreach( $sportHomeAwaysToAssign as $homeAway) {
 
-            $homeCount = $this->countPlaceCombination($assignedHomeCounterMap, $homeAway->getHome());
-            $highestHomeCountSinglePlace = $this->calculateHighestSinglePlaceCount($assignedHomeCounterMap, $homeAway->getHome());
-            $count =  $homeCount + $this->countPlaceCombination($assignedAwayCounterMap, $homeAway->getHome());
+            $homeCount = $this->sumPlaceNrsCount($assignedHomeNrCounterMap, $homeAway->convertToPlaceNrs(Side::Home));
+            $highestHomeCountSinglePlace = $this->calculateHighestSinglePlaceCount($assignedHomeNrCounterMap, $homeAway->getHome());
+            $count =  $homeCount + $this->sumPlaceNrsCount($assignedAwayNrCounterMap, $homeAway->getHome());
 
             if( $bestHomeAway === null || $homeCount < $lowestHomeCount) {
                 $lowestHomeCount = $homeCount;
@@ -583,9 +586,9 @@ class HomeAwayBalancer
             }
 
             $swappedHomeAway = $homeAway->swap();
-            $swappedHomeCount = $this->countPlaceCombination($assignedHomeCounterMap, $swappedHomeAway->getHome());
-            $swappedHighestHomeCountSinglePlace = $this->calculateHighestSinglePlaceCount($assignedHomeCounterMap, $swappedHomeAway->getHome());
-            $swappedCount =  $swappedHomeCount + $this->countPlaceCombination($assignedAwayCounterMap, $swappedHomeAway->getHome());
+            $swappedHomeCount = $this->sumPlaceNrsCount($assignedHomeNrCounterMap, $swappedHomeAway->getHome());
+            $swappedHighestHomeCountSinglePlace = $this->calculateHighestSinglePlaceCount($assignedHomeNrCounterMap, $swappedHomeAway->getHome());
+            $swappedCount =  $swappedHomeCount + $this->sumPlaceNrsCount($assignedAwayNrCounterMap, $swappedHomeAway->getHome());
 
             if( $swappedHomeCount < $lowestHomeCount) {
                 $lowestHomeCount = $swappedHomeCount;
@@ -611,20 +614,23 @@ class HomeAwayBalancer
 
     //  1 IN TOTAAL => HET LAAGSTE THUIS (VAN THUISPLEKKEN) + HET LAAGSTE THUIS (VAN UITPLEKKEN)
     // WANNEER GELIJK KIJK WIE DE MINSTE WEDSTRIJDEN HEEFT GESPEELD
-    //      $homeCountHome = $this->countPlaceCombination($homePlaceCounterMap, $homeAway->getHome());
-//        $homeCountAway = $this->countPlaceCombination($homePlaceCounterMap, $homeAway->getAway());
-//        $awayCountHome = $this->countPlaceCombination($awayPlaceCounterMap, $homeAway->getHome());
-//        $awayCountAway = $this->countPlaceCombination($awayPlaceCounterMap, $homeAway->getAway());
+    //      $homeCountHome = $this->sumPlaceNrsCount($homePlaceCounterMap, $homeAway->getHome());
+//        $homeCountAway = $this->sumPlaceNrsCount($homePlaceCounterMap, $homeAway->getAway());
+//        $awayCountHome = $this->sumPlaceNrsCount($awayPlaceCounterMap, $homeAway->getHome());
+//        $awayCountAway = $this->sumPlaceNrsCount($awayPlaceCounterMap, $homeAway->getAway());
 //        return ( $homeCountHome > $homeCountAway
 //            || ($homeCountHome === $homeCountAway && $awayCountHome < $awayCountAway) );
 //    }
 
-    protected function countPlaceCombination(PlaceCounterMap $placeCounterMap, PlaceCombination $placeCombination): int {
-        $count = 0;
-        foreach( $placeCombination->getPlaces() as $place) {
-            $count += $placeCounterMap->count($place);
-        }
-        return $count;
+    /**
+     * @param SideNrCounterMap $sideNrCounterMap
+     * @param list<int> $placeNrs
+     * @return int
+     */
+    protected function sumPlaceNrsCount(SideNrCounterMap $sideNrCounterMap, array $placeNrs): int {
+        return array_sum( array_map( function(int $placeNr) use ($sideNrCounterMap): int {
+            return $sideNrCounterMap->count($placeNr);
+        }, $placeNrs ) );
     }
 
 //    protected function getLowestPlaceCount(PlaceCounterMap $placeCounterMap, PlaceCombination $placeCombination): int {
@@ -639,11 +645,16 @@ class HomeAwayBalancer
 //        return $lowestCount;
 //    }
 
-    protected function calculateHighestSinglePlaceCount(PlaceCounterMap $placeCounterMap, PlaceCombination $placeCombination): int {
+    /**
+     * @param SideNrCounterMap $sideNrCounterMap
+     * @param list<int> $placeNrs
+     * @return int
+     */
+    protected function calculateHighestSinglePlaceCount(SideNrCounterMap $sideNrCounterMap, array $placeNrs): int {
 
         $highestCount = 0;
-        foreach( $placeCombination->getPlaces() as $place) {
-            $count = $placeCounterMap->count($place);
+        foreach( $placeNrs as $placeNr) {
+            $count = $sideNrCounterMap->count($placeNr);
             if( $highestCount === 0 || $count > $highestCount ) {
                 $highestCount = $count;
             }
@@ -651,46 +662,47 @@ class HomeAwayBalancer
         return $highestCount;
     }
 
-    private function getHomeDifference(PlaceCounterMap $homePlaceCounterMap, HomeAway $sportHomeAway): int {
-        $homeDiff = $this->countPlaceCombination($homePlaceCounterMap, $sportHomeAway->getHome())
-            - $this->countPlaceCombination($homePlaceCounterMap, $sportHomeAway->getAway());
+    private function getHomeDifference(SideNrCounterMap $homeNrCounterMap, OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway): int {
+        $homeDiff = $this->sumPlaceNrsCount($homeNrCounterMap, $homeAway->convertToPlaceNrs(Side::Home))
+            - $this->sumPlaceNrsCount($homeNrCounterMap, $homeAway->convertToPlaceNrs(Side::Away));
         return max($homeDiff, 0);
     }
 
     /**
      * @param Side $side
-     * @param Place $place
-     * @param list<HomeAway> $homeAways
-     * @return list<HomeAway>
+     * @param int $placeNr
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
-    protected function getHomeAwaysWithPlaceAtSide(Side $side, Place $place, array $homeAways): array {
-        return array_values( array_filter($homeAways, function(HomeAway $homeAway) use($side, $place): bool {
-            return $homeAway->hasPlace($place, $side);
+    protected function getHomeAwaysWithPlaceAtSide(Side $side, int $placeNr, array $homeAways): array {
+        return array_values( array_filter($homeAways, function(OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway) use($side, $placeNr): bool {
+            return $homeAway->hasPlaceNr($placeNr, $side);
         }));
     }
 
     /**
      * @param Side $side
-     * @param Place $place
-     * @param list<HomeAway> $homeAways
-     * @return list<HomeAway>
+     * @param int $placeNr
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
-    protected function getHomeAwaysWithPlaceNotAtSide(Side $side, Place $place, array $homeAways): array {
-        return array_values( array_filter($homeAways, function(HomeAway $homeAway) use($side, $place): bool {
-            return !$homeAway->hasPlace($place, $side);
+    protected function getHomeAwaysWithPlaceNotAtSide(Side $side, int $placeNr, array $homeAways): array {
+        return array_values( array_filter($homeAways, function(OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway) use($side, $placeNr): bool {
+            return !$homeAway->hasPlaceNr($placeNr, $side);
         }));
     }
 
     /**
      * @param Side $side
-     * @param PlaceCombination $placeCombination
-     * @param list<HomeAway> $homeAways
-     * @return list<HomeAway>
+     * @param int|DuoPlaceNr $duoPlaceNr
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
-    protected function getHomeAwaysWithAPlaceAtSide(Side $side, PlaceCombination $placeCombination, array $homeAways): array {
-        return array_values( array_filter($homeAways, function(HomeAway $homeAway) use($side, $placeCombination): bool {
-            foreach( $placeCombination->getPlaces() as $place) {
-                if( $homeAway->hasPlace($place, $side) ) {
+    protected function getHomeAwaysWithAPlaceAtSide(Side $side, int|DuoPlaceNr $duoPlaceNr, array $homeAways): array {
+        $placeNrs = ($duoPlaceNr instanceof DuoPlaceNr) ? $duoPlaceNr->getPlaceNrs() : [$duoPlaceNr];
+        return array_values( array_filter($homeAways, function(OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway) use($side, $placeNrs): bool {
+            foreach( $placeNrs as $placeNr) {
+                if( $homeAway->hasPlaceNr($placeNr, $side) ) {
                     return true;
                 }
             }
@@ -700,14 +712,15 @@ class HomeAwayBalancer
 
     /**
      * @param Side $side
-     * @param PlaceCombination $placeCombination
-     * @param list<HomeAway> $homeAways
-     * @return list<HomeAway>
+     * @param int|DuoPlaceNr $duoPlaceNr
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
-    protected function getHomeAwaysWithNotAPlaceAtSide(Side $side, PlaceCombination $placeCombination, array $homeAways): array {
-        return array_values( array_filter($homeAways, function(HomeAway $homeAway) use($side, $placeCombination): bool {
-            foreach( $placeCombination->getPlaces() as $place) {
-                if( $homeAway->hasPlace($place, $side) ) {
+    protected function getHomeAwaysWithNotSomePlaceAtSide(Side $side, int|DuoPlaceNr $duoPlaceNr, array $homeAways): array {
+        $placeNrs = ($duoPlaceNr instanceof DuoPlaceNr) ? $duoPlaceNr->getPlaceNrs() : [$duoPlaceNr];
+        return array_values( array_filter($homeAways, function(OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway) use($side, $placeNrs): bool {
+            foreach( $placeNrs as $placeNr) {
+                if( $homeAway->hasPlaceNr($placeNr, $side) ) {
                     return false;
                 }
             }
@@ -715,19 +728,41 @@ class HomeAwayBalancer
         }));
     }
 
+//    /**
+//     * @param Side $side
+//     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
+//     * @return SideNrCounterMap
+//     */
+//    private function createSideNrCounterMap(Side $side, array $homeAways): SideNrCounterMap
+//    {
+//        $homeNrCounterMap =  new SideNrCounterMap($side);
+//        $homeNrCounterMap->addHomeAways($homeAways);
+//        return $homeNrCounterMap;
+//    }
+
     /**
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
      * @param Side $side
-     * @param list<HomeAway> $homeAways
-     * @return SideCounterMap
+     * @param list<int> $sidePlaceNrs
+     * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
-    private function createSideCounterMap(Side $side, array $homeAways): SideCounterMap
+    public function getHomeAwaysBySide(array $homeAways, Side $side, array $sidePlaceNrs): array
     {
-        $combinationMapper = new CombinationMapper();
-        $placeCounterMap = $combinationMapper->initPlaceCounterMapForHomeAways($homeAways);
-        $homeCounterMap =  new SideCounterMap($side, $placeCounterMap);
-        foreach( $homeAways as $homeAway ) {
-            $homeCounterMap->addHomeAway($homeAway);
-        }
-        return $homeCounterMap;
+        return array_values(array_filter($homeAways, function(OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway) use ($side, $placeNrs): bool{
+            return $homeAway->getPlaces($side) == $places;
+        }));
+    }
+
+    /**
+     * @param HomeAwayAbstract $homeAways
+     * @param AgainstSide $side
+     * @param Place $place
+     * @return HomeAwayAbstract
+     */
+    public function getHomeAwaysByPlace(array $homeAways, AgainstSide $side, Place $place): array
+    {
+        return array_values(array_filter($homeAways, function(HomeAwayAbstract $homeAway) use ($side, $place): bool{
+            return $homeAway->hasPlace($place, $side);
+        }));
     }
 }

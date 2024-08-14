@@ -9,8 +9,11 @@ use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\EquallyAssignCalculator;
+use SportsHelpers\SportRange;
 use SportsPlanning\Combinations\Amount\Range as AmountRange;
+use SportsPlanning\Counters\Maps\PlaceNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\AllScheduleMaps;
+use SportsPlanning\Counters\Maps\Schedule\AmountNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\RangedDuoPlaceNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\RangedPlaceNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
@@ -19,7 +22,7 @@ use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
 use SportsPlanning\Schedule\GameRounds\AgainstGameRound;
 use SportsScheduler\Combinations\HomeAwayBalancer;
-use SportsScheduler\Combinations\HomeAwayCreators\GamesPerPlaceHomeAwayCreator as GppHomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator as GppHomeAwayCreator;
 use SportsScheduler\Combinations\AgainstStatisticsCalculators\AgainstGppStatisticsCalculator;
 use SportsScheduler\Exceptions\NoSolutionException;
 use SportsScheduler\Exceptions\TimeoutException;
@@ -40,8 +43,7 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
     }
 
     public function createGameRound(
-        int $nrOfPlaces,
-        AgainstGpp $againstGpp,
+        AgainstGppWithNrOfPlaces $againstGppWithNrOfPlaces,
         GppHomeAwayCreator $homeAwayCreator,
         AllScheduleMaps $allScheduleMaps,
         AmountRange $amountRange,
@@ -53,12 +55,11 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
         if( $nrOfSecondsBeforeTimeout > 0 ) {
             $this->timeoutDateTime = (new \DateTimeImmutable())->add(new \DateInterval('PT' . $nrOfSecondsBeforeTimeout . 'S'));
         }
-        $againstGppWithNrOfPlaces = new AgainstGppWithNrOfPlaces($nrOfPlaces, $againstGpp);
         $gameRound = new AgainstGameRound();
         $this->highestGameRoundNumberCompleted = 0;
         $this->nrOfGamesPerGameRound = $againstGppWithNrOfPlaces->getNrOfGamesSimultaneously();
 
-        $homeAways = $this->createHomeAways($homeAwayCreator, $nrOfPlaces, $againstGpp);
+        $homeAways = $this->createHomeAways($homeAwayCreator, $againstGppWithNrOfPlaces);
         $homeAways = $this->initHomeAways($homeAways);
 
 //        $calculator = new EquallyAssignCalculator();
@@ -71,7 +72,7 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
         $rangedHomeNrCounterMap = new RangedPlaceNrCounterMap($allScheduleMaps->getHomeCounterMap(), $homeAmountRange);
         $rangedAwayNrCounterMap = new RangedPlaceNrCounterMap($allScheduleMaps->getAwayCounterMap(), $homeAmountRange);
 
-        $statisticsCalculator = new GppStatisticsCalculator(
+        $statisticsCalculator = new AgainstGppStatisticsCalculator(
             $againstGppWithNrOfPlaces,
             $rangedHomeNrCounterMap,
             0,
@@ -85,10 +86,10 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
 //        $this->gameRoundOutput->output($gameRound, true, 'ASSIGNED HOMEAWAYS');
 
 //        $this->gameRoundOutput->outputHomeAways($homeAways, null, 'UNASSIGNED HOMEAWAYS BEFORE SORT');
-        $homeAways = $statisticsCalculator->sortHomeAways($homeAways, $this->logger);
+        $homeAways = $statisticsCalculator->sortHomeAways($homeAways);
 //        $this->gameRoundOutput->outputHomeAways($homeAways, null, 'UNASSIGNED HOMEAWAYS AFTER SORT');
         if ($this->assignGameRound(
-                $variantWithPoule,
+                $againstGppWithNrOfPlaces,
                 $homeAways,
                 $homeAways,
                 $statisticsCalculator,
@@ -98,12 +99,12 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
         }
         $homeAwayBalancer = new HomeAwayBalancer($this->logger);
 
-        $homeCounterMap = new SideCounterMap(Side::Home, $rangedHomeCounterMap->copyPlaceCounterMap());
-        $awayCounterMap = new SideCounterMap(Side::Away, $rangedAwayCounterMap->copyPlaceCounterMap());
+        $homeCounterMapCopy = $rangedHomeNrCounterMap->cloneMap();
+        $awayCounterMapCopy = $rangedAwayNrCounterMap->cloneMap();
         $swappedHomeAways = $homeAwayBalancer->balance2(
-            $homeCounterMap,
-            $rangedHomeCounterMap->getAllowedRange(),
-            $awayCounterMap,
+            $homeCounterMapCopy,
+            $rangedHomeNrCounterMap->getAllowedRange(),
+            $awayCounterMapCopy,
             $gameRound->getAllHomeAways()
         );
         $this->updateWithSwappedHomeAways($gameRound, $swappedHomeAways);
@@ -112,9 +113,9 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
 
     /**
      * @param AgainstGppWithNrOfPlaces $againstWithNrOfPlaces
-     * @param list<HomeAway> $homeAwaysForGameRound
-     * @param list<HomeAway> $homeAways
-     * @param GppStatisticsCalculator $statisticsCalculator
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAwaysForGameRound
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
+     * @param AgainstGppStatisticsCalculator $statisticsCalculator
      * @param AgainstGameRound $gameRound
      * @param int $depth
      * @return bool
@@ -123,11 +124,11 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
         AgainstGppWithNrOfPlaces $againstWithNrOfPlaces,
         array $homeAwaysForGameRound,
         array $homeAways,
-        GppStatisticsCalculator $statisticsCalculator,
+        AgainstGppStatisticsCalculator $statisticsCalculator,
         AgainstGameRound $gameRound,
         int $depth = 0
     ): bool {
-        if( $againstWithPoule->getTotalNrOfGames() === $statisticsCalculator->getNrOfHomeAwaysAssigned() ) {
+        if( $againstWithNrOfPlaces->getTotalNrOfGames() === $statisticsCalculator->getNrOfHomeAwaysAssigned() ) {
 //            $statisticsCalculator->output(false);
 //            $this->gameRoundOutput->outputHomeAways($gameRound->getAllHomeAways(), null, 'SUC AFTER SPORT');
             if( $statisticsCalculator->allAssigned() ) {
@@ -140,7 +141,7 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
             throw new TimeoutException('exceeded maximum duration', E_ERROR);
         }
 
-        if ($this->isGameRoundCompleted($againstWithPoule, $gameRound)) {
+        if ($this->isGameRoundCompleted($againstWithNrOfPlaces, $gameRound)) {
             $nextGameRound = $this->toNextGameRound($gameRound, $homeAways);
 
 //            if (!$statisticsCalculator->minimalSportCanStillBeAssigned()) {
@@ -183,17 +184,17 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
 ////                    $this->gameRoundOutput->outputHomeAways($filteredHomeAways, null, 'HOMEAWAYS TO ASSIGN');
 //                }
 
-                $filteredHomeAways = $statisticsCalculator->sortHomeAways($filteredHomeAways, $this->logger);
+                $filteredHomeAways = $statisticsCalculator->sortHomeAways($filteredHomeAways);
             }
             // $this->logger->info('gr ' . $gameRound->getNumber() . ' completed ( ' . count($homeAways) . ' => ' . count($filteredHomeAways) .  ' )');
 
 
-            $nrOfGamesToGo = $againstWithPoule->getTotalNrOfGames() - $statisticsCalculator->getNrOfHomeAwaysAssigned();
+            $nrOfGamesToGo = $againstWithNrOfPlaces->getTotalNrOfGames() - $statisticsCalculator->getNrOfHomeAwaysAssigned();
             if( count($filteredHomeAways) < $nrOfGamesToGo ) {
                 return false;
             }
             if( $this->assignGameRound(
-                $againstWithPoule,
+                $againstWithNrOfPlaces,
                 $filteredHomeAways,
                 $homeAways,
                 $statisticsCalculator,
@@ -211,7 +212,7 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
         // $this->logger->info('gr ' . $gameRound->getNumber() . ' trying.. ( grgames ' . count($gameRound->getHomeAways()) . ', haGr ' . count($homeAwaysForGameRound) .  ' )');
 
         return $this->assignSingleGameRound(
-            $againstWithPoule,
+            $againstWithNrOfPlaces,
             $homeAwaysForGameRound,
             $homeAways,
             $statisticsCalculator,
@@ -221,19 +222,19 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
     }
 
     /**
-     * @param AgainstGppWithPoule $againstWithPoule
-     * @param list<HomeAway> $homeAwaysForGameRound
-     * @param list<HomeAway> $homeAways
-     * @param GppStatisticsCalculator $statisticsCalculator,
+     * @param AgainstGppWithNrOfPlaces $againstWithNrOfPlaces
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAwaysForGameRound
+     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
+     * @param AgainstGppStatisticsCalculator $statisticsCalculator,
      * @param AgainstGameRound $gameRound
      * @param int $depth
      * @return bool
      */
     protected function assignSingleGameRound(
-        AgainstGppWithPoule $againstWithPoule,
+        AgainstGppWithNrOfPlaces $againstWithNrOfPlaces,
         array $homeAwaysForGameRound,
         array $homeAways,
-        GppStatisticsCalculator $statisticsCalculator,
+        AgainstGppStatisticsCalculator $statisticsCalculator,
         AgainstGameRound $gameRound,
         int $depth = 0
     ): bool {
@@ -251,8 +252,8 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
             $homeAwaysForGameRoundTmp = array_values(
                 array_filter(
                     array_merge( $homeAwaysForGameRound, $triedHomeAways),
-                    function (HomeAway $homeAway) use ($gameRound): bool {
-                        return !$gameRound->isHomeAwayPlaceParticipating($homeAway);
+                    function (OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway) use ($gameRound): bool {
+                        return !$gameRound->isSomeHomeAwayPlaceNrParticipating($homeAway);
                     }
                 )
             );
@@ -261,7 +262,7 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
                 || $statisticsCalculator->getNrOfGamesToGo() === count($gameRound->getHomeAways())
                 )
                 && $this->assignGameRound(
-                    $againstWithPoule,
+                    $againstWithNrOfPlaces,
                     $homeAwaysForGameRoundTmp,
                     $homeAways,
                     $statisticsCalculator->addHomeAway($homeAway),
@@ -294,37 +295,29 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
         return $homeAways;
     }
 
-    /**
-     * @param AgainstGppWithPoule $againstWithPoule
-     * @param int $currentGameRoundNumber
-     * @param list<HomeAway> $homeAways
-     * @return bool
-     */
-    protected function isOverAssigned(
-        AgainstGppWithPoule $againstWithPoule,
-        int $currentGameRoundNumber,
-        array $homeAways
-    ): bool {
-        $poule = $againstWithPoule->getPoule();
-        $unassignedMap = [];
-        foreach ($poule->getPlaces() as $place) {
-            $unassignedMap[$place->getPlaceNr()] = new CounterForPlace($place);
-        }
-        foreach ($homeAways as $homeAway) {
-            foreach ($homeAway->getPlaces() as $place) {
-                $unassignedCounter = $unassignedMap[$place->getPlaceNr()];
-                $unassignedMap[$place->getPlaceNr()] = $unassignedCounter->increment();
-            }
-        }
-
-        $nrOfGamePlacesPerBatch = $againstWithPoule->getNrOfGamePlacesPerBatch();
-        foreach ($poule->getPlaces() as $place) {
-            if ($currentGameRoundNumber + $unassignedMap[$place->getPlaceNr()]->count() > $nrOfGamePlacesPerBatch) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    /**
+//     * @param AgainstGppWithNrOfPlaces $againstWithNrOfPlaces
+//     * @param int $currentGameRoundNumber
+//     * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
+//     * @return bool
+//     */
+//    protected function isOverAssigned(
+//        AgainstGppWithNrOfPlaces $againstWithNrOfPlaces,
+//        int $currentGameRoundNumber,
+//        array $homeAways
+//    ): bool {
+//        $unassignedMap = new AmountNrCounterMap($againstWithNrOfPlaces->getNrOfPlaces());
+//        $unassignedMap->addHomeAways($homeAways);
+//
+//        $nrOfGamePlacesPerBatch = $againstWithNrOfPlaces->getNrOfGamePlacesPerBatch();
+//        $placeNrs = (new SportRange(1, $againstWithNrOfPlaces->getNrOfPlaces()))->toArray();
+//        foreach ($placeNrs as $placeNr) {
+//            if ($currentGameRoundNumber + $unassignedMap->count($placeNr) > $nrOfGamePlacesPerBatch) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     /**
      * @param list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway> $homeAways
