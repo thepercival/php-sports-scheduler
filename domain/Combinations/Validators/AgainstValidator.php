@@ -8,6 +8,9 @@ use SportsHelpers\Against\Side;
 use SportsPlanning\Counters\Maps\DuoPlaceNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\AgainstNrCounterMap;
 use SportsPlanning\Game\Against as AgainstGame;
+use SportsPlanning\HomeAways\OneVsOneHomeAway;
+use SportsPlanning\HomeAways\OneVsTwoHomeAway;
+use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
 
@@ -17,6 +20,7 @@ class AgainstValidator extends ValidatorAbstract
 
     public function __construct()
     {
+        $this->againstNrCounterMap = new AgainstNrCounterMap();
         parent::__construct();
     }
 
@@ -25,6 +29,20 @@ class AgainstValidator extends ValidatorAbstract
         return $this->duoPlaceNrCounterMapIsBalanced($this->againstNrCounterMap);
     }
 
+    public function addGame(AgainstGame $game, Sport $sport): void
+    {
+        if ($game->getSport() !== $sport) {
+            return;
+        }
+        $homeAway = $game->createHomeAway();
+        $this->addHomeAway($homeAway);
+    }
+
+
+    public function addHomeAway(OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway): void
+    {
+        $this->againstNrCounterMap->addHomeAway($homeAway);
+    }
 
 //        $homeAway = new HomeAway(
 //            new PlaceCombination( array_values(

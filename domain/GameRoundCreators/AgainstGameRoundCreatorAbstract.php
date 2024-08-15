@@ -137,15 +137,15 @@ abstract class AgainstGameRoundCreatorAbstract
         }
     }
 
-    /**
-     * @param array<string, CounterForDuoPlaceNr> $duoPlacemap
-     * @return array<string, DuoPlaceNr>
-     */
-    protected function convertToDuoPlaceNrMap(array $map): array {
-        $newMap = [];
-        foreach( $map as $idx => $counter ) {
-            $newMap[$idx] = $counter->getDuoPlaceNr();
-        }
-        return $newMap;
-    }
+//    /**
+//     * @param array<string, CounterForDuoPlaceNr> $duoPlacemap
+//     * @return array<string, DuoPlaceNr>
+//     */
+//    protected function convertToDuoPlaceNrMap(array $map): array {
+//        $newMap = [];
+//        foreach( $map as $idx => $counter ) {
+//            $newMap[$idx] = $counter->getDuoPlaceNr();
+//        }
+//        return $newMap;
+//    }
 }

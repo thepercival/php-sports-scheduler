@@ -4,18 +4,11 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Combinations\Validators;
 
-use drupol\phpermutations\Iterators\Combinations as CombinationIt;
-use SportsHelpers\Against\Side;
-use SportsHelpers\Sport\Variant\Single;
-use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsPlanning\Counters\Maps\Schedule\WithNrCounterMap;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
-use SportsPlanning\Place;
-use SportsPlanning\Poule;
 use SportsPlanning\Sport;
 
 class WithValidator extends ValidatorAbstract
@@ -24,12 +17,30 @@ class WithValidator extends ValidatorAbstract
 
     public function __construct()
     {
+        $this->withNrCounterMap = new WithNrCounterMap();
         parent::__construct();
     }
 
     public function balanced(): bool
     {
         return $this->duoPlaceNrCounterMapIsBalanced($this->withNrCounterMap);
+    }
+
+    public function addGame(AgainstGame $game, Sport $sport): void
+    {
+        if ($game->getSport() !== $sport) {
+            return;
+        }
+        $homeAway = $game->createHomeAway();
+        if ($homeAway instanceof OneVsOneHomeAway) {
+            return;
+        }
+        $this->addHomeAway($homeAway);
+    }
+
+    public function addHomeAway(OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway): void
+    {
+        $this->withNrCounterMap->addHomeAway($homeAway);
     }
 
 //    /**

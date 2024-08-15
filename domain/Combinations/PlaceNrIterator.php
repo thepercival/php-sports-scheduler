@@ -5,47 +5,48 @@ declare(strict_types=1);
 namespace SportsScheduler\Combinations;
 
 use Iterator;
+use SportsHelpers\SportRange;
 use SportsPlanning\Place;
 use SportsPlanning\Poule;
 
 /**
- * @implements Iterator<int, Place>
+ * @implements Iterator<int, int|null>
  */
 class PlaceNrIterator implements Iterator
 {
-    private int $current;
+    private int|null $current;
 
-    public function __construct(protected Poule $poule, int $startNr)
+    public function __construct(private readonly SportRange $range)
     {
-        $this->current = $startNr;
+        $this->current = $range->getMin();
     }
 
-    public function current(): Place
-    {
-        return $this->poule->getPlace($this->current);
-    }
-
-    public function next(): void
-    {
-        if ($this->current === $this->poule->getPlaces()->count()) {
-            $this->current = 1;
-        } else {
-            $this->current++;
-        }
-    }
-
-    public function key(): int
+    public function key(): int|null
     {
         return $this->current;
     }
 
+    public function current(): int|null
+    {
+        return $this->current;
+    }
+
+    public function next(): void
+    {
+        if ($this->current === $this->range->getMax()) {
+            $this->current = null;
+        } else if( $this->current !== null ) {
+            $this->current++;
+        }
+    }
+
     public function valid(): bool
     {
-        return true;
+        return $this->current !== null;
     }
 
     public function rewind(): void
     {
-        $this->current = 1;
+        $this->current = $this->range->getMin();
     }
 }

@@ -55,20 +55,5 @@ abstract class ValidatorAbstract
         return $duoPlaceNrCounterMap->calculateReport()->getAmountDifference() === 0;
     }
 
-    public function addGame(AgainstGame $game, Sport $sport): void
-    {
-        if ($game->getSport() !== $sport) {
-            return;
-        }
-        $this->addHomeAway($game->createHomeAway());
-    }
-
-    public function addHomeAway(OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway): void
-    {
-        $this->againstNrCounterMap->add($homeAway);
-        if( $homeAway instanceof OneVsOneHomeAway) {
-            return;
-        }
-        $this->withNrCounterMap->add($homeAway);
-    }
+    abstract public function addGame(AgainstGame $game, Sport $sport): void;
 }
