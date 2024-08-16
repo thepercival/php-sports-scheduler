@@ -508,8 +508,8 @@ class Service
         TogetherGame|AgainstGame $game
     ): bool {
         $poule = $game->getPoule();
-        $nrAvailable = $poule->getPlaces()->count() - $batch->getNrOfPlacesParticipating($poule);
         $selfRefereePlace = 1;
+        $nrAvailable = $poule->getPlaces()->count() - $batch->getNrOfPlacesParticipating($poule, 0);
         return $nrAvailable >= ($this->getSportVariant($game->getSport())->getNrOfGamePlaces() + $selfRefereePlace);
     }
 

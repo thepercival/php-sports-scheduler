@@ -6,17 +6,10 @@ namespace SportsScheduler\GameRoundCreators;
 
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
-use SportsHelpers\Against\Side;
-use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\EquallyAssignCalculator;
-use SportsHelpers\SportRange;
-use SportsPlanning\Combinations\Amount\Range as AmountRange;
-use SportsPlanning\Counters\Maps\PlaceNrCounterMap;
+use SportsPlanning\Combinations\AmountRange;
 use SportsPlanning\Counters\Maps\Schedule\AllScheduleMaps;
-use SportsPlanning\Counters\Maps\Schedule\AmountNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\RangedDuoPlaceNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\RangedPlaceNrCounterMap;
-use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
@@ -26,8 +19,6 @@ use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator as GppH
 use SportsScheduler\Combinations\AgainstStatisticsCalculators\AgainstGppStatisticsCalculator;
 use SportsScheduler\Exceptions\NoSolutionException;
 use SportsScheduler\Exceptions\TimeoutException;
-use SportsPlanning\Counters\CounterForPlaceNr;
-use SportsPlanning\Poule;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
 
 class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract

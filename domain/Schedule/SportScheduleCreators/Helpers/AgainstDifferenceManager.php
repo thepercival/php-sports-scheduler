@@ -10,7 +10,7 @@ use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\EquallyAssignCalculator;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\H2h as AgainstH2hWithNrOfPlaces;
 use SportsPlanning\Combinations\Amount;
-use SportsPlanning\Combinations\Amount\Range as AmountRange;
+use SportsPlanning\Combinations\AmountRange;
 
 class AgainstDifferenceManager
 {

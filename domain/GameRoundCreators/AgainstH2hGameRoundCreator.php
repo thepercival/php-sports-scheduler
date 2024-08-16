@@ -6,8 +6,7 @@ namespace SportsScheduler\GameRoundCreators;
 
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsPlanning\Combinations\Amount\Range as AmountRange;
-use SportsPlanning\Counters\Maps\PlaceNrCounterMap;
+use SportsPlanning\Combinations\AmountRange;
 use SportsPlanning\Counters\Maps\Schedule\RangedPlaceNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;

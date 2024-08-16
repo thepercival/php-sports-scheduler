@@ -16,7 +16,14 @@ class PlaceNrIterator implements Iterator
 {
     private int|null $current;
 
-    public function __construct(private readonly SportRange $range)
+    /**
+     * @param SportRange $range
+     * @param list<int>|null $exceptionPlaceNrs
+     */
+    public function __construct(
+        private readonly SportRange $range,
+        private readonly array|null $exceptionPlaceNrs = null
+    )
     {
         $this->current = $range->getMin();
     }
@@ -37,6 +44,9 @@ class PlaceNrIterator implements Iterator
             $this->current = null;
         } else if( $this->current !== null ) {
             $this->current++;
+            if( $this->exceptionPlaceNrs !== null && in_array($this->current, $this->exceptionPlaceNrs, true)) {
+                $this->next();
+            }
         }
     }
 

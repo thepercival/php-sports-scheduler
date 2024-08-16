@@ -6,7 +6,9 @@ namespace SportsScheduler\Combinations\AgainstStatisticsCalculators;
 
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side;
+use SportsPlanning\Combinations\Amount;
 use SportsPlanning\Combinations\Amount\Calculator;
+use SportsPlanning\Combinations\AmountCalculator;
 use SportsPlanning\Counters\Maps\PlaceNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\RangedDuoPlaceNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\RangedPlaceNrCounterMap;
@@ -54,45 +56,6 @@ abstract class StatisticsCalculatorAbstract
         return new LeastAmountAssigned($leastAmount, $nrOfPlaces);
     }
 
-    protected function getLeastAgainstCombinationAssigned(
-        RangedDuoPlaceNrCounterMap $map,
-        OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway): LeastAmountAssigned
-    {
-        $leastAmount = -1;
-        $nrOfLeastAmount = 0;
-        foreach ($homeAway->createAgainstDuoPlaceNrs() as $againstDuoPlaceNr ) {
-            $amountAssigned = $map->count($againstDuoPlaceNr);
-            if ($leastAmount === -1 || $amountAssigned < $leastAmount) {
-                $leastAmount = $amountAssigned;
-                $nrOfLeastAmount = 1;
-            }
-            if ($amountAssigned === $leastAmount) {
-                $nrOfLeastAmount++;
-            }
-        }
-        return new LeastAmountAssigned($leastAmount, $nrOfLeastAmount);
-    }
-
-    protected function getLeastWithCombinationAssigned(
-        RangedDuoPlaceNrCounterMap $map,
-        OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway): LeastAmountAssigned
-    {
-        $leastAmount = -1;
-        $nrOfSides = 0;
-        foreach ([Side::Home,Side::Away] as $side ) {
-            $sidePlaceCombination = $homeAway->get($side);
-            $amountAssigned = $map->count($sidePlaceCombination);
-            if ($leastAmount === -1 || $amountAssigned < $leastAmount) {
-                $leastAmount = $amountAssigned;
-                $nrOfSides = 0;
-            }
-            if ($amountAssigned === $leastAmount) {
-                $nrOfSides++;
-            }
-        }
-        return new LeastAmountAssigned($leastAmount, $nrOfSides);
-    }
-
     public function outputHomeTotals(string $prefix, bool $withDetails): void
     {
         $header = 'HomeTotals : ';
@@ -102,9 +65,14 @@ abstract class StatisticsCalculatorAbstract
         $rangedHomeCounterReport = $this->rangedHomeNrCounterMap->calculateReport();
         $nrOfPossiblities = $rangedHomeCounterReport->getNOfPossibleCombinations();
         $header .= ', belowMinimum(total) : ' . $rangedHomeCounterReport->getTotalBelowMinimum();
-        $header .= '/' . (new Calculator($nrOfPossiblities, $allowedRange))->maxCountBelowMinimum();
+
+        $amountCalculator = new AmountCalculator($allowedRange);
+        $amountSmaller = $amountCalculator->calculateCumulativeSmallerThanMinAmount( [ 0 => new Amount(0, $nrOfPossiblities ) ] );
+        $header .= '/' . $amountSmaller;
         $header .= ', nrOfPossibilities : ' . $nrOfPossiblities;
         $this->logger->info($prefix . $header);
+
+        $this->logger->info($prefix . 'MOVED TO MAP!!!');
 
         $map = $rangedHomeCounterReport->getAmountMap();
         $mapOutput = $prefix . 'map: ';
@@ -116,18 +84,11 @@ abstract class StatisticsCalculatorAbstract
         if( !$withDetails ) {
             return;
         }
+
+        $this->logger->info($prefix . 'ADD DETAILS HERE!!!');
+
+        // ADD HERE DETAILS
         $prefix =  '    ' . $prefix;
-        $amountPerLine = 4; $counter = 0; $line = '';
-        foreach($this->rangedHomeNrCounterMap->copyPlaceNrCounters() as $placeNrCounter ) {
-            $line .= $placeNrCounter . ', ';
-            if( ++$counter === $amountPerLine ) {
-                $this->logger->info($prefix . $line);
-                $counter = 0;
-                $line = '';
-            }
-        }
-        if( strlen($line) > 0 ) {
-            $this->logger->info($prefix . $line);
-        }
+        // $this->rangedHomeNrCounterMap->output($this->logger, $prefix, $header);
     }
 }

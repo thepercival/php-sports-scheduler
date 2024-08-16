@@ -18,13 +18,20 @@ class DuoPlaceNrIterator implements Iterator
     protected PlaceNrIterator $homePlaceNrIterator;
     protected PlaceNrIterator $awayPlaceNrIterator;
 
-    public function __construct(private readonly SportRange $range)
+    /**
+     * @param SportRange $range
+     * @param list<int>|null $exceptionPlaceNrs
+     */
+    public function __construct(
+        private readonly SportRange $range,
+        array|null $exceptionPlaceNrs = null
+    )
     {
         if( $this->range->difference() < 1) {
             throw new \Exception('range should be at least one');
         }
-        $this->homePlaceNrIterator = new PlaceNrIterator($range);
-        $this->awayPlaceNrIterator = new PlaceNrIterator($range);
+        $this->homePlaceNrIterator = new PlaceNrIterator($range, $exceptionPlaceNrs);
+        $this->awayPlaceNrIterator = new PlaceNrIterator($range, $exceptionPlaceNrs);
     }
 
     public function current(): DuoPlaceNr|null
@@ -63,7 +70,8 @@ class DuoPlaceNrIterator implements Iterator
 
     public function key(): string
     {
-        return '' . $this->current();
+        $current = $this->current();
+        return $current !== null ? (string)$current : '';
     }
 
     public function valid(): bool

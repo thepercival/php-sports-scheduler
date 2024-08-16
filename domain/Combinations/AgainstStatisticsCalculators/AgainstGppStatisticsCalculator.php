@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace SportsScheduler\Combinations\AgainstStatisticsCalculators;
 
 use Psr\Log\LoggerInterface;
-use SportsPlanning\Combinations\Amount\Range as AmountRange;
+use SportsHelpers\Against\Side;
+use SportsPlanning\Combinations\AmountRange;
 use SportsPlanning\Combinations\DuoPlaceNr;
 use SportsPlanning\Counters\Maps\Schedule\RangedDuoPlaceNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\RangedPlaceNrCounterMap;
@@ -117,9 +118,9 @@ class AgainstGppStatisticsCalculator extends StatisticsCalculatorAbstract
                 return false;
             }
             if ($assignedRange->getAmountDifference() === $minimalAllowedDifference ) {
-                $minAssigned = $assignedRange->getMin();
-                $nextAssigned = $this->rangedAmountNrCounterMap->countAmount($minAssigned->amount + 1);
-                if( $minAssigned->count > $nextAssigned ) {
+                $minAssigned = $assignedRange->min;
+                $nextAmountNrOfEntities = $this->rangedAmountNrCounterMap->getNrOfEntitiesForAmount($minAssigned->amount + 1);
+                if( $minAssigned->nrOfEntitiesWithSameAmount > $nextAmountNrOfEntities ) {
                     return false;
                 }
             }
@@ -154,9 +155,9 @@ class AgainstGppStatisticsCalculator extends StatisticsCalculatorAbstract
                 return false;
             }
             if ($assignedRange->getAmountDifference() === $minimalAllowedDifference ) {
-                $minAssigned = $assignedRange->getMin();
-                $nextAssigned = $this->rangedAgainstNrCounterMap->countAmount($minAssigned->amount + 1);
-                if( $minAssigned->count > $nextAssigned ) {
+                $minAssigned = $assignedRange->min;
+                $nextAmountNrOfEntities = $this->rangedAgainstNrCounterMap->getNrOfEntitiesForAmount($minAssigned->amount + 1);
+                if( $minAssigned->nrOfEntitiesWithSameAmount > $nextAmountNrOfEntities ) {
                     return false;
                 }
             }
@@ -193,9 +194,9 @@ class AgainstGppStatisticsCalculator extends StatisticsCalculatorAbstract
                 return false;
             }
             if ($assignedRange->getAmountDifference() === $minimalAllowedDifference ) {
-                $minAssigned = $assignedRange->getMin();
-                $nextAssigned = $this->rangedWithNrCounterMap->countAmount($minAssigned->amount + 1);
-                if( $minAssigned->count > $nextAssigned /* && $minAssigned->count > 10*/ ) {
+                $minAssigned = $assignedRange->min;
+                $nextAmountNrOfEntities = $this->rangedWithNrCounterMap->getNrOfEntitiesForAmount($minAssigned->amount + 1);
+                if( $minAssigned->nrOfEntitiesWithSameAmount > $nextAmountNrOfEntities /* && $minAssigned->count > 10*/ ) {
                     return false;
                 }
             }
@@ -231,7 +232,7 @@ class AgainstGppStatisticsCalculator extends StatisticsCalculatorAbstract
         foreach($homeAways as $homeAway ) {
             $leastAmountAssigned[$homeAway->getIndex()] = $this->getLeastAssigned($this->rangedAmountNrCounterMap, $homeAway);
             $leastAgainstAmountAssigned[$homeAway->getIndex()] = $this->getLeastAgainstCombinationAssigned($this->rangedAgainstNrCounterMap, $homeAway);
-            $leastWithAmountAssigned[$homeAway->getIndex()] = $this->getLeastWithCombinationAssigned($this->rangedWithNrCounterMap, $homeAway);
+            $leastWithAmountAssigned[$homeAway->getIndex()] = $this->getLeastWithDuoPlaceNrAssigned($this->rangedWithNrCounterMap, $homeAway);
             $leastHomeAmountAssigned[$homeAway->getIndex()] = $this->getLeastAssigned($this->rangedHomeNrCounterMap, $homeAway);
         }
         uasort($homeAways, function (
@@ -302,6 +303,50 @@ class AgainstGppStatisticsCalculator extends StatisticsCalculatorAbstract
 //        return $this->assignedSportMap->count($place) >= $this->getMaxNrOfGamesPerPlace();
 //    }
 
+    protected function getLeastAgainstCombinationAssigned(
+        RangedDuoPlaceNrCounterMap $map,
+        OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway): LeastAmountAssigned
+    {
+        $leastAmount = -1;
+        $nrOfLeastAmount = 0;
+        $aAgainstDuoPlaceNrs = $homeAway instanceof OneVsOneHomeAway ? [$homeAway->createAgainstDuoPlaceNr()] : $homeAway->createAgainstDuoPlaceNrs();
+        foreach ($aAgainstDuoPlaceNrs as $againstDuoPlaceNr ) {
+            $amountAssigned = $map->count($againstDuoPlaceNr);
+            if ($leastAmount === -1 || $amountAssigned < $leastAmount) {
+                $leastAmount = $amountAssigned;
+                $nrOfLeastAmount = 1;
+            }
+            if ($amountAssigned === $leastAmount) {
+                $nrOfLeastAmount++;
+            }
+        }
+        return new LeastAmountAssigned($leastAmount, $nrOfLeastAmount);
+    }
+
+    protected function getLeastWithDuoPlaceNrAssigned(
+        RangedDuoPlaceNrCounterMap $map,
+        OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway): LeastAmountAssigned
+    {
+        $leastAmount = -1;
+        $nrOfSides = 0;
+        if( $homeAway instanceof OneVsTwoHomeAway) {
+            $leastAmount = $map->count($homeAway->getWithDuoPlaceNr());
+            $nrOfSides = 1;
+        } else if( $homeAway instanceof TwoVsTwoHomeAway) {
+            foreach ([Side::Home, Side::Away] as $side) {
+                $amountAssigned = $map->count($homeAway->get($side));
+                if ($leastAmount === -1 || $amountAssigned < $leastAmount) {
+                    $leastAmount = $amountAssigned;
+                    $nrOfSides = 0;
+                }
+                if ($amountAssigned === $leastAmount) {
+                    $nrOfSides++;
+                }
+            }
+        }
+        return new LeastAmountAssigned($leastAmount, $nrOfSides);
+    }
+
     private function getMinNrOfGamesPerPlace(): int {
         $totalNrOfGamesPerPlace = $this->againstGppWithNrOfPlaces->getSportVariant()->getNrOfGamesPerPlace();
         return $totalNrOfGamesPerPlace - (!$this->againstGppWithNrOfPlaces->allPlacesSameNrOfGamesAssignable() ? 1 : 0);
@@ -320,18 +365,21 @@ class AgainstGppStatisticsCalculator extends StatisticsCalculatorAbstract
             $homeAways,
             function (OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway) : bool {
                 foreach ($homeAway->convertToPlaceNrs() as $placeNr) {
-                    if( $this->rangedAmountNrCounterMap->count($placeNr) + 1 > $this->rangedAmountNrCounterMap->getAllowedRange()->getMax()->amount ) {
+                    if( $this->rangedAmountNrCounterMap->count($placeNr) + 1 > $this->rangedAmountNrCounterMap->getAllowedRange()->max->amount ) {
                         return false;
                     }
                 }
-                foreach( $homeAway->createAgainstDuoPlaceNrs() as $duoPlaceNr) {
-                    if( $this->rangedAgainstNrCounterMap->count($duoPlaceNr) + 1 > $this->rangedAgainstNrCounterMap->getAllowedRange()->getMax()->amount ) {
+
+                $againstDuoPlaceNrs = ($homeAway instanceof OneVsOneHomeAway) ? [$homeAway->createAgainstDuoPlaceNr()] : $homeAway->createAgainstDuoPlaceNrs();
+                foreach( $againstDuoPlaceNrs as $duoPlaceNr) {
+                    if( $this->rangedAgainstNrCounterMap->count($duoPlaceNr) + 1 > $this->rangedAgainstNrCounterMap->getAllowedRange()->max->amount ) {
                         return false;
                     }
                 }
                 if( !($homeAway instanceof OneVsOneHomeAway) ) {
-                    foreach( $homeAway->createWithDuoPlaceNrs() as $duoPlaceNr) {
-                        if( $this->rangedWithNrCounterMap->count($duoPlaceNr) + 1 > $this->rangedWithNrCounterMap->getAllowedRange()->getMax()->amount ) {
+                    $withDuoPlaceNrs = ($homeAway instanceof OneVsTwoHomeAway) ? [$homeAway->getWithDuoPlaceNr()] : $homeAway->createWithDuoPlaceNrs();
+                    foreach($withDuoPlaceNrs  as $duoPlaceNr) {
+                        if( $this->rangedWithNrCounterMap->count($duoPlaceNr) + 1 > $this->rangedWithNrCounterMap->getAllowedRange()->max->amount ) {
                             return false;
                         }
                     }
@@ -471,17 +519,10 @@ class AgainstGppStatisticsCalculator extends StatisticsCalculatorAbstract
             return;
         }
         $prefix =  '    ' . $prefix;
-        $amountPerLine = 4; $counter = 0; $line = '';
-        foreach( $this->rangedWithNrCounterMap->copyDuoPlaceNrCounters() as $duoPlaceNrCounter ) {
-            $line .= $duoPlaceNrCounter . ', ';
-            if( ++$counter === $amountPerLine ) {
-                $this->logger->info($prefix . $line);
-                $counter = 0;
-                $line = '';
-            }
-        }
-        if( strlen($line) > 0 ) {
-            $this->logger->info($prefix . $line);
-        }
+        $this->logger->info($prefix . 'ADD DETAILS HERE!!!');
+
+        // ADD HERE DETAILS
+        $prefix =  '    ' . $prefix;
+        // $this->rangedWithNrCounterMap->output($this->logger, $prefix, $header);
     }
 }

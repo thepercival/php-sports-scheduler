@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace SportsScheduler\Combinations\HomeAwayGenerators;
 
 use SportsHelpers\SportRange;
+use SportsPlanning\Combinations\DuoPlaceNr;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
+use SportsScheduler\Combinations\DuoPlaceNrIterator;
+use SportsScheduler\Combinations\PlaceNrIterator;
 
 final class H2hHomeAwayGenerator
 {
@@ -18,40 +21,21 @@ final class H2hHomeAwayGenerator
     public function createForOneH2h(int $nrOfPlaces): array
     {
         $homeAways = [];
-
-        /** @var list<int|null> $schedulePlaceNrs */
-        $schedulePlaceNrs = (new SportRange(1, $nrOfPlaces))->toArray();
-
-        if ($nrOfPlaces % 2 !== 0) {
-            $schedulePlaceNrs[] = null;
-        }
-        $away = array_splice($schedulePlaceNrs, (int)(count($schedulePlaceNrs) / 2));
-        $home = $schedulePlaceNrs;
-        for ($gameRoundNr = 0; $gameRoundNr < count($home) + count($away) - 1; $gameRoundNr++) {
-            for ($gameNr = 0; $gameNr < count($home); $gameNr++) {
-                /** @var int|null $homePlaceNr */
-                $homePlaceNr = $home[$gameNr];
-                /** @var int|null $awayPlaceNr */
-                $awayPlaceNr = $away[$gameNr];
-                if ($homePlaceNr === null || $awayPlaceNr === null) {
-                    continue;
-                }
-                $homeAways[] = $this->createHomeAway($homePlaceNr, $awayPlaceNr);
-            }
-            if (count($home) + count($away) - 1 > 2) {
-                $removedSecond = array_splice($home, 1, 1);
-                array_unshift($away, array_shift($removedSecond));
-                $home[] = array_pop($away);
+        $nrOfPlacesRange = new SportRange(1, $nrOfPlaces);
+        $duoPlaceNrIt = new DuoPlaceNrIterator($nrOfPlacesRange);
+        while( $duoPlaceNrIt->valid() ) {
+            $duoPlaceNr = $duoPlaceNrIt->current();
+            if( $duoPlaceNr !== null ) {
+                $homeAways[] = $this->createHomeAway($duoPlaceNr);
             }
         }
-
         return $this->swap($homeAways);
     }
 
-    protected function createHomeAway(int $homePlaceNr, int $awayPlaceNr): OneVsOneHomeAway
+    protected function createHomeAway(DuoPlaceNr $duoePlaceNr): OneVsOneHomeAway
     {
-        $homeAway = new OneVsOneHomeAway($homePlaceNr, $awayPlaceNr);
-        if ($this->shouldSwap($homePlaceNr, $awayPlaceNr)) {
+        $homeAway = new OneVsOneHomeAway($duoePlaceNr);
+        if ($this->shouldSwap($duoePlaceNr->placeNrOne, $duoePlaceNr->placeNrTwo)) {
             return $homeAway->swap();
         }
         return $homeAway;
