@@ -15,7 +15,7 @@ use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
 use SportsPlanning\Schedule\GameRounds\AgainstGameRound;
 use SportsScheduler\Combinations\HomeAwayBalancer;
-use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator as GppHomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator;
 use SportsScheduler\Combinations\AgainstStatisticsCalculators\AgainstGppStatisticsCalculator;
 use SportsScheduler\Exceptions\NoSolutionException;
 use SportsScheduler\Exceptions\TimeoutException;
@@ -35,7 +35,7 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
 
     public function createGameRound(
         AgainstGppWithNrOfPlaces $againstGppWithNrOfPlaces,
-        GppHomeAwayCreator $homeAwayCreator,
+        GppHomeAwayGenerator $homeAwayCreator,
         AllScheduleMaps $allScheduleMaps,
         AmountRange $amountRange,
         AmountRange $againstAmountRange,
@@ -273,12 +273,12 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
     }
 
     /**
-     * @param GppHomeAwayCreator $homeAwayCreator
+     * @param GppHomeAwayGenerator $homeAwayCreator
      * @param AgainstGppWithNrOfPlaces $againstGppWithNrOfPlaces
      * @return list<OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway>
      */
     protected function createHomeAways(
-        GppHomeAwayCreator $homeAwayCreator,
+        GppHomeAwayGenerator $homeAwayCreator,
         AgainstGppWithNrOfPlaces $againstGppWithNrOfPlaces): array
     {
         $totalNrOfGames = $againstGppWithNrOfPlaces->getTotalNrOfGames();

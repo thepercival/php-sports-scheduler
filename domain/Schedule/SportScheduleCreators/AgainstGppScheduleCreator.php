@@ -19,7 +19,7 @@ use SportsPlanning\Schedule\Game;
 use SportsPlanning\Schedule\GamePlace;
 use SportsPlanning\Schedule\GameRounds\AgainstGameRound;
 use SportsPlanning\Schedule\Sport as SportSchedule;
-use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator as GppHomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator;
 use SportsScheduler\GameRoundCreators\AgainstGppGameRoundCreator;
 use SportsScheduler\Schedule\SportScheduleCreators\Helpers\AgainstDifferenceManager;
 use SportsScheduler\Schedule\SportVariantWithNr;
@@ -48,8 +48,8 @@ class AgainstGppScheduleCreator
         int|null                 $nrOfSecondsBeforeTimeout
     ): void
     {
-        $homeAwayCreator = new GppHomeAwayCreator();
         $nrOfPlaces = $schedule->getNrOfPlaces();
+        $homeAwayCreator = new GppHomeAwayGenerator($nrOfPlaces);
         $allScheduleMaps = new AllScheduleMaps($nrOfPlaces);
         $allScheduleMaps->setHomeCounterMap($homeNrCounterMap);
         $allScheduleMaps->setTogetherCounterMap($togetherNrCounterMap);

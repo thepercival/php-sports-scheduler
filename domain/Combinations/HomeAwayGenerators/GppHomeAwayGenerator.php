@@ -25,10 +25,10 @@ final class GppHomeAwayGenerator
     private bool $swap = false;
 
 
-    public function __construct()
+    public function __construct(int $nrOfPlaces)
     {
-        $this->amountNrCounterMapCumulative = new AmountNrCounterMap();
-        $this->homeNrCounterMapCumulative = new SideNrCounterMap(Side::Home);
+        $this->amountNrCounterMapCumulative = new AmountNrCounterMap($nrOfPlaces);
+        $this->homeNrCounterMapCumulative = new SideNrCounterMap(Side::Home, $nrOfPlaces);
     }
 
     /**
