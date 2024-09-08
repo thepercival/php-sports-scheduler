@@ -7,22 +7,21 @@ namespace SportsScheduler\Schedule\SportScheduleCreators;
 use Exception;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side as AgainstSide;
-use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
+use SportsHelpers\SportVariants\AgainstGpp;
 use SportsPlanning\Counters\Maps\Schedule\AllScheduleMaps;
 use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\Schedule;
-use SportsPlanning\Schedule\Game;
-use SportsPlanning\Schedule\GamePlace;
 use SportsPlanning\Schedule\GameRounds\AgainstGameRound;
-use SportsPlanning\Schedule\Sport as SportSchedule;
+use SportsPlanning\Schedule\ScheduleGame;
+use SportsPlanning\Schedule\ScheduleGamePlace;
+use SportsPlanning\Schedule\ScheduleSport;
 use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator;
 use SportsScheduler\GameRoundCreators\AgainstGppGameRoundCreator;
 use SportsScheduler\Schedule\SportScheduleCreators\Helpers\AgainstDifferenceManager;
-use SportsScheduler\Schedule\SportVariantWithNr;
 
 class AgainstGppScheduleCreator
 {
@@ -30,54 +29,42 @@ class AgainstGppScheduleCreator
     {
     }
 
-    /**
-     * @param Schedule $schedule
-     * @param list<SportVariantWithNr> $sportVariantsWithNr
-     * @param SideNrCounterMap $homeNrCounterMap
-     * @param TogetherNrCounterMap $togetherNrCounterMap
-     * @param AgainstDifferenceManager $againstGppDifferenceManager
-     * @param int|null $nrOfSecondsBeforeTimeout
-     * @throws Exception
-     */
-    public function createSportSchedules(
+    public function createGamesForSports(
         Schedule                 $schedule,
-        array                    $sportVariantsWithNr,
-        SideNrCounterMap         $homeNrCounterMap,
-        TogetherNrCounterMap     $togetherNrCounterMap,
-        AgainstDifferenceManager $againstGppDifferenceManager,
-        int|null                 $nrOfSecondsBeforeTimeout
+//        array                    $scheduleSports,
+//        SideNrCounterMap         $homeNrCounterMap,
+        TogetherNrCounterMap     $togetherNrCounterMap // ,
+//        AgainstDifferenceManager $againstGppDifferenceManager,
+//        int|null                 $nrOfSecondsBeforeTimeout
     ): void
     {
         $nrOfPlaces = $schedule->getNrOfPlaces();
-        $homeAwayCreator = new GppHomeAwayGenerator($nrOfPlaces);
+        $homeAwayGenerator = new GppHomeAwayGenerator($nrOfPlaces);
         $allScheduleMaps = new AllScheduleMaps($nrOfPlaces);
-        $allScheduleMaps->setHomeCounterMap($homeNrCounterMap);
         $allScheduleMaps->setTogetherCounterMap($togetherNrCounterMap);
         $allScheduleMaps = clone $allScheduleMaps;
 
-        foreach ($sportVariantsWithNr as $sportVariantWithNr) {
-            $sportNr = $sportVariantWithNr->number;
-            $againstGpp = $sportVariantWithNr->sportVariant;
+        foreach ($schedule->getSportSchedules() as $scheduleSport) {
+            $sportNr = $scheduleSport->getNumber();
+            $againstGpp = $scheduleSport->createVariant();
             if( !($againstGpp instanceof AgainstGpp ) ) {
                 continue;
             }
-            $sportSchedule = new SportSchedule($schedule, $sportNr, $againstGpp->toPersistVariant());
-
             $gameRoundCreator = new AgainstGppGameRoundCreator($this->logger);
-            $gameRound = $gameRoundCreator->createGameRound(
-                new AgainstGppWithNrOfPlaces($nrOfPlaces, $againstGpp),
-                $homeAwayCreator,
-                $allScheduleMaps,
-                $againstGppDifferenceManager->getAmountRange($sportNr),
-                $againstGppDifferenceManager->getAgainstRange($sportNr),
-                $againstGppDifferenceManager->getWithRange($sportNr),
-                $againstGppDifferenceManager->getHomeRange($sportNr),
-                $nrOfSecondsBeforeTimeout
-            );
-
-            $this->createGames($sportSchedule, $gameRound);
-            $allScheduleMaps->addHomeAways($gameRound->getAllHomeAways());
-            $allScheduleMaps = clone $allScheduleMaps;
+//            $gameRound = $gameRoundCreator->createRootAndDescendants(
+//                new AgainstGppWithNrOfPlaces($nrOfPlaces, $againstGpp),
+//                $homeAwayGenerator,
+//                $allScheduleMaps/*,
+//                $againstGppDifferenceManager->getAmountRange($sportNr),
+//                $againstGppDifferenceManager->getAgainstRange($sportNr),
+//                $againstGppDifferenceManager->getWithRange($sportNr),
+//                $againstGppDifferenceManager->getHomeRange($sportNr),
+//                $nrOfSecondsBeforeTimeout*/
+//            );
+//
+//            $this->createGames($scheduleSport, $gameRound);
+//            $allScheduleMaps->addHomeAways($gameRound->getAllHomeAways());
+//            $allScheduleMaps = clone $allScheduleMaps;
         }
     }
 
@@ -94,33 +81,20 @@ class AgainstGppScheduleCreator
 //        return array_merge($sportVariants, $againstGppVariants);
 //    }
 
-    protected function createGames(SportSchedule $sportSchedule, AgainstGameRound $gameRound): void
+    protected function createGames(ScheduleSport $sportSchedule, AgainstGameRound $againstGameRound): void
     {
-        while ($gameRound !== null) {
-            foreach ($gameRound->getHomeAways() as $homeAway) {
-                $game = new Game($sportSchedule, $gameRound->getNumber());
-                if( $homeAway instanceof OneVsOneHomeAway ) {
-                    foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
-                        $gamePlace = new GamePlace($game, $homeAway->get($side));
+        while ($againstGameRound !== null) {
+            foreach ($againstGameRound->getHomeAways() as $homeAway) {
+                $game = new ScheduleGame($sportSchedule);
+                foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
+                    foreach ($homeAway->convertToPlaceNrs($side) as $placeNr) {
+                        $gamePlace = new ScheduleGamePlace($game, $placeNr);
                         $gamePlace->setAgainstSide($side);
-                    }
-                } else if( $homeAway instanceof OneVsTwoHomeAway ) {
-                    $gamePlace = new GamePlace($game, $homeAway->getHome());
-                    $gamePlace->setAgainstSide(AgainstSide::Home);
-                    foreach ($homeAway->getAway()->getPlaceNrs() as $placeNr) {
-                        $gamePlace = new GamePlace($game, $placeNr);
-                        $gamePlace->setAgainstSide(AgainstSide::Away);
-                    }
-                } else { // TwoVsTwoHomeAway
-                    foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
-                        foreach ($homeAway->get($side)->getPlaceNrs() as $placeNr) {
-                            $gamePlace = new GamePlace($game, $placeNr);
-                            $gamePlace->setAgainstSide($side);
-                        }
+                        $gamePlace->setGameRoundNumber($againstGameRound->getNumber());
                     }
                 }
             }
-            $gameRound = $gameRound->getNext();
+            $againstGameRound = $againstGameRound->getNext();
         }
     }
 }

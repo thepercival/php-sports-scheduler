@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Schedule\SportScheduleCreators;
 
-use Exception;
-use SportsHelpers\Sport\Variant\AllInOneGame as AllInOneGameBase;
-use SportsHelpers\Sport\Variant\AllInOneGame as AllInOneGameSportVariant;
 use SportsHelpers\SportRange;
-use SportsPlanning\Schedule\Game as ScheduleGame;
-use SportsPlanning\Schedule\GamePlace as ScheduleGamePlace;
+use SportsHelpers\SportVariants\AllInOneGame;
 use SportsPlanning\Schedule;
 use SportsPlanning\Schedule\GameRounds\TogetherGameRound;
-use SportsPlanning\Schedule\GameRounds\GameRoundTogetherGame;
-use SportsPlanning\Schedule\GameRounds\GameRoundTogetherGamePlace;
-use SportsPlanning\Schedule\Sport as SportSchedule;
-use SportsPlanning\Sport;
-use SportsScheduler\Schedule\SportVariantWithNr;
+use SportsPlanning\Schedule\GameRounds\TogetherGameRoundGamePlace;
+use SportsPlanning\Schedule\ScheduleGame;
+use SportsPlanning\Schedule\ScheduleGamePlace;
+use SportsPlanning\Schedule\ScheduleSport;
 
 class AllInOneGameScheduleCreator
 {
@@ -24,39 +19,32 @@ class AllInOneGameScheduleCreator
     {
     }
 
-    /**
-     * @param Schedule $schedule
-     * @param list<SportVariantWithNr> $allInOneGamesWithNr
-     */
-    public function createSportSchedules(
-        Schedule $schedule,
-        array $allInOneGamesWithNr): void
+    public function createGamesForSports(Schedule $schedule): void
     {
         $nrOfPlaces = $schedule->getNrOfPlaces();
-        foreach ($allInOneGamesWithNr as $allInOneGameWithNr) {
-            $sportVariant = $allInOneGameWithNr->sportVariant;
-            if( !($sportVariant instanceof AllInOneGameBase ) ) {
-                continue;
+        foreach( $schedule->getSportSchedules() as $scheduleSport) {
+            $allInOneGameVariant = $scheduleSport->createVariant();
+            if( !($allInOneGameVariant instanceof AllInOneGame ) ) {
+                return;
             }
-            $sportSchedule = new SportSchedule($schedule, $allInOneGameWithNr->number, $sportVariant->toPersistVariant());
-            $gameRound = $this->generateGameRounds($nrOfPlaces, $sportVariant);
-            $this->createGames($sportSchedule, $gameRound);
+            $gameRound = $this->generateGameRounds($nrOfPlaces, $allInOneGameVariant);
+            $this->createGamesForGameRounds($scheduleSport, $gameRound);
         }
     }
 
-    protected function generateGameRounds(int $nrOfPlaces, AllInOneGameSportVariant $sportVariant): TogetherGameRound
+    protected function generateGameRounds(int $nrOfPlaces, AllInOneGame $allInOneGame): TogetherGameRound
     {
         $gameRound = null;
         /** @var TogetherGameRound|null $previous */
         $previous = null;
-        for ($gameRoundNumber = 1 ; $gameRoundNumber <= $sportVariant->getNrOfGamesPerPlace() ; $gameRoundNumber++) {
-            $gameRound = $previous === null ? new TogetherGameRound() : $previous->createNext();
+        for ($gameRoundNumber = 1 ; $gameRoundNumber <= $allInOneGame->nrOfGamesPerPlace ; $gameRoundNumber++) {
+            $gameRound = $previous === null ? new TogetherGameRound($nrOfPlaces) : $previous->createNext();
 
-            $gamePlaces = array_map(function(int $placeNr) use($gameRoundNumber) : GameRoundTogetherGamePlace {
-                return new GameRoundTogetherGamePlace($gameRoundNumber, $placeNr);
+            $gamePlaces = array_map(function(int $placeNr) use($gameRoundNumber) : TogetherGameRoundGamePlace {
+                return new TogetherGameRoundGamePlace($gameRoundNumber, $placeNr);
             }, (new SportRange(1, $nrOfPlaces))->toArray() );
 
-            new GameRoundTogetherGame($gameRound, $gamePlaces);
+            $gameRound->addGame($gamePlaces);
 
             $previous = $gameRound;
         }
@@ -67,14 +55,14 @@ class AllInOneGameScheduleCreator
         return $gameRound->getFirst();
     }
 
-    protected function createGames(SportSchedule $sportSchedule, TogetherGameRound $gameRound): void
+    protected function createGamesForGameRounds(ScheduleSport $schduleSport, TogetherGameRound $gameRound): void
     {
         while ($gameRound !== null) {
             foreach ($gameRound->getGames() as $gameRoundGame) {
-                $game = new ScheduleGame($sportSchedule);
-                foreach ($gameRoundGame->getGamePlaces() as $gameRoundGamePlace) {
-                    $gamePlace = new ScheduleGamePlace($game, $gameRoundGamePlace->getPlaceNr());
-                    $gamePlace->setGameRoundNumber($gameRoundGamePlace->getGameRoundNumber());
+                $game = new ScheduleGame($schduleSport);
+                foreach ($gameRoundGame->gamePlaces as $gameRoundGamePlace) {
+                    $gamePlace = new ScheduleGamePlace($game, $gameRoundGamePlace->placeNr);
+                    $gamePlace->setGameRoundNumber($gameRoundGamePlace->gameRoundNumber);
                 }
             }
             $gameRound = $gameRound->getNext();

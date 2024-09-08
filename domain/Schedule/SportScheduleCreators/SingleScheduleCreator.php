@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace SportsScheduler\Schedule\SportScheduleCreators;
 
 use Psr\Log\LoggerInterface;
-use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
+use SportsHelpers\SportVariants\Single;
 use SportsPlanning\Counters\Maps\Schedule\AmountNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
 use SportsPlanning\Schedule\GameRounds\TogetherGameRound;
 use SportsPlanning\Schedule;
-use SportsPlanning\Schedule\Game;
-use SportsPlanning\Schedule\GamePlace;
-use SportsPlanning\Schedule\Sport as SportSchedule;
+use SportsPlanning\Schedule\ScheduleGame;
+use SportsPlanning\Schedule\ScheduleGamePlace;
+use SportsPlanning\Schedule\ScheduleSport;
 use SportsScheduler\GameRoundCreators\SingleGameRoundCreator;
-use SportsScheduler\Schedule\SportVariantWithNr;
 
 class SingleScheduleCreator
 {
@@ -24,23 +23,20 @@ class SingleScheduleCreator
 
     /**
      * @param Schedule $schedule
-     * @param list<SportVariantWithNr> $singlesWithNr
      * @return TogetherNrCounterMap
      */
-    public function createSportSchedules(
-        Schedule $schedule,
-        array $singlesWithNr): TogetherNrCounterMap
+    public function createGamesForSports(Schedule $schedule): TogetherNrCounterMap
     {
         $nrOfPlaces = $schedule->getNrOfPlaces();
         $amountNrCounterMap = new AmountNrCounterMap($nrOfPlaces);
         $togetherNrCounterMap = new TogetherNrCounterMap($nrOfPlaces);
-        foreach ($singlesWithNr as $singleWithNr) {
-            $sportVariant = $singleWithNr->sportVariant;
-            if( !($sportVariant instanceof SingleSportVariant ) ) {
+        foreach ($schedule->getSportSchedules() as $scheduleSport) {
+            $singleVariant = $scheduleSport->createVariant();
+            if( !($singleVariant instanceof Single ) ) {
                 continue;
             }
-            $sportSchedule = new SportSchedule($schedule, $singleWithNr->number, $sportVariant->toPersistVariant());
-            $gameRound = $this->generateGameRounds($nrOfPlaces, $sportVariant, $amountNrCounterMap, $togetherNrCounterMap);
+            $sportSchedule = new ScheduleSport($schedule, $scheduleSport->getNumber(), $singleVariant->toPersistVariant());
+            $gameRound = $this->generateGameRounds($nrOfPlaces, $singleVariant, $amountNrCounterMap, $togetherNrCounterMap);
             $this->createGames($sportSchedule, $gameRound);
         }
         return $togetherNrCounterMap;
@@ -48,7 +44,7 @@ class SingleScheduleCreator
 
     protected function generateGameRounds(
         int $nrOfPlaces,
-        SingleSportVariant $sportVariant,
+        Single $sportVariant,
         AmountNrCounterMap $amountNrCounterMap,
         TogetherNrCounterMap $togetherNrCounterMap
     ): TogetherGameRound {
@@ -132,17 +128,17 @@ class SingleScheduleCreator
 //        }
 //    }
 
-    protected function createGames(SportSchedule $sportSchedule, TogetherGameRound $gameRound): void
+    protected function createGames(ScheduleSport $sportSchedule, TogetherGameRound $togetherGameRound): void
     {
-        while ($gameRound !== null) {
-            foreach ($gameRound->getGames() as $gameRoundGame) {
-                $game = new Game($sportSchedule);
-                foreach ($gameRoundGame->getGamePlaces() as $gameRoundGamePlace) {
-                    $gamePlace = new GamePlace($game, $gameRoundGamePlace->getPlaceNr());
-                    $gamePlace->setGameRoundNumber($gameRoundGamePlace->getGameRoundNumber());
+        while ($togetherGameRound !== null) {
+            foreach ($togetherGameRound->getGames() as $togetherGameRoundGame) {
+                $game = new ScheduleGame($sportSchedule);
+                foreach ($togetherGameRoundGame->gamePlaces as $togetherGameRoundGamePlace) {
+                    $gamePlace = new ScheduleGamePlace($game, $togetherGameRoundGamePlace->placeNr);
+                    $gamePlace->setGameRoundNumber($togetherGameRoundGamePlace->gameRoundNumber);
                 }
             }
-            $gameRound = $gameRound->getNext();
+            $togetherGameRound = $togetherGameRound->getNext();
         }
     }
 }

@@ -15,8 +15,8 @@ use SportsPlanning\Poule;
  */
 class DuoPlaceNrIterator implements Iterator
 {
-    protected PlaceNrIterator $homePlaceNrIterator;
-    protected PlaceNrIterator $awayPlaceNrIterator;
+    protected PlaceNrIterator $currentHomePlaceNrIterator;
+    protected PlaceNrIterator $currentAwayPlaceNrIterator;
 
     /**
      * @param SportRange $range
@@ -27,18 +27,26 @@ class DuoPlaceNrIterator implements Iterator
         array|null $exceptionPlaceNrs = null
     )
     {
+        if( $this->range->getMin() < 1) {
+            throw new \Exception('range->minPlaceNr should should be at least 1');
+        }
         if( $this->range->difference() < 1) {
             throw new \Exception('range should be at least one');
         }
-        $this->homePlaceNrIterator = new PlaceNrIterator($range, $exceptionPlaceNrs);
-        $this->awayPlaceNrIterator = new PlaceNrIterator($range, $exceptionPlaceNrs);
+        $this->currentHomePlaceNrIterator = new PlaceNrIterator($range, $exceptionPlaceNrs);
+        $this->currentAwayPlaceNrIterator = new PlaceNrIterator($range, $exceptionPlaceNrs);
+        $this->rewind();
     }
 
     public function current(): DuoPlaceNr|null
     {
-        $homePlaceNr = $this->homePlaceNrIterator->current();
-        $awayPlaceNr = $this->awayPlaceNrIterator->current();
-        if( $homePlaceNr === null || $awayPlaceNr === null) {
+        $homePlaceNr = $this->currentHomePlaceNrIterator->current();
+        $awayPlaceNr = $this->currentAwayPlaceNrIterator->current();
+
+        if( $homePlaceNr === null || $awayPlaceNr === null ) {
+            return null;
+        }
+        if( $homePlaceNr === $this->range->getMax() && $awayPlaceNr === $this->range->getMax() ) {
             return null;
         }
         return new DuoPlaceNr($homePlaceNr, $awayPlaceNr);
@@ -46,25 +54,30 @@ class DuoPlaceNrIterator implements Iterator
 
     public function next(): void
     {
-        $homePlaceNr = $this->homePlaceNrIterator->current();
-        $awayPlaceNr = $this->awayPlaceNrIterator->current();
-        if( $homePlaceNr === null || $awayPlaceNr === null) {
+        $homePlaceNr = $this->currentHomePlaceNrIterator->current();
+        $awayPlaceNr = $this->currentAwayPlaceNrIterator->current();
+        $current = $this->current();
+        if( $current === null ) {
             return;
         }
         if( $awayPlaceNr < $this->range->getMax() ) {
-            $this->awayPlaceNrIterator->next();
+            $this->currentAwayPlaceNrIterator->next();
+            return;
         }
-        else if( $awayPlaceNr === $this->range->getMax() ) {
-            $this->homePlaceNrIterator->next();
-            // set away to home + 1
-            $homePlaceNr = $this->homePlaceNrIterator->current();
-            if( $homePlaceNr !== null) {
-                $awayPlaceNr = $this->awayPlaceNrIterator->current();
-                while ( $awayPlaceNr !== null && $awayPlaceNr <= $homePlaceNr ) {
-                    $this->awayPlaceNrIterator->next();
-                    $awayPlaceNr = $this->awayPlaceNrIterator->current();
-                }
-            }
+        $this->currentHomePlaceNrIterator->next();
+        if( $homePlaceNr === ($this->range->getMax() - 1) ) {
+            return;
+        }
+
+        // set away to home + 1
+        $newHomePlaceNr = $this->currentHomePlaceNrIterator->current();
+        if( $newHomePlaceNr === null ) {
+            return;
+        }
+        $this->currentAwayPlaceNrIterator->rewind();
+        $newAwayPlaceNr = $newHomePlaceNr + 1;
+        while (  $this->currentAwayPlaceNrIterator->current() !== $newAwayPlaceNr ) {
+            $this->currentAwayPlaceNrIterator->next();
         }
     }
 
@@ -81,7 +94,8 @@ class DuoPlaceNrIterator implements Iterator
 
     public function rewind(): void
     {
-        $this->homePlaceNrIterator->rewind();
-        $this->awayPlaceNrIterator->rewind();
+        $this->currentHomePlaceNrIterator->rewind();
+        $this->currentAwayPlaceNrIterator->rewind();
+        $this->currentAwayPlaceNrIterator->next();
     }
 }

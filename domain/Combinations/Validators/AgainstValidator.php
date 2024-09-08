@@ -4,23 +4,20 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Combinations\Validators;
 
-use SportsHelpers\Against\Side;
-use SportsPlanning\Counters\Maps\DuoPlaceNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\AgainstNrCounterMap;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
-use SportsPlanning\Poule;
 use SportsPlanning\Sport;
 
 class AgainstValidator extends ValidatorAbstract
 {
     protected AgainstNrCounterMap $againstNrCounterMap;
 
-    public function __construct()
+    public function __construct(int $nrOfPlaces)
     {
-        $this->againstNrCounterMap = new AgainstNrCounterMap();
+        $this->againstNrCounterMap = new AgainstNrCounterMap($nrOfPlaces);
         parent::__construct();
     }
 

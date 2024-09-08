@@ -8,19 +8,17 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side;
 use SportsHelpers\Against\Side as AgainstSide;
-use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
+use SportsHelpers\SportVariants\AgainstH2h;
 use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
-use SportsPlanning\HomeAways\OneVsOneHomeAway;
-use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\Schedule;
-use SportsPlanning\Schedule\Game;
-use SportsPlanning\Schedule\GamePlace;
 use SportsPlanning\Schedule\GameRounds\AgainstGameRound;
-use SportsPlanning\Schedule\Sport as SportSchedule;
+use SportsPlanning\Schedule\ScheduleGame;
+use SportsPlanning\Schedule\ScheduleGamePlace;
+use SportsPlanning\Schedule\ScheduleSport;
+use SportsPlanning\Schedule\SportVariantWithNr;
 use SportsScheduler\Combinations\HomeAwayGenerators\H2hHomeAwayGenerator;
 use SportsScheduler\GameRoundCreators\AgainstH2hGameRoundCreator;
 use SportsScheduler\Schedule\SportScheduleCreators\Helpers\AgainstDifferenceManager;
-use SportsScheduler\Schedule\SportVariantWithNr;
 
 class AgainstH2hScheduleCreator
 {
@@ -28,61 +26,40 @@ class AgainstH2hScheduleCreator
     {
     }
 
-    /**
-     * @param Schedule $schedule
-     * @param list<SportVariantWithNr> $sportVariantsWithNr
-     * @param AgainstDifferenceManager $againstGppDifferenceManager
-     * @return SideNrCounterMap
-     * @throws Exception
-     */
-    public function createSportSchedules(
-        Schedule $schedule,
-        array $sportVariantsWithNr,
-        AgainstDifferenceManager $againstGppDifferenceManager
-    ): SideNrCounterMap
+    public function createGamesForSport(ScheduleSport $scheduleSport): void
     {
-        $nrOfPlaces = $schedule->getNrOfPlaces();
-        $homeNrCounterMap = new SideNrCounterMap(Side::Home, $nrOfPlaces);
+        $nrOfPlaces = $scheduleSport->getSchedule()->getNrOfPlaces();
         $homeAwayCreator = new H2hHomeAwayGenerator();
-        $sportNr = 1;
-        foreach ($sportVariantsWithNr as $sportVariantWithNr) {
-            $againstH2h = $sportVariantWithNr->sportVariant;
-            if( !($againstH2h instanceof AgainstH2h ) ) {
-                continue;
-            }
-            $sportSchedule = new SportSchedule($schedule, $sportNr, $againstH2h->toPersistVariant());
 
-            $gameRoundCreator = new AgainstH2hGameRoundCreator($this->logger);
-            $gameRound = $gameRoundCreator->createGameRound(
-                $nrOfPlaces,
-                $againstH2h,
-                $homeAwayCreator,
-                $homeNrCounterMap,
-                $againstGppDifferenceManager->getHomeRange($sportNr)
-            );
-
-            $this->createGames($sportSchedule, $gameRound);
+        $againstH2h = $scheduleSport->createVariant();
+        if( !($againstH2h instanceof AgainstH2h ) ) {
+            return;
         }
-        return $homeNrCounterMap;
+
+        $gameRoundCreator = new AgainstH2hGameRoundCreator($this->logger);
+//        $gameRound = $gameRoundCreator->createGameRound(
+//            $nrOfPlaces,
+//            $againstH2h,
+//            $homeAwayCreator
+//        );
+//
+//        $this->createGames($scheduleSport, $gameRound);
     }
 
 //    public function setGamesPerPlaceMargin(int $margin): void {
 //        $this->gamesPerPlaceMargin = $margin;
 //    }
 
-    protected function createGames(SportSchedule $sportSchedule, AgainstGameRound $gameRound): void
+    protected function createGames(ScheduleSport $scheduleSport, AgainstGameRound $gameRound): void
     {
         while ($gameRound !== null) {
             foreach ($gameRound->getHomeAways() as $homeAway) {
-
-                if( $homeAway instanceof OneVsOneHomeAway ) {
-                    $game = new Game($sportSchedule, $gameRound->getNumber());
-                    foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
-                        $gamePlace = new GamePlace($game, $homeAway->get($side));
+                $game = new ScheduleGame($scheduleSport, $gameRound->getNumber());
+                foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
+                    foreach( $homeAway->convertToPlaceNrs($side) as $sidePlaceNr ) {
+                        $gamePlace = new ScheduleGamePlace($game, $sidePlaceNr);
                         $gamePlace->setAgainstSide($side);
                     }
-                } else {
-                    throw new \Exception('h2h can only be 1vs1');
                 }
             }
             $gameRound = $gameRound->getNext();

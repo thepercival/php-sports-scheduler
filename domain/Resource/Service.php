@@ -5,9 +5,10 @@ namespace SportsScheduler\Resource;
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\SelfReferee;
-use SportsHelpers\Sport\Variant\Against as AgainstSportVariant;
-use SportsHelpers\Sport\Variant\AllInOneGame as AllInOneGameSportVariant;
-use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
+use SportsHelpers\SportVariants\AgainstGpp;
+use SportsHelpers\SportVariants\AgainstH2h;
+use SportsHelpers\SportVariants\AllInOneGame;
+use SportsHelpers\SportVariants\Single;
 use SportsPlanning\Batch;
 use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeOtherPouleBatch;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeSamePouleBatch;
@@ -42,7 +43,7 @@ class Service
     protected TimeoutConfig $timeoutConfig;
     protected int $debugCounter = 0;
     /**
-     * @var array<int, AgainstSportVariant|SingleSportVariant>
+     * @var array<int, AgainstH2h|AgainstGpp|Single>
      */
     protected array $sportVariantMap;
     protected Helper $helper;
@@ -528,14 +529,14 @@ class Service
         $this->sportVariantMap = [];
         foreach ($input->getSports() as $sport) {
             $variant = $sport->createVariant();
-            if ($variant instanceof AllInOneGameSportVariant) {
+            if ($variant instanceof AllInOneGame) {
                 continue;
             }
             $this->sportVariantMap[$sport->getNumber()] = $variant;
         }
     }
 
-    public function getSportVariant(Sport $sport): AgainstSportVariant|SingleSportVariant
+    public function getSportVariant(Sport $sport): AgainstH2h|AgainstGpp|Single
     {
         return $this->sportVariantMap[$sport->getNumber()];
     }

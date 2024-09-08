@@ -6,7 +6,8 @@ namespace SportsScheduler\Game;
 
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side as AgainstSide;
-use SportsHelpers\Sport\Variant\Against as AgainstSportVariant;
+use SportsHelpers\SportVariants\AgainstGpp;
+use SportsHelpers\SportVariants\AgainstH2h;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Game\Place\Against as AgainstGamePlace;
 use SportsPlanning\Game\Place\Together as TogetherGamePlace;
@@ -15,7 +16,7 @@ use SportsPlanning\Place;
 use SportsPlanning\Planning;
 use SportsPlanning\Poule;
 use SportsPlanning\Schedule;
-use SportsPlanning\Schedule\Sport as SportSchedule;
+use SportsPlanning\Schedule\ScheduleSport;
 use SportsPlanning\Sport;
 
 class Creator
@@ -32,7 +33,7 @@ class Creator
     {
         foreach ($planning->getInput()->getPoules() as $poule) {
             foreach ($planning->getInput()->getSports() as $sport) {
-                $sportSchedule = $this->getSportSchedule($schedules, $poule, $sport);
+                $sportSchedule = $this->getScheduleSport($schedules, $poule, $sport);
                 $this->createSportGames($planning, $poule, $sport, $sportSchedule);
             }
         }
@@ -42,9 +43,9 @@ class Creator
      * @param list<Schedule> $schedules
      * @param Poule $poule
      * @param Sport $sport
-     * @return SportSchedule
+     * @return ScheduleSport
      */
-    protected function getSportSchedule(array $schedules, Poule $poule, Sport $sport): SportSchedule
+    protected function getScheduleSport(array $schedules, Poule $poule, Sport $sport): ScheduleSport
     {
         $nrOfPlaces = $poule->getPlaces()->count();
         foreach ($schedules as $schedule) {
@@ -64,26 +65,26 @@ class Creator
         Planning $planning,
         Poule $poule,
         Sport $sport,
-        SportSchedule $sportSchedule
+        ScheduleSport $sportSchedule
     ): void {
         $sportVariant = $sport->createVariant();
         $defaultField = $sport->getField(1);
-        foreach ($sportSchedule->getGames() as $gameRoundGame) {
-            if ($sportVariant instanceof AgainstSportVariant) {
-                $game = new AgainstGame($planning, $poule, $defaultField, $gameRoundGame->getGameRoundNumber());
+        foreach ($sportSchedule->getGames() as $scheduleGame) {
+            if ($sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
+                $game = new AgainstGame($planning, $poule, $defaultField, $scheduleGame->getGameRoundNumber());
                 foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
                     $sidePlaces = array_map( function(int $placeNr) use($poule): Place {
                         return $poule->getPlace($placeNr);
-                    }, $gameRoundGame->getSidePlaceNrs($side) );
+                    }, $scheduleGame->getSidePlaceNrs($side) );
                     foreach ($sidePlaces as $place) {
                         new AgainstGamePlace($game, $place, $side);
                     }
                 }
             } else {
                 $game = new TogetherGame($planning, $poule, $defaultField);
-                foreach ($gameRoundGame->getGamePlaces() as $gameRoundGamePlace) {
-                    $place = $poule->getPlace($gameRoundGamePlace->getNumber());
-                    new TogetherGamePlace($game, $place, $gameRoundGamePlace->getGameRoundNumber());
+                foreach ($scheduleGame->getGamePlaces() as $scheduleGamePlace) {
+                    $place = $poule->getPlace($scheduleGamePlace->getPlaceNr());
+                    new TogetherGamePlace($game, $place, $scheduleGamePlace->getGameRoundNumber());
                 }
             }
         }

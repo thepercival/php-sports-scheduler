@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace SportsScheduler\Combinations\HomeAwayGenerators;
 
 use SportsHelpers\Against\Side;
-use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
 use SportsHelpers\SportRange;
+use SportsHelpers\SportVariants\AgainstGpp;
 use SportsPlanning\Combinations\DuoPlaceNr;
 use SportsPlanning\Counters\Maps\Schedule\AmountNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
@@ -39,11 +39,11 @@ final class GppHomeAwayGenerator
     {
         $againstGpp = $againstGppWithNrOfPlaces->getSportVariant();
 
-        if( $againstGpp->getNrOfHomePlaces() === 1 && $againstGpp->getNrOfAwayPlaces() === 1) {
+        if( $againstGpp->nrOfHomePlaces === 1 && $againstGpp->nrOfAwayPlaces === 1) {
             return $this->createOneVsOne($againstGppWithNrOfPlaces);
-        } else if( $againstGpp->getNrOfHomePlaces() === 1 && $againstGpp->getNrOfAwayPlaces() === 2) {
+        } else if( $againstGpp->nrOfHomePlaces === 1 && $againstGpp->nrOfAwayPlaces === 2) {
             return $this->createOneVsTwo($againstGppWithNrOfPlaces);
-        } else if( $againstGpp->getNrOfHomePlaces() === 2 && $againstGpp->getNrOfAwayPlaces() === 2) {
+        } else if( $againstGpp->nrOfHomePlaces === 2 && $againstGpp->nrOfAwayPlaces === 2) {
             return $this->createTwoVsTwo($againstGppWithNrOfPlaces);
         }
         throw new \Exception('invalid nrOfHomePlace-nrOfAwayPlaces');
@@ -62,7 +62,7 @@ final class GppHomeAwayGenerator
         $duoPlaceNrIt = new DuoPlaceNrIterator($sportRange);
         while( $duoPlaceNr = $duoPlaceNrIt->current()) {
 
-            $homeAway = new OneVsOneHomeAway($duoPlaceNr);
+            $homeAway = new OneVsOneHomeAway($duoPlaceNr->placeNrOne, $duoPlaceNr->placeNrOne);
             if ($this->shouldSwapOneVsOne($againstGpp, $homeAway)) {
                 $homeAway = $homeAway->swap();
             }
@@ -142,7 +142,7 @@ final class GppHomeAwayGenerator
 
     protected function shouldSwapOneVsOne(AgainstGpp $againstGpp, OneVsOneHomeAway $homeAway): bool
     {
-        if ($againstGpp->getNrOfHomePlaces() === 1) {
+        if ($againstGpp->nrOfHomePlaces === 1) {
             return $this->arePlaceNumbersEqualOrUnequal($homeAway);
         }
         if ($this->mustBeHome($againstGpp, $homeAway->getHome())) {
@@ -200,7 +200,7 @@ final class GppHomeAwayGenerator
         foreach ($placeNrs as $placeNr) {
             $nrOfGames = $this->amountNrCounterMapCumulative->count($placeNr);
             $nrOfHomeGames = $this->homeNrCounterMapCumulative->count($placeNr);
-            $nrOfGamesLeft = $againstGpp->getNrOfGamesPerPlace() - $nrOfGames;
+            $nrOfGamesLeft = $againstGpp->nrOfGamesPerPlace - $nrOfGames;
             if ($nrOfGamesLeft === ($minNrOfHomeGamesPerPlace - $nrOfHomeGames)) {
                 return true;
             }
@@ -232,7 +232,7 @@ final class GppHomeAwayGenerator
 
     private function getMinNrOfHomeGamesPerPlace(AgainstGpp $againstGpp): int
     {
-        return (int)floor($againstGpp->getNrOfGamesPerPlace() / 2);
+        return (int)floor($againstGpp->nrOfGamesPerPlace / 2);
     }
 
     /**

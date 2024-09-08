@@ -4,19 +4,11 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Combinations\Validators;
 
-use SportsHelpers\Against\Side as AgainstSide;
-use SportsHelpers\Sport\Variant\Against as AgainstVariant;
-use SportsPlanning\Counters\CounterForPlaceNr;
-use SportsPlanning\Counters\Maps\DuoPlaceNrCounterMap;
-use SportsPlanning\Counters\Maps\PlaceNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\AgainstNrCounterMap;
+use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\WithNrCounterMap;
+use SportsPlanning\Counters\Reports\DuoPlaceNrCountersPerAmountReport;
 use SportsPlanning\Game\Against as AgainstGame;
-use SportsPlanning\Game\Place\Against as AgainstGamePlace;
-use SportsPlanning\HomeAways\OneVsOneHomeAway;
-use SportsPlanning\HomeAways\OneVsTwoHomeAway;
-use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
-use SportsPlanning\Place;
 use SportsPlanning\Planning;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
@@ -50,9 +42,10 @@ abstract class ValidatorAbstract
         }
     }
 
-    protected function duoPlaceNrCounterMapIsBalanced(DuoPlaceNrCounterMap $duoPlaceNrCounterMap): bool
+    protected function duoPlaceNrCounterMapIsBalanced(AgainstNrCounterMap|TogetherNrCounterMap|WithNrCounterMap $duoPlaceNrCounterMap): bool
     {
-        return $duoPlaceNrCounterMap->calculateReport()->getAmountDifference() === 0;
+        $report = new DuoPlaceNrCountersPerAmountReport($duoPlaceNrCounterMap);
+        return $report->range->getAmountDifference() === 0;
     }
 
     abstract public function addGame(AgainstGame $game, Sport $sport): void;

@@ -15,9 +15,9 @@ class WithValidator extends ValidatorAbstract
 {
     protected WithNrCounterMap $withNrCounterMap;
 
-    public function __construct()
+    public function __construct(int $nrOfPlaces)
     {
-        $this->withNrCounterMap = new WithNrCounterMap();
+        $this->withNrCounterMap = new WithNrCounterMap($nrOfPlaces);
         parent::__construct();
     }
 

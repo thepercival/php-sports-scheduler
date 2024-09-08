@@ -6,18 +6,19 @@ namespace SportsScheduler\Schedule;
 
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side;
+use SportsHelpers\GameMode;
 use SportsHelpers\PouleStructure;
-use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsHelpers\Sport\Variant\AllInOneGame;
-use SportsHelpers\Sport\Variant\Single;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
+use SportsHelpers\SportVariants\AgainstGpp;
+use SportsHelpers\SportVariants\AgainstH2h;
+use SportsHelpers\SportVariants\AllInOneGame;
+use SportsHelpers\SportVariants\Single;
 use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
 use SportsPlanning\Input;
 use SportsPlanning\Poule;
 use SportsPlanning\Schedule;
-use SportsPlanning\Schedule\Name as ScheduleName;
-use SportsPlanning\Schedule\Sport as SportSchedule;
+use SportsPlanning\Schedule\ScheduleSport;
+use SportsPlanning\Schedule\SportVariantWithNr;
 use SportsPlanning\Sport;
 use SportsScheduler\Schedule\SportScheduleCreators\AgainstGppScheduleCreator;
 use SportsScheduler\Schedule\SportScheduleCreators\AgainstH2hScheduleCreator;
@@ -95,124 +96,151 @@ class Creator
             function(SportVariantWithNr $sportVariantsWithNr): Single|AgainstH2h|AgainstGpp|AllInOneGame {
                 return $sportVariantsWithNr->sportVariant;
             }, $sportVariantsWithNr );
-        $sportConfigsName = new ScheduleName($sportVariants);
         foreach ($distinctPoules as $poule) {
             $nrOfPlaces = count($poule->getPlaces());
+            if (array_key_exists($nrOfPlaces, $schedules)) {
+                continue;
+            }
+            if ($this->isScheduleAlreadyCreated($nrOfPlaces, $sportVariantsWithNr)) {
+                continue;
+            }
+            $schedule = new Schedule($nrOfPlaces, $sportVariantsWithNr);
             $pouleStructureBase = new PouleStructure($nrOfPlaces);
             if( $pouleStructureBase->getTotalNrOfGames($sportVariants) > self::MaxNrOfGames ) {
                 throw new \Exception('the maximum number of games is ' . self::MaxNrOfGames );
             }
-            if ($this->isScheduleAlreadyCreated($nrOfPlaces, (string)$sportConfigsName)) {
-                continue;
-            }
-            if (array_key_exists($nrOfPlaces, $schedules)) {
-                continue;
-            }
-            $schedule = new Schedule($nrOfPlaces, $sportVariants);
-            $schedules[$nrOfPlaces] = $schedule;
 
-            $allInOneGameSportVariantsWithNr = $this->getAllInOneGameSportVariantsWithNr($sportVariantsWithNr);
-            (new AllInOneGameScheduleCreator())->createSportSchedules($schedule, $allInOneGameSportVariantsWithNr);
 
-            $singleSportVariantsWithNr = $this->convertToSingleSportVariantsWithNr($sportVariantsWithNr);
+            (new AllInOneGameScheduleCreator())->createGamesForSports($schedule);
+
             $singleHelper = new SingleCreatorHelper($this->logger);
-            $togetherCounterMap = $singleHelper->createSportSchedules($schedule, $singleSportVariantsWithNr);
+            $togetherCounterMap = $singleHelper->createGamesForSports($schedule);
 
-            $againstVariantsWithNr = $this->convertToAgainstSportVariantsWithNr($sportVariantsWithNr, $nrOfPlaces);
-            $againstVariantMap = $this->convertToAgainstVariantMap($againstVariantsWithNr);
-            if( count($againstVariantMap) === 0) {
-                continue;
-            }
-            $differenceManager = new AgainstDifferenceManager(
-                count($poule->getPlaces()),
-                $againstVariantMap,
-                $allowedGppMargin,
-                $this->logger);
+            $scheduleSportH2h = $this->filterH2hSport($schedule);
 
-            $againstH2hsWithNr = $this->convertToAgainstH2hSportVariantsWithNr($sportVariantsWithNr);
-
-            $homeNrCounterMap = new SideNrCounterMap(Side::Home, $nrOfPlaces);
-            if( count($againstH2hsWithNr) > 0 ) {
+            if( $scheduleSportH2h !== null) {
                 $againstH2hScheduleCreator = new AgainstH2hScheduleCreator($this->logger);
-                $homeNrCounterMap = $againstH2hScheduleCreator->createSportSchedules(
-                    $schedule,
-                    $againstH2hsWithNr,
-                    $differenceManager);
-            }
-            $againstGppsWithNr = $this->convertToAgainstGppSportVariantsWithNr($sportVariantsWithNr, $nrOfPlaces);
-            if( count($againstGppsWithNr) > 0) {
+                $againstH2hScheduleCreator->createGamesForSport($scheduleSportH2h);
+            } else if ( count($this->filterGppSports($schedule)) > 0) {
                 $againstGppScheduleCreator = new AgainstGppScheduleCreator($this->logger);
-                $againstGppScheduleCreator->createSportSchedules(
-                    $schedule,
-                    $againstGppsWithNr,
-                    $homeNrCounterMap,
-                    $togetherCounterMap,
-                    $differenceManager,
-                    $nrOfSecondsBeforeTimeout);
+                $againstGppScheduleCreator->createGamesForSports($schedule, $togetherCounterMap);
             }
+
+//            $againstVariantsWithNr = $this->convertToAgainstSportVariantsWithNr($sportVariantsWithNr, $nrOfPlaces);
+//            $againstVariantMap = $this->convertToAgainstVariantMap($againstVariantsWithNr);
+//            if( count($againstVariantMap) > 0) {
+//                $differenceManager = new AgainstDifferenceManager(
+//                    count($poule->getPlaces()),
+//                    $againstVariantMap,
+//                    $allowedGppMargin,
+//                    $this->logger);
+//
+//                $againstH2hsWithNr = $this->convertToAgainstH2hSportVariantsWithNr($sportVariantsWithNr);
+//                $againstGppsWithNr = $this->convertToAgainstGppSportVariantsWithNr($sportVariantsWithNr, $nrOfPlaces);
+//
+//                $homeNrCounterMap = new SideNrCounterMap(Side::Home, $nrOfPlaces);
+//                if( $h2hScheduleSport !== null ) {
+//
+//                } else if( count($againstGppsWithNr) > 0) {
+//                    $againstGppScheduleCreator = new AgainstGppScheduleCreator($this->logger);
+//                    $againstGppScheduleCreator->createSportSchedules(
+//                        $schedule,
+//                        $againstGppsWithNr,
+//                        $homeNrCounterMap,
+//                        $togetherCounterMap,
+//                        $differenceManager,
+//                        $nrOfSecondsBeforeTimeout);
+//                }
+//            }
+
+            $schedules[$nrOfPlaces] = $schedule;
         }
         return array_values($schedules);
     }
 
 
+    private function filterH2hSport(Schedule $schedule): ScheduleSport|null {
+        $filtered = array_filter($schedule->getSportSchedules()->toArray(), function(ScheduleSport $scheduleSport): bool {
+            return $scheduleSport->getGameMode() === GameMode::Against && $scheduleSport->getNrOfH2h() > 0;
+        } );
+        $filteredOne = reset($filtered);
+        return $filteredOne === false ? null : $filteredOne;
+    }
 
-    public function createBetterSchedule(
-        Schedule $schedule,
-        int $allowedGppMargin,
-        int $nrOfSecondsBeforeTimeout): Schedule
-    {
-        $nrOfPlaces = $schedule->getNrOfPlaces();
-        $sportVariants = $schedule->createSportVariants();
-        $oldSportSchedules = array_values($schedule->getSportSchedules()->toArray());
-        $sportVariantsWithNr = $this->createSportVariantsWithNr($oldSportSchedules);
-        $newSchedule = new Schedule($nrOfPlaces, $sportVariants);
+    /**
+     * @param Schedule $schedule
+     * @return list<ScheduleSport>
+     */
+    private function filterGppSports(Schedule $schedule): array {
+        $scheduleSports = array_values( $schedule->getSportSchedules()->toArray() );
+        return array_values( array_filter($scheduleSports, function(ScheduleSport $scheduleSport): bool {
+            return $scheduleSport->getGameMode() === GameMode::Against && $scheduleSport->getNrOfGamesPerPlace() > 0;
+        } ) );
+    }
 
-        // AllInOneGame
-        {
-            $allInOneGameSportVariantMap = $this->getAllInOneGameSportVariantsWithNr($sportVariantsWithNr);
-            (new AllInOneGameScheduleCreator())->createSportSchedules($newSchedule, $allInOneGameSportVariantMap);
-        }
+//    public function createBetterSchedule(
+//        Schedule $schedule,
+//        int $allowedGppMargin,
+//        int $nrOfSecondsBeforeTimeout): Schedule
+//    {
+//        $nrOfPlaces = $schedule->getNrOfPlaces();
+//        $sportVariants = $schedule->createSportVariants();
+//        $oldSportSchedules = array_values($schedule->getSportSchedules()->toArray());
+//        $sportVariantsWithNr = $this->createSportVariantsWithNr($oldSportSchedules);
+//        $newSchedule = new Schedule($nrOfPlaces, $sportVariantsWithNr);
+//
+//        // AllInOneGame
+//        (new AllInOneGameScheduleCreator())->createGamesForSports($newSchedule);
+//
+//        $singleHelper = new SingleCreatorHelper($this->logger);
+//        $togetherCounterMap = $singleHelper->createGamesForSports($newSchedule);
+//
+//        $scheduleSportH2h = $this->filterH2hSport($schedule);
+//
+//        if( $scheduleSportH2h !== null) {
+//            $againstH2hScheduleCreator = new AgainstH2hScheduleCreator($this->logger);
+//            $againstH2hScheduleCreator->createGamesForSport($scheduleSportH2h);
+//        } else if ( count($this->filterGppSports($newSchedule)) > 0) {
+//            $againstGppScheduleCreator = new AgainstGppScheduleCreator($this->logger);
+//            $againstGppScheduleCreator->createGamesForSports($newSchedule, $togetherCounterMap);
+//        }
 
-        // Single
-        $singleSportVariantsWithNr = $this->convertToSingleSportVariantsWithNr($sportVariantsWithNr);
-        $singleHelper = new SingleCreatorHelper($this->logger);
-        $togetherCounterMap = $singleHelper->createSportSchedules($newSchedule, $singleSportVariantsWithNr);
 
 //        $assignedCounter = new AssignedCounter($newPoule, $sportVariants);
 //        $assignedCounter = $assignedCounter->addWithMap($withMap);
 
         // AgainstH2h|AgainstGpp
-        {
-            $againstVariantsWithNr = $this->convertToAgainstSportVariantsWithNr($sportVariantsWithNr, $nrOfPlaces);
-            $againstVariantMap = $this->convertToAgainstVariantMap($againstVariantsWithNr);
-            if( count($againstVariantMap) > 0) {
-
-                $differenceManager = new AgainstDifferenceManager($nrOfPlaces, $againstVariantMap, $allowedGppMargin, $this->logger);
-
-                $homeCounterMap = new SideNrCounterMap(Side::Home, $nrOfPlaces);
-                $againstH2hsWithNr = $this->convertToAgainstH2hSportVariantsWithNr($againstVariantsWithNr);
-                if( count($againstH2hsWithNr) > 0 ) {
-                    // @TODO CDK Against    => NVP
-                    // @TODO CDK With       => Deze vullen voor together
-                    // @TODO CDK Home       => NVP
-                    // Pas counter toe als voor de sport het item op ongelijk uitkomt
-                    $againstH2hScheduleCreator = new AgainstH2hScheduleCreator($this->logger);
-                    $homeCounterMap = $againstH2hScheduleCreator->createSportSchedules(
-                        $newSchedule, $againstH2hsWithNr, $differenceManager);
-                }
-                $againstGppsWithNr = $this->convertToAgainstGppSportVariantsWithNr($againstVariantsWithNr, $schedule->getNrOfPlaces());
-                if( count($againstGppsWithNr) > 0 ) {
-                    $againstGppScheduleCreator = new AgainstGppScheduleCreator($this->logger);
-                    $againstGppScheduleCreator->createSportSchedules(
-                        $newSchedule, $againstGppsWithNr,
-                        $homeCounterMap, $togetherCounterMap,
-                        $differenceManager, $nrOfSecondsBeforeTimeout);
-                }
-            }
-        }
-
-        return $newSchedule;
-    }
+//        {
+//            $againstVariantsWithNr = $this->convertToAgainstSportVariantsWithNr($sportVariantsWithNr, $nrOfPlaces);
+//            $againstVariantMap = $this->convertToAgainstVariantMap($againstVariantsWithNr);
+//            if( count($againstVariantMap) > 0) {
+//
+//                $differenceManager = new AgainstDifferenceManager($nrOfPlaces, $againstVariantMap, $allowedGppMargin, $this->logger);
+//
+//                $homeCounterMap = new SideNrCounterMap(Side::Home, $nrOfPlaces);
+//                $againstH2hsWithNr = $this->convertToAgainstH2hSportVariantsWithNr($againstVariantsWithNr);
+//                if( count($againstH2hsWithNr) > 0 ) {
+//                    // @TODO CDK Against    => NVP
+//                    // @TODO CDK With       => Deze vullen voor together
+//                    // @TODO CDK Home       => NVP
+//                    // Pas counter toe als voor de sport het item op ongelijk uitkomt
+//                    $againstH2hScheduleCreator = new AgainstH2hScheduleCreator($this->logger);
+//                    $homeCounterMap = $againstH2hScheduleCreator->createSportSchedules(
+//                        $newSchedule, $againstH2hsWithNr, $differenceManager);
+//                }
+//                $againstGppsWithNr = $this->convertToAgainstGppSportVariantsWithNr($againstVariantsWithNr, $schedule->getNrOfPlaces());
+//                if( count($againstGppsWithNr) > 0 ) {
+//                    $againstGppScheduleCreator = new AgainstGppScheduleCreator($this->logger);
+//                    $againstGppScheduleCreator->createSportSchedules(
+//                        $newSchedule, $againstGppsWithNr,
+//                        $homeCounterMap, $togetherCounterMap,
+//                        $differenceManager, $nrOfSecondsBeforeTimeout);
+//                }
+//            }
+//        }
+//
+//        return $newSchedule;
+//    }
 
     /**
      * @param list<SportVariantWithNr> $sportVariantsWithNr
@@ -331,14 +359,18 @@ class Creator
         $this->existingSchedules = $existingSchedules;
     }
 
-    public function isScheduleAlreadyCreated(int $nrOfPlaces, string $sportConfigsName): bool
+    /**
+     * @param int $nrOfPlaces
+     * @param list<SportVariantWithNr> $sportVariantsWithNr
+     * @return bool
+     */
+    public function isScheduleAlreadyCreated(int $nrOfPlaces, array $sportVariantsWithNr): bool
     {
         if ($this->existingSchedules === null) {
             return false;
         }
         foreach ($this->existingSchedules as $existingSchedule) {
-            if ($nrOfPlaces === $existingSchedule->getNrOfPlaces()
-                && $sportConfigsName === $existingSchedule->getSportsConfigName()) {
+            if ((new Schedule($nrOfPlaces, $sportVariantsWithNr))->toJsonCustom() === $existingSchedule->toJsonCustom()) {
                 return true;
             }
         }
@@ -346,11 +378,11 @@ class Creator
     }
 
     /**
-     * @param list<SportSchedule|Sport> $sportSchedules
+     * @param list<ScheduleSport|Sport> $sportSchedules
      * @return list<SportVariantWithNr>
      */
     private function createSportVariantsWithNr( array $sportSchedules ): array {
-        return array_map(function(SportSchedule|Sport $sportSchedule): SportVariantWithNr {
+        return array_map(function(ScheduleSport|Sport $sportSchedule): SportVariantWithNr {
             return new SportVariantWithNr($sportSchedule->getNumber(), $sportSchedule->createVariant() );
             }
         , $sportSchedules);

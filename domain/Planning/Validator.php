@@ -6,10 +6,10 @@ namespace SportsScheduler\Planning;
 
 use SportsHelpers\Against\Side as AgainstSide;
 use SportsHelpers\SelfReferee;
-use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsHelpers\Sport\Variant\AllInOneGame;
 use SportsHelpers\Sport\Variant\Creator as VariantCreator;
+use SportsHelpers\SportVariants\AgainstGpp;
+use SportsHelpers\SportVariants\AgainstH2h;
+use SportsHelpers\SportVariants\AllInOneGame;
 use SportsPlanning\Planning\Validity as PlanningValidity;
 use SportsScheduler\Combinations\Validators\AgainstValidator;
 use SportsScheduler\Combinations\Validators\WithValidator;
@@ -219,14 +219,14 @@ class Validator
             // if ($againstWithPoule instanceof AgainstH2hWithPoule || $againstWithPoule->allPlacesSameNrOfGamesAssignable()) {
                 if (// $sportVariant->hasMultipleSidePlaces() &&
                     ($againstWithNrOfPlaces instanceof AgainstH2hWithNrOfPlaces || $againstWithNrOfPlaces->allWithSameNrOfGamesAssignable())) {
-                    $withValidator = new WithValidator();
+                    $withValidator = new WithValidator($nrOfPlaces);
                     $withValidator->addGames($planning, $poule, $sport);
                     if (!$withValidator->balanced()) {
                         return PlanningValidity::UNEQUAL_GAME_WITH;
                     }
                 }
                 if ($againstWithNrOfPlaces instanceof AgainstH2hWithNrOfPlaces || $againstWithNrOfPlaces->allAgainstSameNrOfGamesAssignable()) {
-                    $againstValidator = new AgainstValidator();
+                    $againstValidator = new AgainstValidator($nrOfPlaces);
                     $againstValidator->addGames($planning, $poule, $sport);
                     if (!$againstValidator->balanced()) {
                         return PlanningValidity::UNEQUAL_GAME_AGAINST;
@@ -239,8 +239,8 @@ class Validator
             return $game->getSport() === $sport;
         });
         foreach ($sportGames as $game) {
-            $sportVariant = $game->createVariant();
-            if ($sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
+            $againstVariant = $game->createVariant();
+            if ($againstVariant instanceof AgainstH2h || $againstVariant instanceof AgainstGpp) {
                 if (!$game instanceof AgainstGame) {
                     return PlanningValidity::UNEQUAL_GAME_HOME_AWAY;
                 }
@@ -251,18 +251,16 @@ class Validator
                 if ($nrOfHomePlaces === 0 || $nrOfAwayPlaces === 0) {
                     return PlanningValidity::EMPTY_PLACE;
                 }
-                if ($sportVariant->getNrOfHomePlaces() === $sportVariant->getNrOfAwayPlaces()) {
-                    if ($sportVariant->getNrOfHomePlaces() !== $nrOfHomePlaces
-                        || $sportVariant->getNrOfAwayPlaces() !== $nrOfAwayPlaces) {
+                if ($againstVariant->nrOfHomePlaces === $againstVariant->nrOfAwayPlaces) {
+                    if ($againstVariant->nrOfHomePlaces !== $nrOfHomePlaces
+                        || $againstVariant->nrOfAwayPlaces !== $nrOfAwayPlaces) {
                         return PlanningValidity::UNEQUAL_GAME_HOME_AWAY;
                     }
                 } else {
                     if (
-                        ($sportVariant->getNrOfHomePlaces() !== $nrOfHomePlaces && $sportVariant->getNrOfAwayPlaces(
-                            ) !== $nrOfHomePlaces)
+                        ($againstVariant->nrOfHomePlaces !== $nrOfHomePlaces && $againstVariant->nrOfAwayPlaces !== $nrOfHomePlaces)
                         ||
-                        ($sportVariant->getNrOfHomePlaces() !== $nrOfAwayPlaces && $sportVariant->getNrOfAwayPlaces(
-                            ) !== $nrOfAwayPlaces)) {
+                        ($againstVariant->nrOfHomePlaces !== $nrOfAwayPlaces && $againstVariant->nrOfAwayPlaces !== $nrOfAwayPlaces)) {
                         return PlanningValidity::UNEQUAL_GAME_HOME_AWAY;
                     }
                 }

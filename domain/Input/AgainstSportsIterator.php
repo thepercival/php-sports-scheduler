@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Input;
 
-use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\SportRange;
+use SportsHelpers\SportVariants\AgainstGpp;
+use SportsHelpers\SportVariants\AgainstH2h;
 
 /**
  * @implements \Iterator<string, SportVariantWithFields|null>

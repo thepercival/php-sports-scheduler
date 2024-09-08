@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Tests\Combinations\HomeAwayCreator;
+namespace SportsScheduler\Tests\Combinations\HomeAwayGenerators;
 
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;

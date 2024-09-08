@@ -8,10 +8,9 @@ use SportsHelpers\PouleStructure\Balanced as BalancedPouleStructure;
 use SportsHelpers\PouleStructure\BalancedIterator as PouleStructureIterator;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
-use SportsHelpers\Sport\Variant\Against as AgainstSportVariant;
-use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
 use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\SportRange;
+use SportsHelpers\SportVariants\AllInOneGame;
 use SportsPlanning\Input as PlanningInput;
 use SportsPlanning\Input\Configuration;
 use SportsPlanning\Input\Service as PlanningInputService;
@@ -222,7 +221,7 @@ class Iterator implements \Iterator
         if ($pouleStructure === null) {
             return $this->incrementStructure();
         }
-        if (($sportVariant instanceof AgainstSportVariant || $sportVariant instanceof SingleSportVariant)
+        if ((!($sportVariant instanceof AllInOneGame))
             && $sportVariant->getNrOfGamePlaces() > $pouleStructure->getSmallestPoule()) {
             return $this->incrementSports();
         }

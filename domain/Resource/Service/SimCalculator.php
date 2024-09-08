@@ -6,10 +6,12 @@ use SportsHelpers\PouleStructure;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\Sport\Variant as SportVariant;
-use SportsHelpers\Sport\Variant\Against as AgainstSportVariant;
-use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
 use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\Sport\Variant\Creator as VariantCreator;
+use SportsHelpers\SportVariants\AgainstGpp;
+use SportsHelpers\SportVariants\AgainstH2h;
+use SportsHelpers\SportVariants\AllInOneGame;
+use SportsHelpers\SportVariants\Single;
 use SportsPlanning\Input;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\H2h as AgainstH2hWithNrOfPlaces;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
@@ -102,12 +104,12 @@ class SimCalculator
 //        return $nrOfGamesPerBatch < $maxNrOfGamesPerBatch ? $nrOfGamesPerBatch : $maxNrOfGamesPerBatch;
 //    }
 
-    protected function getNrOfGamePlaces(SportVariant $sportVariant, int $nrOfPlaces): int
+    protected function getNrOfGamePlaces(Single|AllInOneGame|AgainstGpp|AgainstH2h $sportVariant, int $nrOfPlaces): int
     {
-        if ($sportVariant instanceof SingleSportVariant || $sportVariant instanceof AgainstSportVariant) {
-            return $sportVariant->getNrOfGamePlaces();
+        if ($sportVariant instanceof AllInOneGame) {
+            return $nrOfPlaces;
         }
-        return $nrOfPlaces;
+        return $sportVariant->getNrOfGamePlaces();
     }
 
 //
