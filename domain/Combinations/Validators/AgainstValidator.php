@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SportsScheduler\Combinations\Validators;
 
 use SportsPlanning\Counters\Maps\Schedule\AgainstNrCounterMap;
-use SportsPlanning\Game\Against as AgainstGame;
+use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
@@ -39,6 +39,11 @@ class AgainstValidator extends ValidatorAbstract
     public function addHomeAway(OneVsOneHomeAway|OneVsTwoHomeAway|TwoVsTwoHomeAway $homeAway): void
     {
         $this->againstNrCounterMap->addHomeAway($homeAway);
+    }
+
+    public function cloneAgainstNrCounterMap(): AgainstNrCounterMap {
+        return clone $this->againstNrCounterMap;
+
     }
 
 //        $homeAway = new HomeAway(

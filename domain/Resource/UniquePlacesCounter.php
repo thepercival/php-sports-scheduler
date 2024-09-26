@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace SportsScheduler\Resource;
 
 use SportsPlanning\Counters\CounterForPoule;
-use SportsPlanning\Game\Against as AgainstGame;
-use SportsPlanning\Game\Together as TogetherGame;
+use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Poule;
 use SportsScheduler\Place\GameCounter;
 

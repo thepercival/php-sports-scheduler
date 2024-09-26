@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SportsScheduler\Combinations\Validators;
 
 use SportsPlanning\Counters\Maps\Schedule\WithNrCounterMap;
-use SportsPlanning\Game\Against as AgainstGame;
+use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;

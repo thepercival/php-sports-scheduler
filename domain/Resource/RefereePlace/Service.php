@@ -8,8 +8,8 @@ use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
 use SportsScheduler\Exceptions\TimeoutException;
 use SportsPlanning\Game;
-use SportsPlanning\Game\Against as AgainstGame;
-use SportsPlanning\Game\Together as TogetherGame;
+use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Input;
 use SportsPlanning\Place;
 use SportsPlanning\Planning;
@@ -120,7 +120,10 @@ class Service
         return $this->replacer->replaceUnequals($this->planning, $batch->getFirst());
     }
 
-    private function isRefereePlaceAssignable(SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch, Game $game, Place $refereePlace): bool
+    private function isRefereePlaceAssignable(
+        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch,
+        AgainstGame|TogetherGame $game,
+        Place $refereePlace): bool
     {
         if ($batch->getBase()->isParticipating($refereePlace) || $batch->isParticipatingAsReferee($refereePlace)) {
             return false;

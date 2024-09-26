@@ -6,7 +6,7 @@ namespace SportsScheduler\Tests\Resource;
 
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\SportRange;
-use SportsPlanning\Game\Against as AgainstGame;
+use SportsPlanning\Game\AgainstGame;
 use SportsScheduler\Resource\Fields;
 use SportsScheduler\TestHelper\PlanningCreator;
 // use SportsScheduler\TestHelper\PlanningReplacer;

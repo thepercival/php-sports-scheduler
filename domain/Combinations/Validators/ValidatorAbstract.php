@@ -8,7 +8,7 @@ use SportsPlanning\Counters\Maps\Schedule\AgainstNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\WithNrCounterMap;
 use SportsPlanning\Counters\Reports\DuoPlaceNrCountersPerAmountReport;
-use SportsPlanning\Game\Against as AgainstGame;
+use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Planning;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;

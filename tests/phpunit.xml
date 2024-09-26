@@ -6,6 +6,9 @@
       <xml outputDirectory="./codecoverage/xml"/>
     </report>
   </coverage>
+  <php>
+    <env name="XDEBUG_MODE" value="coverage" force="true" />
+  </php>
   <testsuites>
     <testsuite name="php-sports-scheduler">
       <directory suffix="Test.php">cases</directory>

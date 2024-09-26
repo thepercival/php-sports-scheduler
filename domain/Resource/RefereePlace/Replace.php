@@ -3,8 +3,8 @@
 namespace SportsScheduler\Resource\RefereePlace;
 
 use SportsPlanning\Batch\SelfReferee as SelfRefereeBatch;
-use SportsPlanning\Game\Against as AgainstGame;
-use SportsPlanning\Game\Together as TogetherGame;
+use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Place;
 
 class Replace

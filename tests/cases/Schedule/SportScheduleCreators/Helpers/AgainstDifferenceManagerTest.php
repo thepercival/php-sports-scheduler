@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Tests\Schedule\CreatorHelpers;
+namespace SportsScheduler\Tests\Schedule\SportScheduleCreators\Helpers;
 
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;

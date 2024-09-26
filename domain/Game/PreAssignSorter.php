@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace SportsScheduler\Game;
 
 use SportsHelpers\Sport\Variant\Creator as VariantCreator;
-use SportsPlanning\Game\Against as AgainstGame;
-use SportsPlanning\Game\Together as TogetherGame;
-use SportsPlanning\Game\Place\Together as TogetherGamePlace;
+use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Game\TogetherGame;
+use SportsPlanning\Game\TogetherGamePlace;
 use SportsPlanning\Input;
 use SportsPlanning\Planning;
 

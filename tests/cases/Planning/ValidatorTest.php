@@ -18,7 +18,7 @@ use SportsHelpers\SportRange;
 use SportsPlanning\Batch;
 use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
-use SportsPlanning\Game\Against as AgainstGame;
+use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Output\PlanningOutput;
 use SportsScheduler\Game\Assigner as GameAssigner;
 use SportsScheduler\Game\Creator as GameCreator;

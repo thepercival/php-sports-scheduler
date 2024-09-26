@@ -2,26 +2,20 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Tests\Schedule\Creator\Against;
+namespace SportsScheduler\Tests\Schedule\SportScheduleCreators;
 
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
-use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use SportsHelpers\SportRange;
-use SportsScheduler\Game\Creator as GameCreator;
-use SportsPlanning\Planning;
-use SportsPlanning\Output\PlanningOutput;
-use SportsPlanning\Referee\Info as RefereeInfo;
 use SportsPlanning\Output\ScheduleOutput;
-use SportsScheduler\Planning\Validator as PlanningValidator;
+use SportsPlanning\Planning;
 use SportsPlanning\Planning\Validity;
+use SportsScheduler\Game\Creator as GameCreator;
+use SportsScheduler\Planning\Validator as PlanningValidator;
 use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class GamesPerPlaceTest extends TestCase
+class AgainstGppScheduleCreatorTest extends TestCase
 {
     use PlanningCreator;
     use GppMarginCalculator;

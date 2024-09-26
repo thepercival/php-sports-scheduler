@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Planning;
 
+use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\Side as AgainstSide;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\Sport\Variant\Creator as VariantCreator;
 use SportsHelpers\SportVariants\AgainstGpp;
 use SportsHelpers\SportVariants\AgainstH2h;
 use SportsHelpers\SportVariants\AllInOneGame;
+use SportsPlanning\Game\GameAbstract;
 use SportsPlanning\Planning\Validity as PlanningValidity;
 use SportsScheduler\Combinations\Validators\AgainstValidator;
 use SportsScheduler\Combinations\Validators\WithValidator;
@@ -17,8 +19,8 @@ use SportsScheduler\Exceptions\UnequalAssignedFieldsException;
 use SportsScheduler\Exceptions\UnequalAssignedRefereePlacesException;
 use SportsScheduler\Exceptions\UnequalAssignedRefereesException;
 use SportsPlanning\Game;
-use SportsPlanning\Game\Against as AgainstGame;
-use SportsPlanning\Game\Together as TogetherGame;
+use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Input;
 use SportsPlanning\Place;
 use SportsPlanning\Planning;
@@ -32,7 +34,7 @@ use SportsHelpers\Sport\Variant\WithNrOfPlaces\AllInOneGame as AllInOneGameWithN
 
 class Validator
 {
-    public function __construct()
+    public function __construct(private LoggerInterface $logger)
     {
     }
 
@@ -217,8 +219,11 @@ class Validator
                 $nrOfHomeSideGames[$place->getUniqueIndex()] = 0;
             }
             // if ($againstWithPoule instanceof AgainstH2hWithPoule || $againstWithPoule->allPlacesSameNrOfGamesAssignable()) {
-                if (// $sportVariant->hasMultipleSidePlaces() &&
-                    ($againstWithNrOfPlaces instanceof AgainstH2hWithNrOfPlaces || $againstWithNrOfPlaces->allWithSameNrOfGamesAssignable())) {
+                if ( $sportVariant->hasMultipleSidePlaces()
+                    // && ($againstWithNrOfPlaces instanceof AgainstH2hWithNrOfPlaces || $againstWithNrOfPlaces->allWithSameNrOfGamesAssignable())
+                )
+                {
+
                     $withValidator = new WithValidator($nrOfPlaces);
                     $withValidator->addGames($planning, $poule, $sport);
                     if (!$withValidator->balanced()) {
@@ -229,13 +234,17 @@ class Validator
                     $againstValidator = new AgainstValidator($nrOfPlaces);
                     $againstValidator->addGames($planning, $poule, $sport);
                     if (!$againstValidator->balanced()) {
+                        $againstNrCounterMap = $againstValidator->cloneAgainstNrCounterMap();
+                        $header = "PlanningValidity::UNEQUAL_GAME_AGAINST for againstNrCounterMap : ";
+                        $this->logger->error($header);
+                        $againstNrCounterMap->output($this->logger, '', $header);
                         return PlanningValidity::UNEQUAL_GAME_AGAINST;
                     }
                 }
             // }
         }
 
-        $sportGames = array_filter($planning->getGamesForPoule($poule), function (Game $game) use ($sport): bool {
+        $sportGames = array_filter($planning->getGamesForPoule($poule), function (AgainstGame|TogetherGame $game) use ($sport): bool {
             return $game->getSport() === $sport;
         });
         foreach ($sportGames as $game) {
@@ -379,7 +388,7 @@ class Validator
          * @return array<int,bool>
          */
         $getBatchParticipations = function (Place $place) use ($planning): array {
-            $games = $planning->getGames(Game::ORDER_BY_BATCH);
+            $games = $planning->getGames(GameAbstract::ORDER_BY_BATCH);
             $batchMap = [];
             foreach ($games as $game) {
                 if (array_key_exists($game->getBatchNr(), $batchMap) === false) {
@@ -432,7 +441,7 @@ class Validator
 
     protected function validateResourcesPerBatch(Planning $planning): int
     {
-        $games = $planning->getGames(Game::ORDER_BY_BATCH);
+        $games = $planning->getGames(GameAbstract::ORDER_BY_BATCH);
         $batchMap = [];
         foreach ($games as $game) {
             if (array_key_exists($game->getBatchNr(), $batchMap) === false) {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace SportsScheduler\Schedule;
 
 use Psr\Log\LoggerInterface;
-use SportsHelpers\Against\Side;
 use SportsHelpers\GameMode;
 use SportsHelpers\PouleStructure;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
@@ -13,7 +12,6 @@ use SportsHelpers\SportVariants\AgainstGpp;
 use SportsHelpers\SportVariants\AgainstH2h;
 use SportsHelpers\SportVariants\AllInOneGame;
 use SportsHelpers\SportVariants\Single;
-use SportsPlanning\Counters\Maps\Schedule\SideNrCounterMap;
 use SportsPlanning\Input;
 use SportsPlanning\Poule;
 use SportsPlanning\Schedule;
@@ -23,7 +21,6 @@ use SportsPlanning\Sport;
 use SportsScheduler\Schedule\SportScheduleCreators\AgainstGppScheduleCreator;
 use SportsScheduler\Schedule\SportScheduleCreators\AgainstH2hScheduleCreator;
 use SportsScheduler\Schedule\SportScheduleCreators\AllInOneGameScheduleCreator;
-use SportsScheduler\Schedule\SportScheduleCreators\Helpers\AgainstDifferenceManager;
 use SportsScheduler\Schedule\SportScheduleCreators\SingleScheduleCreator as SingleCreatorHelper;
 
 // use SportsPlanning\Counters\AssignedCounter;

@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Tests\Schedule\Creator;
+namespace SportsScheduler\Tests\Schedule\SportScheduleCreators;
 
-use SportsPlanning\Output\Schedule as ScheduleOutput;
-use SportsScheduler\Game\Creator as GameCreator;
-use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\SportRange;
-use SportsPlanning\Planning;
 use SportsPlanning\Output\Planning as PlanningOutput;
+use SportsPlanning\Output\Schedule as ScheduleOutput;
+use SportsPlanning\Planning;
+use SportsScheduler\Game\Creator as GameCreator;
+use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class AllInOneGameTest extends TestCase
+class AllInOneGameScheduleCreatorTest extends TestCase
 {
     use PlanningCreator;
     use GppMarginCalculator;

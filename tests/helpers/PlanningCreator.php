@@ -10,12 +10,12 @@ use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\PouleStructure;
 
-use SportsHelpers\Sport\Variant\AllInOneGame as AllInOneGameSportVariant;
-use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
 use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\SportRange;
+use SportsHelpers\SportVariants\AgainstGpp;
+use SportsHelpers\SportVariants\AgainstH2h;
+use SportsHelpers\SportVariants\AllInOneGame;
+use SportsHelpers\SportVariants\Single;
 use SportsScheduler\Game\Assigner as GameAssigner;
 use SportsScheduler\Game\Creator as GameCreator;
 use SportsPlanning\Input;
@@ -46,14 +46,14 @@ trait PlanningCreator
         return new AgainstGpp($nrOfHomePlaces, $nrOfAwayPlaces, $nrOfGamesPerPlace);
     }
 
-    protected function getSingleSportVariant(int $nrOfGamesPerPlace = 1, int $nrOfGamePlaces = 1): SingleSportVariant
+    protected function getSingleSportVariant(int $nrOfGamesPerPlace = 1, int $nrOfGamePlaces = 1): Single
     {
-        return new SingleSportVariant($nrOfGamePlaces, $nrOfGamesPerPlace);
+        return new Single($nrOfGamePlaces, $nrOfGamesPerPlace);
     }
 
-    protected function getAllInOneGameSportVariant(int $nrOfGamesPerPlace = 1): AllInOneGameSportVariant
+    protected function getAllInOneGameSportVariant(int $nrOfGamesPerPlace = 1): AllInOneGame
     {
-        return new AllInOneGameSportVariant($nrOfGamesPerPlace);
+        return new AllInOneGame($nrOfGamesPerPlace);
     }
 
     protected function getAgainstH2hSportVariantWithFields(

@@ -33,6 +33,31 @@ class AgainstGppGameRoundCreator extends AgainstGameRoundCreatorAbstract
 //        parent::__construct($logger);
 //    }
 //
+
+    private function assignHomeAways(AgainstGameRound $gameRound): AgainstGameRound {
+
+        if( $gameRound->nrOfPlaces % 4 === 0 ) {
+            return $this->assignHomeAways4N($gameRound);
+        }
+        if( $gameRound->nrOfPlaces % 4 === 1 ) {
+            if( $gameRound->nrOfPlaces === 5 ) {
+                $seatConfig = [[2, 3], [4, 1]]; // placeNr 1 takes seat 2, placeNr 2 takes seat 3 .. placeNr 5 "sits out"
+            }
+            return $this->assignHomeAways4NPlus1($gameRound);
+        }
+        throw new \Exception('look for solutions 4%2 and 4%3');
+    }
+
+    private function assignHomeAways4N(AgainstGameRound $gameRound): AgainstGameRound {
+
+        throw new \Exception('look for solutions 4%0');
+    }
+
+    private function assignHomeAways4NPlus1(AgainstGameRound $gameRound): AgainstGameRound {
+
+        throw new \Exception('look for solutions 4%0');
+    }
+
 //    public function createRootAndDescendants(
 //        AgainstGppWithNrOfPlaces $againstGppWithNrOfPlaces,
 //        GppHomeAwayGenerator $homeAwayCreator,

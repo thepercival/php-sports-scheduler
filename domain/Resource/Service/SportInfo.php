@@ -8,8 +8,8 @@ use SportsHelpers\SportVariants\AgainstGpp;
 use SportsHelpers\SportVariants\AgainstH2h;
 use SportsHelpers\SportVariants\AllInOneGame;
 use SportsHelpers\SportVariants\Single;
-use SportsPlanning\Game\Against as AgainstGame;
-use SportsPlanning\Game\Together as TogetherGame;
+use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Sport;
 use SportsScheduler\Resource\UniquePlacesCounter;
 
