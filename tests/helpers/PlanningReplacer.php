@@ -4,10 +4,16 @@ namespace SportsScheduler\TestHelper;
 
 use SportsPlanning\Batch\SelfReferee as SelfRefereeBatch;
 use SportsPlanning\Batch;
+use SportsPlanning\Game\AgainstGame as AgainstGame;
+use SportsPlanning\Game\TogetherGame as TogetherGame;
 use SportsPlanning\Place as PlanningPlace;
 use SportsPlanning\Game as PlanningGame;
 use SportsPlanning\Field as PlanningField;
 use SportsPlanning\Referee as PlanningReferee;
+use SportsPlanning\Sports\Plannable\PlannableAgainstOneVsOne;
+use SportsPlanning\Sports\Plannable\PlannableAgainstOneVsTwo;
+use SportsPlanning\Sports\Plannable\PlannableAgainstTwoVsTwo;
+use SportsPlanning\Sports\Plannable\PlannableTogetherSport;
 use SportsScheduler\Resource\RefereePlace\Replacer as RefereePlaceReplacer;
 
 trait PlanningReplacer
@@ -42,7 +48,6 @@ trait PlanningReplacer
         int $maxAmount
     ): bool {
         $batchHasToField = $this->hasBatchField($batch, $toField);
-        /** @var PlanningGame $game */
         foreach ($batch->getGames() as $game) {
             if ($game->getField() !== $fromField || $batchHasToField) {
                 continue;
@@ -90,7 +95,6 @@ trait PlanningReplacer
         int $maxAmount
     ): bool {
         $batchHasToReferee = $this->hasBatchReferee($batch, $toReferee);
-        /** @var PlanningGame $game */
         foreach ($batch->getGames() as $game) {
             if ($game->getReferee() !== $fromReferee || $batchHasToReferee) {
                 continue;

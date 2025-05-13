@@ -10,7 +10,10 @@ use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Input;
 use SportsPlanning\Poule;
-use SportsPlanning\Sport;
+use SportsPlanning\Sports\Plannable\PlannableAgainstOneVsOne;
+use SportsPlanning\Sports\Plannable\PlannableAgainstOneVsTwo;
+use SportsPlanning\Sports\Plannable\PlannableAgainstTwoVsTwo;
+use SportsPlanning\Sports\Plannable\PlannableTogetherSport;
 
 class Fields
 {
@@ -73,20 +76,24 @@ class Fields
 
 
     /**
-     * @param Sport $sport
+     * @param PlannableAgainstOneVsOne|PlannableAgainstOneVsTwo|PlannableAgainstTwoVsTwo|PlannableTogetherSport $plannableSport
      * @return list<Field>
      */
-    public function getAssignableFields(Sport $sport): array
+    public function getAssignableFields(
+        PlannableAgainstOneVsOne|PlannableAgainstOneVsTwo|PlannableAgainstTwoVsTwo|PlannableTogetherSport $plannableSport
+    ): array
     {
-        return array_values($sport->getFields()->filter(function (Field $field): bool {
+        return array_values($plannableSport->getFields()->filter(function (Field $field): bool {
             return $this->isUnassigned($field);
         })->toArray());
     }
 
-    public function isSomeFieldAssignable(Sport $sport, Poule $poule): bool
+    public function isSomeFieldAssignable(
+        PlannableAgainstOneVsOne|PlannableAgainstOneVsTwo|PlannableAgainstTwoVsTwo|PlannableTogetherSport $plannableSport
+        , Poule $poule): bool
     {
         foreach ($this->unassignedFields as $unassignedField) {
-            if ($this->isFieldAssignable($unassignedField, $sport, $poule)) {
+            if ($this->isFieldAssignable($unassignedField, $plannableSport, $poule)) {
                 return true;
             }
         }
@@ -147,9 +154,12 @@ class Fields
         array_push($this->unassignedFields, $field);
     }*/
 
-    protected function isFieldAssignable(Field $field, Sport $sport, Poule $poule): bool
+    protected function isFieldAssignable(
+        Field $field,
+        PlannableAgainstOneVsOne|PlannableAgainstOneVsTwo|PlannableAgainstTwoVsTwo|PlannableTogetherSport $plannableSport,
+        Poule $poule): bool
     {
-        if ($field->getSport() !== $sport) {
+        if ($field->getSport() !== $plannableSport) {
             return false;
         }
         return $this->fieldPouleMap === null|| isset($this->fieldPouleMap[$this->getFieldPouleMapIndex($field, $poule)]);

@@ -9,7 +9,6 @@ use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
-use SportsPlanning\Sport;
 
 class WithValidator extends ValidatorAbstract
 {
@@ -26,11 +25,8 @@ class WithValidator extends ValidatorAbstract
         return $this->duoPlaceNrCounterMapIsBalanced($this->withNrCounterMap);
     }
 
-    public function addGame(AgainstGame $game, Sport $sport): void
+    public function addGame(AgainstGame $game): void
     {
-        if ($game->getSport() !== $sport) {
-            return;
-        }
         $homeAway = $game->createHomeAway();
         if ($homeAway instanceof OneVsOneHomeAway) {
             return;

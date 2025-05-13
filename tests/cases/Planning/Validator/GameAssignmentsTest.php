@@ -6,14 +6,19 @@ namespace SportsScheduler\Tests\Planning\Validator;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
+use SportsHelpers\Sports\AgainstOneVsOne;
+use SportsHelpers\Sports\AgainstTwoVsTwo;
 use SportsPlanning\Batch;
 use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
+use SportsPlanning\Input\Configuration;
 use SportsPlanning\Resource\ResourceType;
+use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentValidator;
-use SportsPlanning\Referee\Info as RefereeInfo;
+use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Resource\GameCounter;
 use SportsPlanning\Resource\ResourceCounter;
 use SportsScheduler\TestHelper\PlanningCreator;
@@ -26,7 +31,13 @@ class GameAssignmentsTest extends TestCase
 
     public function testGetCountersFields(): void
     {
-        $planning = $this->createPlanning($this->createInput([5]));
+        $sportsWithNrOfFieldsAndNrOfCycles = [
+            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
+        ];
+        $refereeInfo = new PlanningRefereeInfo();
+        $planning = $this->createPlanning(
+            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+        );
 
         $resourceCounter = new ResourceCounter($planning);
         $gameCounters = $resourceCounter->getCounters(ResourceType::Fields->value);
@@ -40,7 +51,13 @@ class GameAssignmentsTest extends TestCase
 
     public function testGetCountersReferees(): void
     {
-        $planning = $this->createPlanning($this->createInput([5]));
+        $sportsWithNrOfFieldsAndNrOfCycles = [
+            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
+        ];
+        $refereeInfo = new PlanningRefereeInfo();
+        $planning = $this->createPlanning(
+            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+        );
 
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
@@ -58,9 +75,12 @@ class GameAssignmentsTest extends TestCase
 
     public function testGetCountersRefereePlaces(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $sportsWithNrOfFieldsAndNrOfCycles = [
+            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
+        ];
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
         $planning = $this->createPlanning(
-            $this->createInput([5], null, $refereeInfo)
+            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
 //        $planningOutput = new PlanningOutput();
@@ -79,9 +99,12 @@ class GameAssignmentsTest extends TestCase
 
     public function testGetUnequalRefereePlaces(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $sportsWithNrOfFieldsAndNrOfCycles = [
+            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
+        ];
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
         $planning = $this->createPlanning(
-            $this->createInput([5], null, $refereeInfo)
+            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
         $firstPoule = $planning->getInput()->getPoule(1);
@@ -126,9 +149,12 @@ class GameAssignmentsTest extends TestCase
 
     public function testValidateRefereePlacesTwoPoulesNotEqualySized(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules, 1));
+        $sportsWithNrOfFieldsAndNrOfCycles = [
+            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
+        ];
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules, 1));
         $planning = $this->createPlanning(
-            $this->createInput([5, 4], null, $refereeInfo)
+            new Configuration(new PouleStructure(5, 4), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
         $secondPoule = $planning->getInput()->getPoule(2);
@@ -155,9 +181,12 @@ class GameAssignmentsTest extends TestCase
 
     public function testValidateUnequalFields(): void
     {
-        $sportVariant = $this->getAgainstH2hSportVariantWithFields(2);
+        $sportsWithNrOfFieldsAndNrOfCycles = [
+            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1),
+        ];
+        $refereeInfo = new PlanningRefereeInfo();
         $planning = $this->createPlanning(
-            $this->createInput([5], [$sportVariant])
+            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
         // $planningGames = $planning->getPoule(1)->getGames();
@@ -175,9 +204,12 @@ class GameAssignmentsTest extends TestCase
 
     public function testValidateUnequalReferees(): void
     {
-        $refereeInfo = new RefereeInfo(3);
+        $sportsWithNrOfFieldsAndNrOfCycles = [
+            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
+        ];
+        $refereeInfo = new PlanningRefereeInfo(3);
         $planning = $this->createPlanning(
-            $this->createInput([5], null, $refereeInfo)
+            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
         // $planningGames = $planning->getPoule(1)->getGames();
@@ -197,9 +229,12 @@ class GameAssignmentsTest extends TestCase
 
     public function testValidateUnequalRefereePlaces(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
+        $sportsWithNrOfFieldsAndNrOfCycles = [
+            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
+        ];
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
         $planning = $this->createPlanning(
-            $this->createInput([5], null, $refereeInfo)
+            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
         $firstPoule = $planning->getInput()->getPoule(1);
@@ -225,10 +260,13 @@ class GameAssignmentsTest extends TestCase
 
     public function testEquallyAssignedFieldsMultipleSport(): void
     {
-        $sportVariant1 = $this->getAgainstGppSportVariantWithFields(4, 1, 1, 4);
-        $sportVariant2 = $this->getAgainstGppSportVariantWithFields(1, 1, 1, 4);
+        $sportsWithNrOfFieldsAndNrOfCycles = [
+            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 4, 4),
+            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 4)
+        ];
+        $refereeInfo = new PlanningRefereeInfo();
         $planning = $this->createPlanning(
-            $this->createInput([5], [$sportVariant1, $sportVariant2])
+            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
         $validator = new GameAssignmentValidator($planning);
@@ -238,10 +276,14 @@ class GameAssignmentsTest extends TestCase
 
     public function testValidate(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
+        $sportsWithNrOfFieldsAndNrOfCycles = [
+            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
+        ];
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
         $planning = $this->createPlanning(
-            $this->createInput([5], null, $refereeInfo)
+            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
+
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
         $validator = new GameAssignmentValidator($planning);

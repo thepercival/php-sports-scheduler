@@ -2,42 +2,37 @@
 
 namespace SportsScheduler\Resource\Service;
 
-use SportsHelpers\PouleStructure;
+use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
-use SportsHelpers\Sport\Variant as SportVariant;
-use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
-use SportsHelpers\Sport\Variant\Creator as VariantCreator;
-use SportsHelpers\SportVariants\AgainstGpp;
-use SportsHelpers\SportVariants\AgainstH2h;
-use SportsHelpers\SportVariants\AllInOneGame;
-use SportsHelpers\SportVariants\Single;
 use SportsPlanning\Input;
-use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\H2h as AgainstH2hWithNrOfPlaces;
-use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
-use SportsHelpers\Sport\Variant\WithNrOfPlaces\AllInOneGame as AllInOneGameWithNrOfPlaces;
-use SportsHelpers\Sport\Variant\WithNrOfPlaces\Single as SingleWithNrOfPlaces;
+use SportsPlanning\PlanningPouleStructure;
+use SportsPlanning\Sports\SportWithNrOfFields;
+use SportsPlanning\Sports\SportWithNrOfPlaces\AgainstOneVsOneWithNrOfPlaces;
+use SportsPlanning\Sports\SportWithNrOfPlaces\AgainstOneVsTwoWithNrOfPlaces;
+use SportsPlanning\Sports\SportWithNrOfPlaces\AgainstTwoVsTwoWithNrOfPlaces;
+use SportsPlanning\Sports\SportWithNrOfPlaces\TogetherSportWithNrOfPlaces;
 use SportsScheduler\Resource\UniquePlacesCounter;
-use SportsPlanning\Referee\Info as RefereeInfo;
+use SportsPlanning\Referee\PlanningRefereeInfo;
 
 class SimCalculator
 {
-    private RefereeInfo $refereeInfo;
-    private PouleStructure $pouleStructure;
+//    private PlanningRefereeInfo $refereeInfo;
+    //private PouleStructure $pouleStructure;
 
     public function __construct(Input $input)
     {
-        $this->refereeInfo = $input->getRefereeInfo();
-        $this->pouleStructure = $input->createPouleStructure();
+//        $this->refereeInfo = $input->getRefereeInfo();
+        // $this->pouleStructure = $input->createPouleStructure();
         // $this->balancedStructure = $this->input->createPouleStructure()->isBalanced();
         // $sportVariants = array_values($this->input->createSportVariants()->toArray());
         // $this->totalNrOfGames = $this->input->createPouleStructure()->getTotalNrOfGames($sportVariants);
     }
 
-    public function getMaxNrOfGamesPerBatch(InfoToAssign $infoToAssign): int
+    public function getMaxNrOfGamesPerBatch(AssignPlanningCounters $infoToAssign): int
     {
         $maxNrOfGamesPerBatch = 0;
-        foreach ($infoToAssign->getSportInfoMap() as $sportInfo) {
+        foreach ($infoToAssign->getSportWithNrOfFieldsCountNrOfGamesAndUniquePlacesMap() as $sportInfo) {
             $maxNrOfGamesPerBatch += $this->getMaxNrOfSimultaneousSportGames($sportInfo);
         }
         return $maxNrOfGamesPerBatch;
@@ -45,48 +40,37 @@ class SimCalculator
 //        return $this->reduceByPlaces($maxNrOfGamesPerBatch, $infoToAssign);
     }
 
-    public function getMaxNrOfSimultaneousSportGames(SportInfo $sportInfo): int
-    {
-        // SHOULD THIS BE THE POULESTRUCTURE OF THIS??
-        $pouleStructure = $this->getPouleStructureFromPoulesToAssign($sportInfo);
-        $sportVariantWithFields = new SportVariantWithFields($sportInfo->getVariant(), $sportInfo->getSport()->getNrOfFields());
-
-        return $this->getMaxNrOfSportGamesPerBatch($pouleStructure, $sportVariantWithFields);
-    }
+//    public function getMaxNrOfSimultaneousSportGames(
+//        PouleStructure $pouleStructure, SportWithNrOfFields $sportWithNrOfFields): int
+//    {
+//        // SHOULD THIS BE THE POULESTRUCTURE OF THIS??
+//        // $pouleStructure = $this->createPouleStructureFromPoulesFromUniquePlaces($sportCountNrOfGamesAndUniquePlaces);
+//        return $this->getMaxNrOfSportGamesPerBatch($pouleStructure, $sportWithNrOfFields);
+//    }
 
     // per poule kijk je wat het maximum is en daar neem je de laagste waarde van
-    public function getMaxNrOfSportGamesPerBatch(
-        PouleStructure $pouleStructure, SportVariantWithFields $sportVariantWithFields): int {
-        $selfRefereeInfo = $this->refereeInfo->selfRefereeInfo;
+    public function calculateMaxSimNrOfSportGames(
+        PouleStructure $pouleStructure,
+        SportWithNrOfFields $sportWithNrOfFields,
+        PlanningRefereeInfo $refereeInfo): int {
+        $selfRefereeInfo = $refereeInfo->selfRefereeInfo;
         $minNrOfGamesPerBatch = array_sum(
-            array_map( function( int $nrOfPlaces ) use ($sportVariantWithFields, $selfRefereeInfo): int {
-                $variantWithNrOfPlaces = (new VariantCreator())->createWithNrOfPlaces($nrOfPlaces, $sportVariantWithFields->getSportVariant());
-                return $this->getMaxNrOfGamesSimultaneously($variantWithNrOfPlaces, $selfRefereeInfo);
+            array_map( function( int $nrOfPlaces ) use ($sportWithNrOfFields, $selfRefereeInfo): int {
+                $sport = $sportWithNrOfFields->sport;
+
+                $sportWithNrOfPlaces = (new SportWithNrOfPlacesCreator())->create($nrOfPlaces, $sport);
+                return $this->getMaxNrOfGamesSimultaneously($sportWithNrOfPlaces, $selfRefereeInfo);
             }, $pouleStructure->toArray() )
         );
-        if ($sportVariantWithFields->getNrOfFields() < $minNrOfGamesPerBatch) {
-            $minNrOfGamesPerBatch = $sportVariantWithFields->getNrOfFields();
+        if ($sportWithNrOfFields->nrOfFields < $minNrOfGamesPerBatch) {
+            $minNrOfGamesPerBatch = $sportWithNrOfFields->nrOfFields;
         }
-        if ($this->refereeInfo->selfRefereeInfo->selfReferee === SelfReferee::Disabled
-            && $this->refereeInfo->nrOfReferees > 0
-            && $this->refereeInfo->nrOfReferees < $minNrOfGamesPerBatch) {
-            $minNrOfGamesPerBatch = $this->refereeInfo->nrOfReferees;
+        if ($selfRefereeInfo->selfReferee === SelfReferee::Disabled
+            && $refereeInfo->nrOfReferees > 0
+            && $refereeInfo->nrOfReferees < $minNrOfGamesPerBatch) {
+            $minNrOfGamesPerBatch = $refereeInfo->nrOfReferees;
         }
         return $minNrOfGamesPerBatch;
-    }
-
-
-    /**
-     * @param SportInfo $sportInfo
-     * @return PouleStructure
-     */
-    protected function getPouleStructureFromPoulesToAssign(SportInfo $sportInfo): PouleStructure
-    {
-        /** @var list<int> $nrOfPlacesPerPoule */
-        $nrOfPlacesPerPoule = array_map(function (UniquePlacesCounter $uniquePlacesCounter): int {
-            return count($uniquePlacesCounter->getPoule()->getPlaces());
-        }, $sportInfo->getUniquePlacesCounters());
-        return new PouleStructure(...$nrOfPlacesPerPoule);
     }
 
 //    public function reduceByPlaces(int $maxNrOfGamesPerBatch, InfoToAssign $infoToAssign): int
@@ -104,23 +88,15 @@ class SimCalculator
 //        return $nrOfGamesPerBatch < $maxNrOfGamesPerBatch ? $nrOfGamesPerBatch : $maxNrOfGamesPerBatch;
 //    }
 
-    protected function getNrOfGamePlaces(Single|AllInOneGame|AgainstGpp|AgainstH2h $sportVariant, int $nrOfPlaces): int
-    {
-        if ($sportVariant instanceof AllInOneGame) {
-            return $nrOfPlaces;
-        }
-        return $sportVariant->getNrOfGamePlaces();
-    }
-
 //
 //    // uitgaan van het aantal wedstrijden en velden per sport en scheidsrechters
 //    // aantal pouleplekken niet, want je kunt verschillende poules hebben met
 //    // verschillende aantallen
 
-    public function getMinNrOfBatchesNeeded(SportInfo $sportInfoToAssign): int
+    public function getMinNrOfBatchesNeeded(SportWithNrOfFieldsCountNrOfGamesAndUniquePlaces $sportInfoTo): int
     {
-        $maxNrOfSimultaneousGames = $this->getMaxNrOfSimultaneousSportGames($sportInfoToAssign);
-        return (int)ceil($sportInfoToAssign->getNrOfGames() / $maxNrOfSimultaneousGames);
+        $maxNrOfSimultaneousGames = $this->getMaxNrOfSimultaneousSportGames($sportInfoTo);
+        return (int)ceil($sportInfoTo->getNrOfGames() / $maxNrOfSimultaneousGames);
     }
 
 
@@ -206,26 +182,21 @@ class SimCalculator
     //          eigen poule scheids leveren     : hoeveelheid kan verschillen
     //
     public function getMaxNrOfGamesSimultaneously(
-        AllInOneGameWithNrOfPlaces|SingleWithNrOfPlaces|AgainstH2hWithNrOfPlaces|AgainstGppWithNrOfPlaces $sportVariantWithNrOfPlaces,
+        TogetherSportWithNrOfPlaces|
+        AgainstOneVsOneWithNrOfPlaces|AgainstOneVsTwoWithNrOfPlaces|AgainstTwoVsTwoWithNrOfPlaces $sportWithNrOfPlaces,
         SelfRefereeInfo $selfRefereeInfo): int {
-        if( $sportVariantWithNrOfPlaces instanceof AllInOneGameWithNrOfPlaces) {
-            return 1;
-        }
-        $sportVariant = $sportVariantWithNrOfPlaces->getSportVariant();
-        $nrOfPlaces = $sportVariantWithNrOfPlaces->getNrOfPlaces();
-        $nrOfGamePlaces = $sportVariant->getNrOfGamePlaces();
-        if( $sportVariantWithNrOfPlaces instanceof SingleWithNrOfPlaces) {
-            if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrIfSimSelfRefs === 1) {
-                $nrOfSimGames = (int)floor($nrOfPlaces / ($nrOfGamePlaces + 1));
-            } else if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrIfSimSelfRefs > 1) {
-                $nrOfSimGames = (int)floor(($nrOfPlaces - 1) / $nrOfGamePlaces);
-            } else {
-                $nrOfSimGames = (int)floor($nrOfPlaces / $nrOfGamePlaces);
-            }
-            return $nrOfSimGames === 0 ? 1 : $nrOfSimGames;
-        }
 
-        // als i
+        $nrOfPlaces = $sportWithNrOfPlaces->nrOfPlaces;
+
+        $nrOfGamePlaces = $sportWithNrOfPlaces->sport->getNrOfGamePlaces();
+        if( $sportWithNrOfPlaces instanceof TogetherSportWithNrOfPlaces) {
+            if( $nrOfGamePlaces === null) {
+                return 1;
+            }
+        }
+        if( $nrOfGamePlaces === null) {
+            throw new \Exception('nrOfGamePlaces cannot be 0');
+        }
         if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrIfSimSelfRefs === 1) {
             $nrOfSimGames = (int)floor($nrOfPlaces / ($nrOfGamePlaces + 1));
         } else if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrIfSimSelfRefs > 1) {
@@ -235,4 +206,15 @@ class SimCalculator
         }
         return $nrOfSimGames === 0 ? 1 : $nrOfSimGames;
     }
+
+//    public function createPouleStructureFromPoulesFromUniquePlaces(
+//        SportWithNrOfFieldsCountNrOfGamesAndUniquePlaces $sportCountNrOfGamesAndUniquePlaces
+//    ): PouleStructure
+//    {
+//        /** @var list<int> $nrOfPlacesPerPoule */
+//        $nrOfPlacesPerPoule = array_map(function (UniquePlacesCounter $uniquePlacesCounter): int {
+//            return count($uniquePlacesCounter->getPoule()->getPlaces());
+//        }, array_values( $sportCountNrOfGamesAndUniquePlaces->getUniquePlacesCounterMap()) );
+//        return new PouleStructure(...$nrOfPlacesPerPoule);
+//    }
 }

@@ -7,9 +7,9 @@ namespace SportsScheduler\Tests\Combinations\Validators;
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\SportRange;
 use SportsScheduler\Combinations\Validators\WithValidator;
-use SportsScheduler\Game\Creator as GameCreator;
+use SportsScheduler\Game\PlannableGameCreator as GameCreator;
 use SportsPlanning\Planning;
-use SportsScheduler\Schedule\Creator as ScheduleCreator;
+use SportsScheduler\Schedules\CycleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
@@ -29,7 +29,7 @@ class WithValidatorTest extends TestCase
         $maxGppMargin = $this->calculateMaxGppMargin($biggestPoule);
         $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
         // (new ScheduleOutput($this->getLogger()))->output($schedules);
-        $gameCreator = new GameCreator($this->createLogger());
+        $gameCreator = new PlannableGameCreator($this->createLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -51,7 +51,7 @@ class WithValidatorTest extends TestCase
         $maxGppMargin = $this->calculateMaxGppMargin($biggestPoule);
         $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
         // (new ScheduleOutput($this->getLogger()))->output($schedules);
-        $gameCreator = new GameCreator($this->createLogger());
+        $gameCreator = new PlannableGameCreator($this->createLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -73,7 +73,7 @@ class WithValidatorTest extends TestCase
         $maxGppMargin = $this->calculateMaxGppMargin($biggestPoule);
         $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
         // (new ScheduleOutput($this->getLogger()))->output($schedules);
-        $gameCreator = new GameCreator($this->createLogger());
+        $gameCreator = new PlannableGameCreator($this->createLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -95,7 +95,7 @@ class WithValidatorTest extends TestCase
         $maxGppMargin = $this->calculateMaxGppMargin($biggestPoule);
         $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
         // (new ScheduleOutput($this->getLogger()))->output($schedules);
-        $gameCreator = new GameCreator($this->createLogger());
+        $gameCreator = new PlannableGameCreator($this->createLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -117,7 +117,7 @@ class WithValidatorTest extends TestCase
         $maxGppMargin = $this->calculateMaxGppMargin($biggestPoule);
         $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
         // (new ScheduleOutput($this->getLogger()))->output($schedules);
-        $gameCreator = new GameCreator($this->createLogger());
+        $gameCreator = new PlannableGameCreator($this->createLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
 

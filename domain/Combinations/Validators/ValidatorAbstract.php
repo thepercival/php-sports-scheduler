@@ -35,10 +35,10 @@ abstract class ValidatorAbstract
 //        return new PlaceCombination($poulePlaces);
 //    }
 
-    public function addGames(Planning $planning, Poule $poule, Sport $sport): void
+    public function addGames(Planning $planning): void
     {
-        foreach ($planning->getAgainstGamesForPoule($poule) as $game) {
-            $this->addGame($game, $sport);
+        foreach ($planning->getGames() as $game) {
+            $this->addGame($game);
         }
     }
 
@@ -48,5 +48,5 @@ abstract class ValidatorAbstract
         return $report->range->getAmountDifference() === 0;
     }
 
-    abstract public function addGame(AgainstGame $game, Sport $sport): void;
+     abstract public function addGame(AgainstGame $game): void;
 }

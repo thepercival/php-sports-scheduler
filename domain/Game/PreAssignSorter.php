@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Game;
 
-use SportsHelpers\Sport\Variant\Creator as VariantCreator;
+use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Game\TogetherGamePlace;
 use SportsPlanning\Input;
 use SportsPlanning\Planning;
+use SportsScheduler\Resource\Service\SportWithNrOfPlacesCreator;
 
 class PreAssignSorter
 {
@@ -28,10 +29,10 @@ class PreAssignSorter
         if( $planning->getInput()->getPerPoule() ) {
             uasort($games, function (AgainstGame|TogetherGame $g1, AgainstGame|TogetherGame $g2): int {
 
-                $g1GameRoundNumber = $this->getGameRoundNumber($g1);
-                $g2GameRoundNumber = $this->getGameRoundNumber($g2);
-                if ($g1GameRoundNumber !== $g2GameRoundNumber) {
-                    return $g1GameRoundNumber - $g2GameRoundNumber;
+                $g1Priority = $this->getPriority($g1);
+                $g2Priority = $this->getPriority($g2);
+                if ($g1Priority !== $g2Priority) {
+                    return $g1Priority - $g2Priority;
                 }
                 $pouleNr1 = $g1->getPoule()->getNumber();
                 $pouleNr2 = $g2->getPoule()->getNumber();
@@ -45,10 +46,10 @@ class PreAssignSorter
         $this->initMultiplierMap($planning->getInput());
 
         uasort($games, function (AgainstGame|TogetherGame $g1, AgainstGame|TogetherGame $g2): int {
-            $gameRoundNumber1 = $this->getWeightedGameRoundNumber($g1);
-            $gameRoundNumber2 = $this->getWeightedGameRoundNumber($g2);
-            if ($gameRoundNumber1 !== $gameRoundNumber2) {
-                return $gameRoundNumber1 - $gameRoundNumber2;
+            $priority1 = $this->getWeightedPriority($g1);
+            $priority2 = $this->getWeightedPriority($g2);
+            if ($priority1 !== $priority2) {
+                return $priority1 - $priority2;
             }
             $nrOfPoulePlaces1 = $g1->getPoule()->getPlaces()->count();
             $nrOfPoulePlaces2 = $g2->getPoule()->getPlaces()->count();
@@ -65,18 +66,18 @@ class PreAssignSorter
         return array_values($games);
     }
 
-    protected function getGameRoundNumber(AgainstGame|TogetherGame $game): int
+    protected function getPriority(AgainstGame|TogetherGame $game): int
     {
         if ($game instanceof AgainstGame) {
-            return $game->getGameRoundNumber();
+            return $game->cyclePartNr;
         }
-        $gameRoundNumbers = array_map(function (TogetherGamePlace $gamePlace): int {
-            return $gamePlace->getGameRoundNumber();
+        $cycleNrs = array_map(function (TogetherGamePlace $gamePlace): int {
+            return $gamePlace->cycleNr;
         }, $game->getPlaces()->toArray() );
-        if( count($gameRoundNumbers) === 0 ) {
+        if( count($cycleNrs) === 0 ) {
             return 0;
         }
-        return max($gameRoundNumbers);
+        return max($cycleNrs);
     }
 
     protected function getSumPlaceNrs(AgainstGame|TogetherGame $game): int
@@ -113,37 +114,37 @@ class PreAssignSorter
     {
         $maxNrOfPlaces = $input->createPouleStructure()->getBiggestPoule();
         $this->muliplierMap = [];
-        foreach ($input->getSports() as $sport) {
-            $sportVariant = $sport->createVariant();
-            $sportVariantWithLargestNrOfPlaces = (new VariantCreator())->createWithNrOfPlaces($maxNrOfPlaces, $sportVariant);
-            $maxNrOfGamePlacesPerBatch = $sportVariantWithLargestNrOfPlaces->getNrOfGamePlacesPerBatch();
-            $this->muliplierMap[$sport->getNumber()] = [];
+        foreach ($input->getSports() as $plannableSport) {
+            $sport = $plannableSport->sport;
+            $sportWithLargestNrOfPlaces = (new SportWithNrOfPlacesCreator())->create($maxNrOfPlaces, $sport);
+            $maxNrOfGamePlacesPerBatch = $sportWithLargestNrOfPlaces->calculateNrOfGamesPerPlace(1);
+            $this->muliplierMap[$plannableSport->getNumber()] = [];
             foreach ($input->getPoules() as $poule) {
-                $variantWithNrOfPlaces = (new VariantCreator())->createWithNrOfPlaces(count($poule->getPlaces()), $sportVariant);
-                $nrOfGamePlacesPerBatch = $variantWithNrOfPlaces->getNrOfGamePlacesPerBatch();
+                $sportWithNrOfPlaces = (new SportWithNrOfPlacesCreator())->create(count($poule->getPlaces()), $sport);
+                $nrOfGamePlacesPerBatch = $sportWithNrOfPlaces->calculateNrOfGamesPerPlace(1);
                 // $nrOfGameRoundsPoule = $sportVariant->getNrOfGameRounds($poule->getPlaces()->count());
-                $this->muliplierMap[$sport->getNumber()][$poule->getNumber()] = $maxNrOfGamePlacesPerBatch / $nrOfGamePlacesPerBatch;
+                $this->muliplierMap[$plannableSport->getNumber()][$poule->getNumber()] = $maxNrOfGamePlacesPerBatch / $nrOfGamePlacesPerBatch;
             }
         }
         return 1;
     }
 
-    protected function getWeightedGameRoundNumber(AgainstGame|TogetherGame $game): int
+    protected function getWeightedPriority(AgainstGame|TogetherGame $game): int
     {
-        $gameRoundNumber = $this->getDefaultGameNumber($game);
+        $priority = $this->getDefaultPriority($game);
         if (!isset($this->muliplierMap[$game->getSport()->getNumber()][$game->getPoule()->getNumber()])) {
-            return $gameRoundNumber;
+            return $priority;
         }
         $multiplier = $this->muliplierMap[$game->getSport()->getNumber()][$game->getPoule()->getNumber()];
-        return (int)($multiplier * $gameRoundNumber);
+        return (int)($multiplier * $priority);
     }
 
-    protected function getDefaultGameNumber(TogetherGame|AgainstGame $game): int
+    protected function getDefaultPriority(TogetherGame|AgainstGame $game): int
     {
         if ($game instanceof AgainstGame) {
-            return $game->getGameRoundNumber();
+            return $game->cyclePartNr;
         }
         $firstGamePlace = $game->getPlaces()->first();
-        return $firstGamePlace !== false ? $firstGamePlace->getGameRoundNumber() : 0;
+        return $firstGamePlace !== false ? $firstGamePlace->cycleNr : 0;
     }
 }

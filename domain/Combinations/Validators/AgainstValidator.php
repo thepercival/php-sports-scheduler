@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Combinations\Validators;
 
+use PHPStan\Rules\VariableVariables\VariableMethodCallableRule;
 use SportsPlanning\Counters\Maps\Schedule\AgainstNrCounterMap;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
-use SportsPlanning\Sport;
 
 class AgainstValidator extends ValidatorAbstract
 {
@@ -17,8 +17,8 @@ class AgainstValidator extends ValidatorAbstract
 
     public function __construct(int $nrOfPlaces)
     {
-        $this->againstNrCounterMap = new AgainstNrCounterMap($nrOfPlaces);
         parent::__construct();
+        $this->againstNrCounterMap = new AgainstNrCounterMap($nrOfPlaces);
     }
 
     public function balanced(): bool
@@ -26,11 +26,8 @@ class AgainstValidator extends ValidatorAbstract
         return $this->duoPlaceNrCounterMapIsBalanced($this->againstNrCounterMap);
     }
 
-    public function addGame(AgainstGame $game, Sport $sport): void
+    public function addGame(AgainstGame $game): void
     {
-        if ($game->getSport() !== $sport) {
-            return;
-        }
         $homeAway = $game->createHomeAway();
         $this->addHomeAway($homeAway);
     }

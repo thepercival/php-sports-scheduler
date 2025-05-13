@@ -12,7 +12,7 @@ use SportsScheduler\Place\GameCounter;
 
 class UniquePlacesCounter
 {
-    protected CounterForPoule $gamePlacesCounter;
+    protected CounterForPoule $gameCounter;
     /**
      * @var array<int, bool> $places
      */
@@ -20,17 +20,17 @@ class UniquePlacesCounter
 
     public function __construct(Poule $poule)
     {
-        $this->gamePlacesCounter = new CounterForPoule($poule);
+        $this->gameCounter = new CounterForPoule($poule);
     }
 
     public function getPoule(): Poule
     {
-        return $this->gamePlacesCounter->getPoule();
+        return $this->gameCounter->getPoule();
     }
 
     public function addGame(AgainstGame|TogetherGame $game): void
     {
-        $this->gamePlacesCounter = $this->gamePlacesCounter->increment();
+        $this->gameCounter = $this->gameCounter->increment();
         foreach ($game->getPlaces() as $gamePlace) {
             if (array_key_exists($gamePlace->getPlace()->getPlaceNr(), $this->places)) {
                 continue;
@@ -46,6 +46,6 @@ class UniquePlacesCounter
 
     public function getNrOfGames(): int
     {
-        return $this->gamePlacesCounter->count();
+        return $this->gameCounter->count();
     }
 }

@@ -14,7 +14,7 @@ use SportsPlanning\Poule;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
 use SportsScheduler\Combinations\AgainstStatisticsCalculators\Against\GamesPerPlace as GppStatisticsCalculator;
 use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator as GppHomeAwayCreator;
-use SportsScheduler\Schedule\SportScheduleCreators\Helpers\AgainstDifferenceManager;
+use SportsScheduler\Schedules\SportScheduleCreators\Helpers\AgainstDifferenceManager;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
