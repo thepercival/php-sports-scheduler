@@ -3,6 +3,7 @@
 namespace SportsScheduler\Resource\Service;
 
 use Psr\Log\LoggerInterface;
+use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsPlanning\Batch;
@@ -17,22 +18,20 @@ use SportsPlanning\Planning\BatchGamesType;
 use SportsPlanning\Planning\Type as PlanningType;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\Filter as PlanningFilter;
+use SportsPlanning\PlanningPouleStructure;
+use SportsPlanning\Referee\PlanningRefereeInfo;
 
 class Helper
 {
-    protected bool $balancedStructure;
     protected int $totalNrOfGames;
     protected int|null $maxNrOfBatches = null;
-    protected Input $input;
+    public readonly PlanningPouleStructure $planningPouleStructure;
 
-    public function __construct(protected Planning $planning, protected LoggerInterface $logger)
+    public function __construct(
+        protected Planning $planning, protected LoggerInterface $logger)
     {
-        $this->input = $planning->getInput();
-        $this->balancedStructure = $this->input->createPouleStructure()->isBalanced();
-
-
-        $planningPouleStructure = $this->input->createPlanningPouleStructure();
-        $this->totalNrOfGames = $planningPouleStructure->calculateNrOfGames();
+        $this->planningPouleStructure = $planning->getInput()->createPlanningPouleStructure();
+        $this->totalNrOfGames = $this->planningPouleStructure->calculateNrOfGames();
 
         $this->initMaxNrOfBatches();
     }
@@ -95,19 +94,19 @@ class Helper
         );
     }
 
-    protected function getMostToAssign(AgainstGame|TogetherGame $game, AssignPlanningCounters $infoToAssign): int
+    protected function getMostToAssign(AgainstGame|TogetherGame $game, AssignPlanningCounters $assignedInfo): int
     {
-        $mosts = array_map( function (Place $place) use ($infoToAssign): int {
-            return $infoToAssign->getPlaceInfoMap()[$place->getUniqueIndex()]->getNrOfGames();
+        $mosts = array_map( function (Place $place) use ($assignedInfo): int {
+            return $assignedInfo->getNrOfGames($place);
         }, $game->getPoulePlaces()->toArray() );
         return count($mosts) > 0 ? max($mosts) : 0;
     }
 
-    protected function getSumToAssign(AgainstGame|TogetherGame $game, AssignPlanningCounters $infoToAssign): int
+    protected function getSumToAssign(AgainstGame|TogetherGame $game, AssignPlanningCounters $assignedInfo): int
     {
         return array_sum(
-            array_map( function (Place $place) use ($infoToAssign): int {
-                return $infoToAssign->getPlaceInfoMap()[$place->getUniqueIndex()]->getNrOfGames();
+            array_map( function (Place $place) use ($assignedInfo): int {
+                return $assignedInfo->getNrOfGames($place);
             }, $game->getPoulePlaces()->toArray() )
         );
     }
@@ -119,9 +118,6 @@ class Helper
      */
     public function canGamesBeAssigned(int $batchNumber, AssignPlanningCounters $infoToAssign): bool
     {
-        if ($infoToAssign->isEmpty()) {
-            return true;
-        }
         $maxNrOfBatches = $this->maxNrOfBatches === null ? $this->planning->getMaxNrOfBatches() : $this->maxNrOfBatches;
         $maxNrOfBatchesToGo = $maxNrOfBatches - $batchNumber;
         if ($this->willMaxNrOfBatchesBeExceeded($maxNrOfBatchesToGo, $infoToAssign)) {
@@ -151,76 +147,74 @@ class Helper
         return false;
     }
 
-    public function willMaxNrOfBatchesBeExceededForSports(int $maxNrOfBatchesToGo, AssignPlanningCounters $infoToAssign): bool
+    public function willMaxNrOfBatchesBeExceededForSports(
+        int $maxNrOfBatchesToGo, AssignPlanningCounters $assignPlanningCounters): bool
     {
-        if ($infoToAssign->isEmpty()) {
-            return false;
-        }
+        $simCalculator = new SimCalculator();
 
-        $simCalculator = new SimCalculator($this->input);
-
-        $pouleStructure = $this->input->createPouleStructure();
-
-//        $maxNrOfBatchGamesAllSports = 0;
-        foreach ($infoToAssign->getSportWithNrOfFieldsCountNrOfGamesAndUniquePlacesMap() as $sportInfo) {
-            $maxNrOfBatchGames = $simCalculator->getMaxNrOfSimultaneousSportGames($sportInfo);
+        $maxNrOfBatchGamesAllSports = 0;
+        foreach ($assignPlanningCounters->getCountersForSports() as $countersForSport) {
+            $maxNrOfBatchGames = $simCalculator->calculateMaxSimNrOfSportGames(
+                $this->planningPouleStructure->pouleStructure,
+                $countersForSport->sportWithNrOfFields,
+                $this->planningPouleStructure->refereeInfo
+            );
             if ($maxNrOfBatchGames > $this->planning->getMaxNrOfBatchGames()) {
                 $maxNrOfBatchGames = $this->planning->getMaxNrOfBatchGames();
             }
-            $minNrOfBatches = (int)ceil($sportInfo->getNrOfGames() / $maxNrOfBatchGames);
+            $minNrOfBatches = (int)ceil($countersForSport->getNrOfGames() / $maxNrOfBatchGames);
             if ($minNrOfBatches > $maxNrOfBatchesToGo) {
                 return true;
             }
-            // $maxNrOfBatchGames = (int)ceil($sportInfo->getNrOfGames() / $minNrOfBatches);
-//            $maxNrOfBatchGamesAllSports += $maxNrOfBatchGames;
+            $maxNrOfBatchGames = (int)ceil($countersForSport->getNrOfGames() / $minNrOfBatches);
+            $maxNrOfBatchGamesAllSports += $maxNrOfBatchGames;
         }
-//        if ($maxNrOfBatchGamesAllSports < $this->planning->getMinNrOfBatchGames()) {
-//            return true;
-//        }
+        if ($maxNrOfBatchGamesAllSports < $this->planning->getMinNrOfBatchGames()) {
+            return true;
+        }
 
-        $maxNrOfBatchGamesAllSports = $simCalculator->getMaxNrOfGamesPerBatch($infoToAssign);
         if ($maxNrOfBatchGamesAllSports > $this->planning->getMaxNrOfBatchGames()) {
             $maxNrOfBatchGamesAllSports = $this->planning->getMaxNrOfBatchGames();
         }
-        $minNrOfBatches = (int)ceil($infoToAssign->getNrOfGames() / $maxNrOfBatchGamesAllSports);
+        $minNrOfBatches = (int)ceil($assignPlanningCounters->getNrOfGames() / $maxNrOfBatchGamesAllSports);
         return $minNrOfBatches > $maxNrOfBatchesToGo;
     }
 
-    public function willMaxNrOfBatchesBeExceededForPlaces(int $maxNrOfBatchesToGo, AssignPlanningCounters $infoToAssign): bool
+    public function willMaxNrOfBatchesBeExceededForPlaces(
+        int $maxNrOfBatchesToGo, AssignPlanningCounters $assignPlanningCounters): bool
     {
-        if ($infoToAssign->isEmpty()) {
-            return false;
-        }
-        foreach ($infoToAssign->getPlaceInfoMap() as $placeInfo) {
-            if ($placeInfo->getNrOfGames() > $maxNrOfBatchesToGo) {
+//        if ($infoToAssign->isEmpty()) {
+//            return false;
+//        }
+        foreach ($assignPlanningCounters->getPlaceGameCounters() as $placeGameCounter) {
+            if ($placeGameCounter->getNrOfGames() > $maxNrOfBatchesToGo) {
                 return true;
             }
         }
 
-        $simCalculator = new SimCalculator($this->input);
         // //////////////////////
         // per poule en sport kijken als het nog gehaald kunnen worden
-        foreach ($infoToAssign->getSportWithNrOfFieldsCountNrOfGamesAndUniquePlacesMap() as $sportInfo) {
-            foreach ($sportInfo->getUniquePlacesCounterMap() as $uniquePlacesCounter) {
+        foreach ($assignPlanningCounters->getCountersForSports() as $countersForSport) {
+            foreach ($countersForSport->getUniquePlacesCounters() as $uniquePlacesCounter) {
                 // all pouleplaces
-                $sportWithNrOfPlaces = (new SportWithNrOfPlacesCreator())->create(
-                    count($uniquePlacesCounter->getPoule()->getPlaces()), $sportInfo->sportWithNrOfFields->sport
-                );
+                $nrOfPlaces = count($uniquePlacesCounter->getPoule()->getPlaces());
 
-                $maxNrOfBatchGames = $simCalculator->getMaxNrOfGamesSimultaneously(
-                    $sportWithNrOfPlaces, $this->input->getRefereeInfo()->selfRefereeInfo);
+                $maxNrOfBatchGames = (new SimCalculator())->calculateMaxSimNrOfSportGames(
+                    new PouleStructure($nrOfPlaces),
+                    $countersForSport->sportWithNrOfFields,
+                    $this->planningPouleStructure->refereeInfo);
 
                 $nrOfBatchesNeeded = (int)ceil($uniquePlacesCounter->getNrOfGames() / $maxNrOfBatchGames);
                 if ($nrOfBatchesNeeded > $maxNrOfBatchesToGo) {
                     return true;
                 }
 
-                // only assigned places
-                $sportWithNrOfPlaces2 = (new SportWithNrOfPlacesCreator())->create(
-                    $uniquePlacesCounter->getNrOfDistinctPlacesAssigned(), $sportInfo->sportWithNrOfFields->sport
-                );
                 $selfRefereeInfo = new SelfRefereeInfo(SelfReferee::Disabled);
-                $maxNrOfBatchGames = $simCalculator->getMaxNrOfGamesSimultaneously($sportWithNrOfPlaces2, $selfRefereeInfo);
+                $maxNrOfBatchGames = (new SimCalculator())->calculateMaxSimNrOfSportGames(
+                    new PouleStructure($uniquePlacesCounter->getNrOfDistinctPlacesAssigned()),
+                    $countersForSport->sportWithNrOfFields,
+                    new PlanningRefereeInfo($selfRefereeInfo)
+                );
                 $nrOfBatchesNeeded = (int)ceil($uniquePlacesCounter->getNrOfGames() / $maxNrOfBatchGames);
                 if ($nrOfBatchesNeeded > $maxNrOfBatchesToGo) {
                     return true;
@@ -231,47 +225,55 @@ class Helper
     }
 
     /**
-     * @param AssignPlanningCounters $infoToAssign
+     * @param AssignPlanningCounters $assignPlanningCounters
      * @return bool
      */
-    public function willMinNrOfBatchGamesBeReached(AssignPlanningCounters $infoToAssign): bool
+    public function willMinNrOfBatchGamesBeReached(AssignPlanningCounters $assignPlanningCounters): bool
     {
         // $sportInfosWithMoreNrOfBatchesNeeded = $this->getSportInfosWithMoreNrOfBatchesNeeded($sportInfoMap);
-        $simCalculator = new SimCalculator($this->input);
-        $maxNrOfGamesSim = $simCalculator->getMaxNrOfGamesPerBatch($infoToAssign);
-        if ($maxNrOfGamesSim < $this->planning->getMinNrOfBatchGames()) {
+        $simCalculator = new SimCalculator();
+        $maxNrOfSimGames = $simCalculator->calculateMaxSimNrOfGames(
+            $this->planningPouleStructure->pouleStructure,
+            $this->planningPouleStructure->createSportsWithNrOfFields(),
+            $this->planningPouleStructure->refereeInfo
+        );
+        if ($maxNrOfSimGames < $this->planning->getMinNrOfBatchGames()) {
             return false;
         }
 
-        $sortedSportInfos = $this->getSportInfosSortedByNrOfSimGames($infoToAssign);
+        $sortedCountersForSports = $this->getCountersForSportsSortedByNrOfSimGames($assignPlanningCounters);
         // $sortedSportInfos = $sportInfoMap->getSportInfoMap();
 
         $nrOfSimultaneousGames = 0;
         while ($nrOfSimultaneousGames < $this->planning->getMinNrOfBatchGames()) {
-            $sportInfo = array_shift($sortedSportInfos);
-            if ($sportInfo === null) {
+            $countersForSport = array_shift($sortedCountersForSports);
+            if ($countersForSport === null) {
                 return false;
             }
-            $nrOfSimultaneousSportGames = $simCalculator->getMaxNrOfSimultaneousSportGames($sportInfo);
+            $nrOfSimultaneousSportGames = $simCalculator->calculateMaxSimNrOfSportGames(
+                $this->planningPouleStructure->pouleStructure,
+                $countersForSport->sportWithNrOfFields,
+                $this->planningPouleStructure->refereeInfo
+            );
             $nrOfSimultaneousGames += $nrOfSimultaneousSportGames;
 
-            if ($sportInfo->getNrOfGames() >= $nrOfSimultaneousSportGames) {
-                $minNrOfBatchesForSportNeeded = (int)floor($sportInfo->getNrOfGames() / $nrOfSimultaneousSportGames);
+            if ($countersForSport->getNrOfGames() >= $nrOfSimultaneousSportGames) {
+                $minNrOfBatchesForSportNeeded = (int)floor($countersForSport->getNrOfGames() / $nrOfSimultaneousSportGames);
                 // $maxNrOfGamesPerBatchLimit = (int)ceil($infoToAssign->getNrOfGames() / $minNrOfBatchesForSportNeeded);
-                $maxNrOfGamesPerBatchLimit = $infoToAssign->getNrOfGames() / $minNrOfBatchesForSportNeeded;
+                $maxNrOfGamesPerBatchLimit = $countersForSport->getNrOfGames() / $minNrOfBatchesForSportNeeded;
                 if ($maxNrOfGamesPerBatchLimit < $this->planning->getMinNrOfBatchGames()) {
                     return false;
                 }
             }
         }
         if ($this->planning->getBatchGamesType() === BatchGamesType::RangeIsOneOrMore) {
-            return $infoToAssign->getNrOfGames() >= $this->planning->getMinNrOfBatchGames();
+            return $countersForSport->getNrOfGames() >= $this->planning->getMinNrOfBatchGames();
         }
 
-        $minNrOfBatchesForGamesPerPlaceNeeded = $this->getMinNrOfBatchesForGamesPerPlaceNeeded($infoToAssign);
+        $minNrOfBatchesForGamesPerPlaceNeeded = $this->getMinNrOfBatchesForGamesPerPlaceNeeded($assignPlanningCounters);
 
-        $restNrOfGames = $infoToAssign->getNrOfGames() % $this->planning->getMinNrOfBatchGames();
-        $roundedNrOfGames = $infoToAssign->getNrOfGames() - $restNrOfGames;
+        $restNrOfGames = $assignPlanningCounters->getNrOfGames() % $this->planning->getMinNrOfBatchGames();
+        $roundedNrOfGames = $assignPlanningCounters->getNrOfGames() - $restNrOfGames;
         $maxNrOfRestGames = $this->totalNrOfGames % $this->planning->getMinNrOfBatchGames();
         if ($restNrOfGames <= $maxNrOfRestGames) {
             $roundedNrOfGames += $this->planning->getMinNrOfBatchGames();
@@ -285,27 +287,36 @@ class Helper
     }
 
     /**
-     * @param AssignPlanningCounters $infoToAssign
-     * @return list<SportWithNrOfFieldsCountNrOfGamesAndUniquePlaces>
+     * @param AssignPlanningCounters $assignPlanningCounters
+     * @return list<NrOfGamesAndUniquePlacesCounterForSport>
      */
-    public function getSportInfosSortedByNrOfSimGames(AssignPlanningCounters $infoToAssign): array
+    public function getCountersForSportsSortedByNrOfSimGames(AssignPlanningCounters $assignPlanningCounters): array
     {
-        $simCalculator = new SimCalculator($this->input);
-        $sportInfos = $infoToAssign->getSportWithNrOfFieldsCountNrOfGamesAndUniquePlacesMap();
-        uasort($sportInfos, function (SportWithNrOfFieldsCountNrOfGamesAndUniquePlaces $infoA, SportWithNrOfFieldsCountNrOfGamesAndUniquePlaces $infoB) use ($simCalculator): int {
-            $nrOfSimGamesA = $simCalculator->getMaxNrOfSimultaneousSportGames($infoA);
-            $nrOfSimGamesB = $simCalculator->getMaxNrOfSimultaneousSportGames($infoB);
+        $countersForSports = $assignPlanningCounters->getCountersForSports();
+        uasort($countersForSports, function (
+            NrOfGamesAndUniquePlacesCounterForSport $a, NrOfGamesAndUniquePlacesCounterForSport $b): int {
+            $simCalculator = new SimCalculator();
+            $nrOfSimGamesA = $simCalculator->calculateMaxSimNrOfSportGames(
+                $this->planningPouleStructure->pouleStructure,
+                $a->sportWithNrOfFields,
+                $this->planningPouleStructure->refereeInfo
+            );
+            $nrOfSimGamesB = $simCalculator->calculateMaxSimNrOfSportGames(
+                $this->planningPouleStructure->pouleStructure,
+                $b->sportWithNrOfFields,
+                $this->planningPouleStructure->refereeInfo
+            );
             return $nrOfSimGamesB - $nrOfSimGamesA;
         });
-        return array_values($sportInfos);
+        return array_values($countersForSports);
     }
 
-    protected function getMinNrOfBatchesForGamesPerPlaceNeeded(AssignPlanningCounters $infoToAssign): int
+    protected function getMinNrOfBatchesForGamesPerPlaceNeeded(AssignPlanningCounters $assignPlanningCounters): int
     {
         $minNrOfBatchesNeeded = 0;
-        foreach ($infoToAssign->getPlaceInfoMap() as $placeInfo) {
-            if ($placeInfo->getNrOfGames() > $minNrOfBatchesNeeded) {
-                $minNrOfBatchesNeeded = $placeInfo->getNrOfGames();
+        foreach ($assignPlanningCounters->getPlaceGameCounters() as $placeGameCounter) {
+            if ($placeGameCounter->getNrOfGames() > $minNrOfBatchesNeeded) {
+                $minNrOfBatchesNeeded = $placeGameCounter->getNrOfGames();
             }
         }
         return $minNrOfBatchesNeeded;
@@ -313,14 +324,14 @@ class Helper
 
     /**
      * @param int $batchNumber
-     * @param AssignPlanningCounters $infoToAssign
+     * @param AssignPlanningCounters $assignPlanningCounters
      * @return list<Place>
      */
-    public function getRequiredPlaces(int $batchNumber, AssignPlanningCounters $infoToAssign): array
+    public function getRequiredPlaces(int $batchNumber, AssignPlanningCounters $assignPlanningCounters): array
     {
         $maxNrOfBatchesToGo = $this->planning->getMaxNrOfBatches() - $batchNumber;
         $requiredPlaces = [];
-        foreach ($infoToAssign->getPlaceInfoMap() as $placeGameCounter) {
+        foreach ($assignPlanningCounters->getPlaceGameCounters() as $placeGameCounter) {
             if ($placeGameCounter->getNrOfGames() >= $maxNrOfBatchesToGo) {
                 $requiredPlaces[] = $placeGameCounter->getPlace();
             }

@@ -6,6 +6,7 @@ namespace SportsScheduler\Resource\Service;
 
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
+use SportsPlanning\Place;
 use SportsPlanning\Resource\GameCounter\Place as PlaceGameCounter;
 use SportsPlanning\Sports\SportWithNrOfFields;
 
@@ -58,23 +59,29 @@ class AssignPlanningCounters
     }
 
     /**
-     * @return array<int, NrOfGamesAndUniquePlacesCounterForSport>
+     * @return list<NrOfGamesAndUniquePlacesCounterForSport>
      */
-    public function getCounterForSportMap(): array
+    public function getCountersForSports(): array
     {
-        return $this->counterForSportMap;
+        return array_values($this->counterForSportMap);
     }
 
-//    /**
-//     * @return array<string, PlaceGameCounter>
-//     */
-//    public function getPlaceInfoMap(): array
-//    {
-//        return $this->placeGameCounters;
-//    }
-
-    public function getNrOfGames(): int
+    /**
+     * @return list<PlaceGameCounter>
+     */
+    public function getPlaceGameCounters(): array
     {
+        return array_values($this->placeGameCounters);
+    }
+
+    public function getNrOfGames(Place|null $place = null): int
+    {
+        if( $place !== null ) {
+            if( !array_key_exists($place->getUniqueIndex(), $this->counterForSportMap) ) {
+                return 0;
+            }
+            return $this->placeGameCounters[$place->getUniqueIndex()]->getNrOfGames();
+        }
         return $this->nrOfGames;
     }
 

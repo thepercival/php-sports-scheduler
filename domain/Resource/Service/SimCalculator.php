@@ -20,7 +20,7 @@ class SimCalculator
 //    private PlanningRefereeInfo $refereeInfo;
     //private PouleStructure $pouleStructure;
 
-    public function __construct(Input $input)
+    public function __construct()
     {
 //        $this->refereeInfo = $input->getRefereeInfo();
         // $this->pouleStructure = $input->createPouleStructure();
@@ -29,16 +29,16 @@ class SimCalculator
         // $this->totalNrOfGames = $this->input->createPouleStructure()->getTotalNrOfGames($sportVariants);
     }
 
-    public function getMaxNrOfGamesPerBatch(AssignPlanningCounters $infoToAssign): int
-    {
-        $maxNrOfGamesPerBatch = 0;
-        foreach ($infoToAssign->getSportWithNrOfFieldsCountNrOfGamesAndUniquePlacesMap() as $sportInfo) {
-            $maxNrOfGamesPerBatch += $this->getMaxNrOfSimultaneousSportGames($sportInfo);
-        }
-        return $maxNrOfGamesPerBatch;
-//        $maxNrOfGamesPerBatch = $this->inputCalculator->reduceByReferees($maxNrOfGamesPerBatch, $this->refereeInfo);
-//        return $this->reduceByPlaces($maxNrOfGamesPerBatch, $infoToAssign);
-    }
+//    public function getMaxNrOfGamesPerBatch(AssignPlanningCounters $assignPlanningCounters): int
+//    {
+//        $maxNrOfGamesPerBatch = 0;
+//        foreach ($assignPlanningCounters as $sportInfo) {
+//            $maxNrOfGamesPerBatch += $this->getMaxNrOfSimultaneousSportGames($sportInfo);
+//        }
+//        return $maxNrOfGamesPerBatch;
+////        $maxNrOfGamesPerBatch = $this->inputCalculator->reduceByReferees($maxNrOfGamesPerBatch, $this->refereeInfo);
+////        return $this->reduceByPlaces($maxNrOfGamesPerBatch, $infoToAssign);
+//    }
 
 //    public function getMaxNrOfSimultaneousSportGames(
 //        PouleStructure $pouleStructure, SportWithNrOfFields $sportWithNrOfFields): int
@@ -47,6 +47,25 @@ class SimCalculator
 //        // $pouleStructure = $this->createPouleStructureFromPoulesFromUniquePlaces($sportCountNrOfGamesAndUniquePlaces);
 //        return $this->getMaxNrOfSportGamesPerBatch($pouleStructure, $sportWithNrOfFields);
 //    }
+
+    /**
+     * @param PouleStructure $pouleStructure
+     * @param list<SportWithNrOfFields> $sportsWithNrOfFields
+     * @param PlanningRefereeInfo $refereeInfo
+     * @return int
+     * @throws \Exception
+     */
+    public function calculateMaxSimNrOfGames(
+        PouleStructure $pouleStructure,
+        array $sportsWithNrOfFields,
+        PlanningRefereeInfo $refereeInfo): int {
+        return array_sum(
+            array_map( function( SportWithNrOfFields $sportWithNrOfFields ) use ($pouleStructure, $refereeInfo): int {
+                return $this->calculateMaxSimNrOfSportGames(
+                    $pouleStructure, $sportWithNrOfFields, $refereeInfo);
+            }, $sportsWithNrOfFields )
+        );
+    }
 
     // per poule kijk je wat het maximum is en daar neem je de laagste waarde van
     public function calculateMaxSimNrOfSportGames(
@@ -93,11 +112,11 @@ class SimCalculator
 //    // aantal pouleplekken niet, want je kunt verschillende poules hebben met
 //    // verschillende aantallen
 
-    public function getMinNrOfBatchesNeeded(SportWithNrOfFieldsCountNrOfGamesAndUniquePlaces $sportInfoTo): int
-    {
-        $maxNrOfSimultaneousGames = $this->getMaxNrOfSimultaneousSportGames($sportInfoTo);
-        return (int)ceil($sportInfoTo->getNrOfGames() / $maxNrOfSimultaneousGames);
-    }
+//    public function getMinNrOfBatchesNeeded(SportWithNrOfFieldsCountNrOfGamesAndUniquePlaces $sportInfoTo): int
+//    {
+//        $maxNrOfSimultaneousGames = $this->getMaxNrOfSimultaneousSportGames($sportInfoTo);
+//        return (int)ceil($sportInfoTo->getNrOfGames() / $maxNrOfSimultaneousGames);
+//    }
 
 
 

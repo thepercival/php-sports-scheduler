@@ -35,11 +35,11 @@ class NrOfGamesAndUniquePlacesCounterForSport
     }
 
     /**
-     * @return array<int, UniquePlacesCounter>
+     * @return list<UniquePlacesCounter>
      */
-    public function getUniquePlacesCounterMap(): array
+    public function getUniquePlacesCounters(): array
     {
-        return $this->uniquePlacesCounterMap;
+        return array_values($this->uniquePlacesCounterMap);
     }
 
     public function getNrOfGames(): int
