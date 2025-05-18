@@ -8,19 +8,17 @@ use PHPUnit\Framework\TestCase;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
-use SportsHelpers\Sports\TogetherSport;
-use SportsPlanning\Output\PlanningOutput;
-use SportsPlanning\Output\PlanningOutput\Extra;
+use SportsPlanning\Input;
 use SportsPlanning\Referee\PlanningRefereeInfo;
-use SportsPlanning\Sports\SportWithNrOfCycles;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
-use SportsScheduler\Combinations\Validators\AgainstValidator;
+use SportsScheduler\Combinations\Validators\TogetherValidator;
 use SportsScheduler\Game\PlannableGameCreator as GameCreator;
 use SportsPlanning\Planning;
 use SportsScheduler\Schedules\CycleCreator;
+use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class AgainstValidatorTest extends TestCase
+class TogetherValidatorTest extends TestCase
 {
     use PlanningCreator;
 
@@ -29,21 +27,19 @@ class AgainstValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1)
         ];
-
         $nrOfPlaces = 2;
         $config = $this->createConfiguration(
             [$nrOfPlaces],
-            $sportsWithNrOfFieldsAndNrOfCycles
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            new PlanningRefereeInfo()
         );
         $planning = $this->createPlanning($config, new SportRange(1, 1));
 
-        // (new PlanningOutput())->outputWithGames($planning, true);
+        $counter = new TogetherValidator($nrOfPlaces);
+        $counter->addGames($planning);
+        //echo $counter;
 
-        $validator = new AgainstValidator($nrOfPlaces);
-        foreach($planning->getGames() as $game) {
-            $validator->addGame($game);
-        }
-        self::assertTrue($validator->balanced());
+        self::assertTrue($counter->balanced());
     }
 
     public function test4Places1VS1(): void
@@ -51,21 +47,19 @@ class AgainstValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1)
         ];
-
         $nrOfPlaces = 4;
         $config = $this->createConfiguration(
             [$nrOfPlaces],
-            $sportsWithNrOfFieldsAndNrOfCycles
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            new PlanningRefereeInfo()
         );
         $planning = $this->createPlanning($config, new SportRange(1, 1));
 
-        // (new PlanningOutput())->outputWithGames($planning, true);
+        $counter = new TogetherValidator($nrOfPlaces);
+        $counter->addGames($planning);
+        //echo $counter;
 
-        $validator = new AgainstValidator($nrOfPlaces);
-        foreach($planning->getGames() as $game) {
-            $validator->addGame($game);
-        }
-        self::assertTrue($validator->balanced());
+        self::assertTrue($counter->balanced());
     }
 
     public function test5Places1VS1(): void
@@ -73,21 +67,19 @@ class AgainstValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1)
         ];
-
         $nrOfPlaces = 5;
         $config = $this->createConfiguration(
             [$nrOfPlaces],
-            $sportsWithNrOfFieldsAndNrOfCycles
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            new PlanningRefereeInfo()
         );
         $planning = $this->createPlanning($config, new SportRange(1, 1));
 
-        // (new PlanningOutput())->outputWithGames($planning, true);
+        $counter = new TogetherValidator($nrOfPlaces);
+        $counter->addGames($planning);
+        //echo $counter;
 
-        $validator = new AgainstValidator($nrOfPlaces);
-        foreach($planning->getGames() as $game) {
-            $validator->addGame($game);
-        }
-        self::assertTrue($validator->balanced());
+        self::assertTrue($counter->balanced());
     }
 
     public function test6Places1VS1(): void
@@ -95,21 +87,19 @@ class AgainstValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1)
         ];
-
         $nrOfPlaces = 6;
         $config = $this->createConfiguration(
             [$nrOfPlaces],
-            $sportsWithNrOfFieldsAndNrOfCycles
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            new PlanningRefereeInfo()
         );
         $planning = $this->createPlanning($config, new SportRange(1, 1));
 
-        // (new PlanningOutput())->outputWithGames($planning, true);
+        $counter = new TogetherValidator($nrOfPlaces);
+        $counter->addGames($planning);
+        //echo $counter;
 
-        $validator = new AgainstValidator($nrOfPlaces);
-        foreach($planning->getGames() as $game) {
-            $validator->addGame($game);
-        }
-        self::assertTrue($validator->balanced());
+        self::assertTrue($counter->balanced());
     }
 
     public function test5Places2VS2(): void
@@ -117,24 +107,19 @@ class AgainstValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), 1, 1)
         ];
-
         $nrOfPlaces = 5;
         $config = $this->createConfiguration(
             [$nrOfPlaces],
-            $sportsWithNrOfFieldsAndNrOfCycles
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            new PlanningRefereeInfo()
         );
         $planning = $this->createPlanning($config, new SportRange(1, 1));
 
-        $validator = new AgainstValidator($nrOfPlaces);
-        $validator->addGames($planning);
+        $counter = new TogetherValidator($nrOfPlaces);
+        $counter->addGames($planning);
+        //echo $counter;
 
-        $extras = Extra::Input->value + Extra::Games->value + Extra::Totals->value;
-        (new PlanningOutput())->output($planning, $extras);
-
-        foreach($planning->getGames() as $game) {
-            $validator->addGame($game);
-        }
-        self::assertTrue($validator->balanced());
+        self::assertTrue($counter->balanced());
     }
 
 //    public function test6Places2VS2(): void
@@ -147,7 +132,7 @@ class AgainstValidatorTest extends TestCase
 //        $gameGenerator->generateUnassignedGames($planning);
 //        // (new PlanningOutput())->outputWithGames($planning, true);
 //
-//        $counter = new AgainstAndAgainstCounter($input->getPoule(1), $input->getSport(1));
+//        $counter = new WithAndAgainstCounter($input->getPoule(1), $input->getSport(1));
 //        $counter->addGames($planning);
 //        echo $counter;
 //

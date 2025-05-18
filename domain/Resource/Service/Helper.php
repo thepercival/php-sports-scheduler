@@ -12,7 +12,6 @@ use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeSamePouleBatch;
 use SportsPlanning\Exceptions\NoBestPlanningException;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
-use SportsPlanning\Input;
 use SportsPlanning\Place;
 use SportsPlanning\Planning\BatchGamesType;
 use SportsPlanning\Planning\Type as PlanningType;
@@ -61,7 +60,7 @@ class Helper
     public function sortGamesForNextBatch(
         Batch|SelfRefereeSamePouleBatch|SelfRefereeOtherPouleBatch $previousBatch,
         array &$gamesForBatchTmp,
-        AssignPlanningCounters $infoToAssign
+        PlanningCounters $infoToAssign
     ): void {
         uasort(
             $gamesForBatchTmp,
@@ -94,7 +93,7 @@ class Helper
         );
     }
 
-    protected function getMostToAssign(AgainstGame|TogetherGame $game, AssignPlanningCounters $assignedInfo): int
+    protected function getMostToAssign(AgainstGame|TogetherGame $game, PlanningCounters $assignedInfo): int
     {
         $mosts = array_map( function (Place $place) use ($assignedInfo): int {
             return $assignedInfo->getNrOfGames($place);
@@ -102,7 +101,7 @@ class Helper
         return count($mosts) > 0 ? max($mosts) : 0;
     }
 
-    protected function getSumToAssign(AgainstGame|TogetherGame $game, AssignPlanningCounters $assignedInfo): int
+    protected function getSumToAssign(AgainstGame|TogetherGame $game, PlanningCounters $assignedInfo): int
     {
         return array_sum(
             array_map( function (Place $place) use ($assignedInfo): int {
@@ -113,80 +112,80 @@ class Helper
 
     /**
      * @param int $batchNumber
-     * @param AssignPlanningCounters $infoToAssign
+     * @param PlanningCounters $unassignedPlanningCounters
      * @return bool
      */
-    public function canGamesBeAssigned(int $batchNumber, AssignPlanningCounters $infoToAssign): bool
+    public function canGamesBeAssigned(int $batchNumber, PlanningCounters $unassignedPlanningCounters): bool
     {
         $maxNrOfBatches = $this->maxNrOfBatches === null ? $this->planning->getMaxNrOfBatches() : $this->maxNrOfBatches;
         $maxNrOfBatchesToGo = $maxNrOfBatches - $batchNumber;
-        if ($this->willMaxNrOfBatchesBeExceeded($maxNrOfBatchesToGo, $infoToAssign)) {
+        if ($this->willMaxNrOfBatchesBeExceeded($maxNrOfBatchesToGo, $unassignedPlanningCounters)) {
             return false;
         }
         if (
             (
-                $infoToAssign->getNrOfGames() < $this->planning->getMinNrOfBatchGames()
+                $unassignedPlanningCounters->getNrOfGames() < $this->planning->getMinNrOfBatchGames()
                 && $this->planning->getBatchGamesType() === BatchGamesType::RangeIsZero
             )
             ||
-            $this->willMinNrOfBatchGamesBeReached($infoToAssign)) {
+            $this->willMinNrOfBatchGamesBeReached($unassignedPlanningCounters)) {
             return true;
         }
         return false;
     }
 
 
-    public function willMaxNrOfBatchesBeExceeded(int $maxNrOfBatchesToGo, AssignPlanningCounters $infoToAssign): bool
+    public function willMaxNrOfBatchesBeExceeded(int $maxNrOfBatchesToGo, PlanningCounters $unassignedPlanningCounters): bool
     {
-        if ($this->willMaxNrOfBatchesBeExceededForSports($maxNrOfBatchesToGo, $infoToAssign)) {
+        if ($this->willMaxNrOfBatchesBeExceededForSports($maxNrOfBatchesToGo, $unassignedPlanningCounters)) {
             return true;
         }
-        if ($this->willMaxNrOfBatchesBeExceededForPlaces($maxNrOfBatchesToGo, $infoToAssign)) {
+        if ($this->willMaxNrOfBatchesBeExceededForPlaces($maxNrOfBatchesToGo, $unassignedPlanningCounters)) {
             return true;
         }
         return false;
     }
 
     public function willMaxNrOfBatchesBeExceededForSports(
-        int $maxNrOfBatchesToGo, AssignPlanningCounters $assignPlanningCounters): bool
+        int $maxNrOfBatchesToGo, PlanningCounters $unassignedPlanningCounters): bool
     {
-        $simCalculator = new SimCalculator();
-
-        $maxNrOfBatchGamesAllSports = 0;
-        foreach ($assignPlanningCounters->getCountersForSports() as $countersForSport) {
-            $maxNrOfBatchGames = $simCalculator->calculateMaxSimNrOfSportGames(
+        $maxUnassignedNrOfBatchGamesAllSports = 0;
+        foreach ($unassignedPlanningCounters->getCountersForSports() as $countersForSport) {
+            $maxUnassignedNrOfBatchGames = (new SimCalculator())->calculateMaxSimNrOfSportGames(
                 $this->planningPouleStructure->pouleStructure,
                 $countersForSport->sportWithNrOfFields,
                 $this->planningPouleStructure->refereeInfo
             );
-            if ($maxNrOfBatchGames > $this->planning->getMaxNrOfBatchGames()) {
-                $maxNrOfBatchGames = $this->planning->getMaxNrOfBatchGames();
+            if ($maxUnassignedNrOfBatchGames > $this->planning->getMaxNrOfBatchGames()) {
+                $maxUnassignedNrOfBatchGames = $this->planning->getMaxNrOfBatchGames();
             }
-            $minNrOfBatches = (int)ceil($countersForSport->getNrOfGames() / $maxNrOfBatchGames);
+
+            $minNrOfBatches = (int)ceil($countersForSport->getNrOfGames() / $maxUnassignedNrOfBatchGames);
             if ($minNrOfBatches > $maxNrOfBatchesToGo) {
                 return true;
             }
-            $maxNrOfBatchGames = (int)ceil($countersForSport->getNrOfGames() / $minNrOfBatches);
-            $maxNrOfBatchGamesAllSports += $maxNrOfBatchGames;
+//            $maxUnassignedNrOfBatchGames = (int)ceil($countersForSport->getNrOfGames() / $minNrOfBatches);
+            $maxUnassignedNrOfBatchGamesAllSports += $maxUnassignedNrOfBatchGames;
         }
-        if ($maxNrOfBatchGamesAllSports < $this->planning->getMinNrOfBatchGames()) {
-            return true;
-        }
+//        if ($maxNrOfBatchGamesAllSports < $this->planning->getMinNrOfBatchGames()) {
+//            return true;
+//        }
+        // $maxNrOfBatchGamesAllSports = $simCalculator->getMaxNrOfGamesPerBatch($infoToAssign);
 
-        if ($maxNrOfBatchGamesAllSports > $this->planning->getMaxNrOfBatchGames()) {
-            $maxNrOfBatchGamesAllSports = $this->planning->getMaxNrOfBatchGames();
+        if ($maxUnassignedNrOfBatchGamesAllSports > $this->planning->getMaxNrOfBatchGames()) {
+            $maxUnassignedNrOfBatchGamesAllSports = $this->planning->getMaxNrOfBatchGames();
         }
-        $minNrOfBatches = (int)ceil($assignPlanningCounters->getNrOfGames() / $maxNrOfBatchGamesAllSports);
+        $minNrOfBatches = (int)ceil($unassignedPlanningCounters->getNrOfGames() / $maxUnassignedNrOfBatchGamesAllSports);
         return $minNrOfBatches > $maxNrOfBatchesToGo;
     }
 
     public function willMaxNrOfBatchesBeExceededForPlaces(
-        int $maxNrOfBatchesToGo, AssignPlanningCounters $assignPlanningCounters): bool
+        int $maxNrOfBatchesToGo, PlanningCounters $unassignedPlanningCounters): bool
     {
 //        if ($infoToAssign->isEmpty()) {
 //            return false;
 //        }
-        foreach ($assignPlanningCounters->getPlaceGameCounters() as $placeGameCounter) {
+        foreach ($unassignedPlanningCounters->getPlaceGameCounters() as $placeGameCounter) {
             if ($placeGameCounter->getNrOfGames() > $maxNrOfBatchesToGo) {
                 return true;
             }
@@ -194,7 +193,7 @@ class Helper
 
         // //////////////////////
         // per poule en sport kijken als het nog gehaald kunnen worden
-        foreach ($assignPlanningCounters->getCountersForSports() as $countersForSport) {
+        foreach ($unassignedPlanningCounters->getCountersForSports() as $countersForSport) {
             foreach ($countersForSport->getUniquePlacesCounters() as $uniquePlacesCounter) {
                 // all pouleplaces
                 $nrOfPlaces = count($uniquePlacesCounter->getPoule()->getPlaces());
@@ -225,10 +224,10 @@ class Helper
     }
 
     /**
-     * @param AssignPlanningCounters $assignPlanningCounters
+     * @param PlanningCounters $assignPlanningCounters
      * @return bool
      */
-    public function willMinNrOfBatchGamesBeReached(AssignPlanningCounters $assignPlanningCounters): bool
+    public function willMinNrOfBatchGamesBeReached(PlanningCounters $unassignedPlanningCounters): bool
     {
         // $sportInfosWithMoreNrOfBatchesNeeded = $this->getSportInfosWithMoreNrOfBatchesNeeded($sportInfoMap);
         $simCalculator = new SimCalculator();
@@ -241,7 +240,7 @@ class Helper
             return false;
         }
 
-        $sortedCountersForSports = $this->getCountersForSportsSortedByNrOfSimGames($assignPlanningCounters);
+        $sortedCountersForSports = $this->getCountersForSportsSortedByNrOfSimGames($unassignedPlanningCounters);
         // $sortedSportInfos = $sportInfoMap->getSportInfoMap();
 
         $nrOfSimultaneousGames = 0;
@@ -267,13 +266,13 @@ class Helper
             }
         }
         if ($this->planning->getBatchGamesType() === BatchGamesType::RangeIsOneOrMore) {
-            return $countersForSport->getNrOfGames() >= $this->planning->getMinNrOfBatchGames();
+            return $unassignedPlanningCounters->getNrOfGames() >= $this->planning->getMinNrOfBatchGames();
         }
 
-        $minNrOfBatchesForGamesPerPlaceNeeded = $this->getMinNrOfBatchesForGamesPerPlaceNeeded($assignPlanningCounters);
+        $minNrOfBatchesForGamesPerPlaceNeeded = $this->getMinNrOfBatchesForGamesPerPlaceNeeded($unassignedPlanningCounters);
 
-        $restNrOfGames = $assignPlanningCounters->getNrOfGames() % $this->planning->getMinNrOfBatchGames();
-        $roundedNrOfGames = $assignPlanningCounters->getNrOfGames() - $restNrOfGames;
+        $restNrOfGames = $unassignedPlanningCounters->getNrOfGames() % $this->planning->getMinNrOfBatchGames();
+        $roundedNrOfGames = $unassignedPlanningCounters->getNrOfGames() - $restNrOfGames;
         $maxNrOfRestGames = $this->totalNrOfGames % $this->planning->getMinNrOfBatchGames();
         if ($restNrOfGames <= $maxNrOfRestGames) {
             $roundedNrOfGames += $this->planning->getMinNrOfBatchGames();
@@ -287,12 +286,12 @@ class Helper
     }
 
     /**
-     * @param AssignPlanningCounters $assignPlanningCounters
+     * @param PlanningCounters $planningCounters
      * @return list<NrOfGamesAndUniquePlacesCounterForSport>
      */
-    public function getCountersForSportsSortedByNrOfSimGames(AssignPlanningCounters $assignPlanningCounters): array
+    public function getCountersForSportsSortedByNrOfSimGames(PlanningCounters $planningCounters): array
     {
-        $countersForSports = $assignPlanningCounters->getCountersForSports();
+        $countersForSports = $planningCounters->getCountersForSports();
         uasort($countersForSports, function (
             NrOfGamesAndUniquePlacesCounterForSport $a, NrOfGamesAndUniquePlacesCounterForSport $b): int {
             $simCalculator = new SimCalculator();
@@ -311,7 +310,7 @@ class Helper
         return array_values($countersForSports);
     }
 
-    protected function getMinNrOfBatchesForGamesPerPlaceNeeded(AssignPlanningCounters $assignPlanningCounters): int
+    protected function getMinNrOfBatchesForGamesPerPlaceNeeded(PlanningCounters $assignPlanningCounters): int
     {
         $minNrOfBatchesNeeded = 0;
         foreach ($assignPlanningCounters->getPlaceGameCounters() as $placeGameCounter) {
@@ -324,10 +323,10 @@ class Helper
 
     /**
      * @param int $batchNumber
-     * @param AssignPlanningCounters $assignPlanningCounters
+     * @param PlanningCounters $assignPlanningCounters
      * @return list<Place>
      */
-    public function getRequiredPlaces(int $batchNumber, AssignPlanningCounters $assignPlanningCounters): array
+    public function getRequiredPlaces(int $batchNumber, PlanningCounters $assignPlanningCounters): array
     {
         $maxNrOfBatchesToGo = $this->planning->getMaxNrOfBatches() - $batchNumber;
         $requiredPlaces = [];

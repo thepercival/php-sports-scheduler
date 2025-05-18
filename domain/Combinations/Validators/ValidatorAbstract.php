@@ -9,6 +9,7 @@ use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\WithNrCounterMap;
 use SportsPlanning\Counters\Reports\DuoPlaceNrCountersPerAmountReport;
 use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Planning;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
@@ -48,5 +49,5 @@ abstract class ValidatorAbstract
         return $report->range->getAmountDifference() === 0;
     }
 
-     abstract public function addGame(AgainstGame $game): void;
+     abstract public function addGame(TogetherGame|AgainstGame $game): void;
 }

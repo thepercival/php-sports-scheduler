@@ -27,15 +27,12 @@ class PerformanceTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
-        $planning = $this->createPlanning(
-            $this->createInput(
-                [5, 4, 4, 4, 4, 4],
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
-            ),
-            $nrOfGamesPerBatchRange
+        $config = $this->createConfiguration(
+            [5, 4, 4, 4, 4, 4],
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
         );
-
+        $planning = $this->createPlanning($config,$nrOfGamesPerBatchRange);
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -56,14 +53,12 @@ class PerformanceTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 9, 1)
         ];
-        $planning = $this->createPlanning(
-            $this->createInput(
-                [7, 7, 7, 7],
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
-            ),
-            $nrOfGamesPerBatchRange
+        $config = $this->createConfiguration(
+            [7, 7, 7, 7],
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
         );
+        $planning = $this->createPlanning($config,$nrOfGamesPerBatchRange);
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -89,15 +84,12 @@ class PerformanceTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 9, 1)
         ];
-        $planning = $this->createPlanning(
-            $this->createInput(
-                [7, 7, 7, 7],
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
-            ),
-            $nrOfGamesPerBatchRange,
-            4
+        $config = $this->createConfiguration(
+            [7, 7, 7, 7],
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
         );
+        $planning = $this->createPlanning($config,$nrOfGamesPerBatchRange,4);
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -124,14 +116,12 @@ class PerformanceTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 4, 1)
         ];
-        $planning = $this->createPlanning(
-            $this->createInput(
-                [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                new PlanningRefereeInfo()
-            ),
-            $nrOfGamesPerBatchRange
+        $config = $this->createConfiguration(
+            [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            new PlanningRefereeInfo()
         );
+        $planning = $this->createPlanning($config,$nrOfGamesPerBatchRange);
 //        self::assertEquals(
 //            '[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] - [against(1vs1) h2h:gpp=>1:0 f(4)] - ref=>0:',
 //            $input->createConfiguration()->getName()

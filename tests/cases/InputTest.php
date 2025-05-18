@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace SportsScheduler\Tests;
 
 use PHPUnit\Framework\TestCase;
+use SportsHelpers\SelfReferee;
+use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
+use SportsPlanning\Input;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\PlanningState;
 use SportsPlanning\Referee\PlanningRefereeInfo;
@@ -22,10 +25,12 @@ class InputTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
-        $input = $this->createInput(
-            [5],
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo()
+        $input = new Input(
+            $this->createConfiguration(
+                [5],
+                $sportsWithNrOfFieldsAndNrOfCycles,
+                new PlanningRefereeInfo()
+            )
         );
         $batchGamesRange = new SportRange(2, 2);
         $planningA = new Planning($input, $batchGamesRange, 0);
@@ -44,10 +49,12 @@ class InputTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
-        $input = $this->createInput(
-            [5],
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo()
+        $input = new Input(
+            $this->createConfiguration(
+                [5],
+                $sportsWithNrOfFieldsAndNrOfCycles,
+                new PlanningRefereeInfo()
+            )
         );
         $batchGamesRange = new SportRange(2, 2);
         $planningA = new Planning($input, $batchGamesRange, 0);
@@ -66,11 +73,14 @@ class InputTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
-        $input = $this->createInput(
-            [5],
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo()
+        $input = new Input(
+            $this->createConfiguration(
+                [5],
+                $sportsWithNrOfFieldsAndNrOfCycles,
+                new PlanningRefereeInfo()
+            )
         );
+
         $batchGamesRange = new SportRange(2, 2);
         $planningA = new Planning($input, $batchGamesRange, 0);
         $planningA->setState(PlanningState::Succeeded);
@@ -88,10 +98,12 @@ class InputTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
-        $input = $this->createInput(
-            [5],
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo()
+        $input = new Input(
+            $this->createConfiguration(
+                [5],
+                $sportsWithNrOfFieldsAndNrOfCycles,
+                new PlanningRefereeInfo()
+            )
         );
         $batchGamesRange = new SportRange(2, 2);
         $planningA = new Planning($input, $batchGamesRange, 1);

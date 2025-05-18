@@ -6,11 +6,12 @@ namespace SportsScheduler\Combinations\Validators;
 
 use SportsPlanning\Counters\Maps\Schedule\WithNrCounterMap;
 use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
 
-class WithValidator extends ValidatorAbstract
+class TogetherValidator extends ValidatorAbstract
 {
     protected WithNrCounterMap $withNrCounterMap;
 
@@ -25,8 +26,12 @@ class WithValidator extends ValidatorAbstract
         return $this->duoPlaceNrCounterMapIsBalanced($this->withNrCounterMap);
     }
 
-    public function addGame(AgainstGame $game): void
+    public function addGame(AgainstGame|TogetherGame $game): void
     {
+        if( $game instanceof TogetherGame ) {
+            $this->withNrCounterMap->incrementDuoPlaceNrs( $game->convertToDuoPlaceNrs() );
+            return;
+        }
         $homeAway = $game->createHomeAway();
         if ($homeAway instanceof OneVsOneHomeAway) {
             return;

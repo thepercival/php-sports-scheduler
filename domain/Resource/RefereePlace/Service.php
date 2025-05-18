@@ -6,6 +6,7 @@ use DateTimeImmutable;
 use SportsHelpers\SelfReferee;
 use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
+use SportsPlanning\Planning\PlanningState;
 use SportsScheduler\Exceptions\TimeoutException;
 use SportsPlanning\Game;
 use SportsPlanning\Game\AgainstGame;
@@ -13,7 +14,6 @@ use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Input;
 use SportsPlanning\Place;
 use SportsPlanning\Planning;
-use SportsPlanning\Planning\State as PlanningState;
 use SportsPlanning\Planning\TimeoutConfig;
 use SportsPlanning\Resource\GameCounter\Place as PlaceGameCounter;
 

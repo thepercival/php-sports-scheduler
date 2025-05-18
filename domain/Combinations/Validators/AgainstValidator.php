@@ -7,6 +7,7 @@ namespace SportsScheduler\Combinations\Validators;
 use PHPStan\Rules\VariableVariables\VariableMethodCallableRule;
 use SportsPlanning\Counters\Maps\Schedule\AgainstNrCounterMap;
 use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\HomeAways\OneVsOneHomeAway;
 use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
@@ -26,8 +27,11 @@ class AgainstValidator extends ValidatorAbstract
         return $this->duoPlaceNrCounterMapIsBalanced($this->againstNrCounterMap);
     }
 
-    public function addGame(AgainstGame $game): void
+    public function addGame(AgainstGame|TogetherGame $game): void
     {
+        if( $game instanceof TogetherGame ) {
+            return;
+        }
         $homeAway = $game->createHomeAway();
         $this->addHomeAway($homeAway);
     }

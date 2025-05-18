@@ -15,7 +15,7 @@ class DuoPlaceNrIteratorTest extends TestCase
         $duoPlaceNrIterator = new DuoPlaceNrIterator(new SportRange(1, 2));
         self::assertTrue($duoPlaceNrIterator->valid());
         $currentIt = $duoPlaceNrIterator->current();
-        self::assertSame('1 & 2' , $currentIt->getIndex());
+        self::assertSame('1 & 2' , $currentIt?->getIndex());
         $duoPlaceNrIterator->next();
         self::assertNull($duoPlaceNrIterator->current());
     }
@@ -26,15 +26,15 @@ class DuoPlaceNrIteratorTest extends TestCase
         self::assertTrue($duoPlaceNrIterator->valid());
 
         $currentIt = $duoPlaceNrIterator->current();
-        self::assertSame('1 & 2' , $currentIt->getIndex());
+        self::assertSame('1 & 2' , $currentIt?->getIndex());
         $duoPlaceNrIterator->next();
 
         $currentIt = $duoPlaceNrIterator->current();
-        self::assertSame('1 & 3' , $currentIt->getIndex());
+        self::assertSame('1 & 3' , $currentIt?->getIndex());
         $duoPlaceNrIterator->next();
 
         $currentIt = $duoPlaceNrIterator->current();
-        self::assertSame('2 & 3' , $currentIt->getIndex());
+        self::assertSame('2 & 3' , $currentIt?->getIndex());
         $duoPlaceNrIterator->next();
 
         self::assertNull($duoPlaceNrIterator->current());
@@ -46,27 +46,27 @@ class DuoPlaceNrIteratorTest extends TestCase
         self::assertTrue($duoPlaceNrIterator->valid());
 
         $currentIt = $duoPlaceNrIterator->current();
-        self::assertSame('1 & 2' , $currentIt->getIndex());
+        self::assertSame('1 & 2' , $currentIt?->getIndex());
         $duoPlaceNrIterator->next();
 
         $currentIt = $duoPlaceNrIterator->current();
-        self::assertSame('1 & 3' , $currentIt->getIndex());
+        self::assertSame('1 & 3' , $currentIt?->getIndex());
         $duoPlaceNrIterator->next();
 
         $currentIt = $duoPlaceNrIterator->current();
-        self::assertSame('1 & 4' , $currentIt->getIndex());
+        self::assertSame('1 & 4' , $currentIt?->getIndex());
         $duoPlaceNrIterator->next();
 
         $currentIt = $duoPlaceNrIterator->current();
-        self::assertSame('2 & 3' , $currentIt->getIndex());
+        self::assertSame('2 & 3' , $currentIt?->getIndex());
         $duoPlaceNrIterator->next();
 
         $currentIt = $duoPlaceNrIterator->current();
-        self::assertSame('2 & 4' , $currentIt->getIndex());
+        self::assertSame('2 & 4' , $currentIt?->getIndex());
         $duoPlaceNrIterator->next();
 
         $currentIt = $duoPlaceNrIterator->current();
-        self::assertSame('3 & 4' , $currentIt->getIndex());
+        self::assertSame('3 & 4' , $currentIt?->getIndex());
         $duoPlaceNrIterator->next();
 
         self::assertNull($duoPlaceNrIterator->current());

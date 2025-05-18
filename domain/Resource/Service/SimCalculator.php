@@ -5,14 +5,11 @@ namespace SportsScheduler\Resource\Service;
 use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
-use SportsPlanning\Input;
-use SportsPlanning\PlanningPouleStructure;
 use SportsPlanning\Sports\SportWithNrOfFields;
 use SportsPlanning\Sports\SportWithNrOfPlaces\AgainstOneVsOneWithNrOfPlaces;
 use SportsPlanning\Sports\SportWithNrOfPlaces\AgainstOneVsTwoWithNrOfPlaces;
 use SportsPlanning\Sports\SportWithNrOfPlaces\AgainstTwoVsTwoWithNrOfPlaces;
 use SportsPlanning\Sports\SportWithNrOfPlaces\TogetherSportWithNrOfPlaces;
-use SportsScheduler\Resource\UniquePlacesCounter;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 
 class SimCalculator

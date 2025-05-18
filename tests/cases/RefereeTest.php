@@ -6,6 +6,7 @@ namespace SportsScheduler\Tests;
 
 use PHPUnit\Framework\TestCase;
 use SportsPlanning\Referee;
+use SportsPlanning\Input;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 class RefereeTest extends TestCase
@@ -14,7 +15,8 @@ class RefereeTest extends TestCase
 
     public function testConstruct(): void
     {
-        $input = $this->createInput([3]);
+        $input = new Input( $this->createConfiguration([3]) );
+
         $referee = new Referee($input);
         $referee->setPriority(2);
         self::assertSame($input, $referee->getInput());

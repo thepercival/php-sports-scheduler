@@ -21,6 +21,8 @@ use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\AgainstGamePlace;
+use SportsPlanning\Input\Configuration;
+use SportsPlanning\Input;
 use SportsPlanning\Output\PlanningOutput;
 use SportsPlanning\Schedules\ScheduleWithNrOfPlaces;
 use SportsPlanning\Sports\SportWithNrOfCycles;
@@ -46,7 +48,8 @@ class PlannimgValidatorTest extends TestCase
 
     public function testHasEnoughTotalNrOfGames(): void
     {
-        $planning = new Planning($this->createInput([3,3]), new SportRange(1, 1), 1);
+        $config = $this->createConfiguration([3,3]);
+        $planning = new Planning(new Input($config), new SportRange(1, 1), 1);
 
         $planningValidator = new PlanningValidator($this->createLogger());
         $validity = $planningValidator->validate($planning);
@@ -58,7 +61,8 @@ class PlannimgValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), 1, 1)
         ];
-        $planning = $this->createPlanning($this->createInput([5], $sportsWithNrOfFieldsAndNrOfCycles));
+        $configuration = $this->createConfiguration([5], $sportsWithNrOfFieldsAndNrOfCycles);
+        $planning = $this->createPlanning($configuration);
         $firstGame = $planning->getAgainstGames()->first();
         self::assertNotFalse($firstGame);
         $firstGame->getPlaces()->clear();
@@ -73,9 +77,8 @@ class PlannimgValidatorTest extends TestCase
     public function testHasEmptyGameRefereePlace(): void
     {
         $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
-        $planning = $this->createPlanning(
-            $this->createInput([5], null, $refereeInfo)
-        );
+        $configuration = $this->createConfiguration([5], null, $refereeInfo);
+        $planning = $this->createPlanning($configuration);
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -102,9 +105,8 @@ class PlannimgValidatorTest extends TestCase
 
     public function testEmptyGameReferee(): void
     {
-        $planning = $this->createPlanning(
-            $this->createInput([5])
-        );
+        $configuration = $this->createConfiguration([5]);
+        $planning = $this->createPlanning($configuration);
 
         /** @var AgainstGame $planningGame */
         $planningGame = $planning->getAgainstGames()->first();
@@ -119,8 +121,8 @@ class PlannimgValidatorTest extends TestCase
     {
         $refereeInfo = new PlanningRefereeInfo();
         $nrOfPlaces = 5;
-        $input = $this->createInput([$nrOfPlaces], null, $refereeInfo);
-        $planning = new Planning($input, new SportRange(1, 1), 1);
+        $configuration = $this->createConfiguration([$nrOfPlaces], null, $refereeInfo);
+        $planning = new Planning(new Input($configuration), new SportRange(1, 1), 1);
 
         $sportsWithNrOfCycles = [
             new SportWithNrOfCycles(new AgainstOneVsOne(), 1),
@@ -146,7 +148,8 @@ class PlannimgValidatorTest extends TestCase
 
     public function testGamesInARow(): void
     {
-        $planning = $this->createPlanning($this->createInput([4]), null);
+        $configuration = $this->createConfiguration([4]);
+        $planning = $this->createPlanning($configuration, null);
 
         $planningValidator = new PlanningValidator($this->createLogger());
         $validity = $planningValidator->validate($planning);
@@ -173,7 +176,8 @@ class PlannimgValidatorTest extends TestCase
 
     public function testGameUnequalHomeAway(): void
     {
-        $planning = $this->createPlanning($this->createInput([2]));
+        $configuration = $this->createConfiguration([2]);
+        $planning = $this->createPlanning($configuration);
 
         $planningGame = $planning->getAgainstGames()->first();
         self::assertInstanceOf(AgainstGame::class, $planningGame);
@@ -193,7 +197,8 @@ class PlannimgValidatorTest extends TestCase
 
     public function testBatchMultipleFields(): void
     {
-        $planning = $this->createPlanning($this->createInput([5]), new SportRange(2, 2));
+        $configuration = $this->createConfiguration([5]);
+        $planning = $this->createPlanning($configuration, new SportRange(2, 2));
 
         $planningGame = $planning->getAgainstGames()->first();
         self::assertInstanceOf(AgainstGame::class, $planningGame);
@@ -214,10 +219,8 @@ class PlannimgValidatorTest extends TestCase
 
     public function testBatchMultipleReferees(): void
     {
-        $planning = $this->createPlanning(
-            $this->createInput([4]),
-            new SportRange(2, 2)
-        );
+        $configuration = $this->createConfiguration([4]);
+        $planning = $this->createPlanning($configuration, new SportRange(2, 2));
 
         $planningGame = $planning->getAgainstGames()->first();
         self::assertInstanceOf(AgainstGame::class, $planningGame);
@@ -238,9 +241,8 @@ class PlannimgValidatorTest extends TestCase
 
     public function testValidResourcesPerBatch(): void
     {
-        $planning = $this->createPlanning(
-            $this->createInput([5])
-        );
+        $configuration = $this->createConfiguration([4]);
+        $planning = $this->createPlanning($configuration);
 
         $planningValidator = new PlanningValidator($this->createLogger());
         $validity = $planningValidator->validate($planning);
@@ -252,7 +254,8 @@ class PlannimgValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 3, 1),
         ];
-        $planning = $this->createPlanning($this->createInput([4], $sportsWithNrOfFieldsAndNrOfCycles));
+        $configuration = $this->createConfiguration([4], $sportsWithNrOfFieldsAndNrOfCycles);
+        $planning = $this->createPlanning($configuration);
 
         $planningGame = $planning->getAgainstGames()->first();
         self::assertInstanceOf(AgainstGame::class, $planningGame);
@@ -272,14 +275,8 @@ class PlannimgValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1),
         ];
-        $planning = $this->createPlanning(
-            $this->createInput(
-                [8,8,8],
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                new PlanningRefereeInfo(),
-                true),
-            new SportRange(6,6)
-        );
+        $configuration = $this->createConfiguration([8,8,8], $sportsWithNrOfFieldsAndNrOfCycles, null, true);
+        $planning = $this->createPlanning($configuration, new SportRange(6,6));
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -289,9 +286,8 @@ class PlannimgValidatorTest extends TestCase
     public function testValidResourcesPerReferee(): void
     {
         $refereeInfo = new PlanningRefereeInfo(3);
-        $planning = $this->createPlanning(
-            $this->createInput([5], null, $refereeInfo)
-        );
+        $configuration = $this->createConfiguration([8,8,8], null, $refereeInfo);
+        $planning = $this->createPlanning($configuration);
 
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->output($planning, true);
@@ -349,13 +345,11 @@ class PlannimgValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1),
         ];
-        $planning = $this->createPlanning(
-            $this->createInput(
-                [3, 3],
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
-            )
-        );
+        $configuration = $this->createConfiguration(
+            [3,3],
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule)));
+        $planning = $this->createPlanning($configuration);
 
         $firstBatch = $planning->createFirstBatch();
         self::assertTrue($firstBatch instanceof SelfRefereeBatchSamePoule
@@ -392,13 +386,11 @@ class PlannimgValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1),
         ];
-        $planning = $this->createPlanning(
-            $this->createInput(
-                [5],
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
-            )
-        );
+        $configuration = $this->createConfiguration(
+            [5],
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule)));
+        $planning = $this->createPlanning($configuration);
 
         $firstBatch = $planning->createFirstBatch();
         self::assertTrue(
@@ -437,13 +429,12 @@ class PlannimgValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1),
         ];
-        $planning = $this->createPlanning(
-            $this->createInput(
-                [5, 4],
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                $refereeInfo
-            )
-        );
+        $configuration = $this->createConfiguration(
+            [5, 4],
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            $refereeInfo);
+        $planning = $this->createPlanning($configuration);
+
         $refereePlaceService = new RefereePlaceService($planning);
         $firstBatch = $planning->createFirstBatch();
         self::assertTrue($firstBatch instanceof SelfRefereeBatchSamePoule
@@ -458,9 +449,11 @@ class PlannimgValidatorTest extends TestCase
     public function testValidityDescriptions(): void
     {
         $refereeInfo = new PlanningRefereeInfo(3);
-        $planning = $this->createPlanning(
-            $this->createInput([5, 4], null, $refereeInfo)
-        );
+        $configuration = $this->createConfiguration(
+            [5, 4],
+            null,
+            $refereeInfo);
+        $planning = $this->createPlanning($configuration);
 
         $planningValidator = new PlanningValidator($this->createLogger());
         $planningValidator->validate($planning);
@@ -489,9 +482,11 @@ class PlannimgValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 2),
         ];
-        $input = $this->createInput([3], $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo);
-
-        $planning = $this->createPlanning($input);
+        $configuration = $this->createConfiguration(
+            [3],
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            $refereeInfo);
+        $planning = $this->createPlanning($configuration);
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -525,9 +520,11 @@ class PlannimgValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 2),
         ];
-        $input = $this->createInput([3], $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo);
-
-        $planning = $this->createPlanning($input, new SportRange(2, 2), 2);
+        $configuration = $this->createConfiguration(
+            [3],
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            $refereeInfo);
+        $planning = $this->createPlanning($configuration, new SportRange(2, 2), 2);
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 

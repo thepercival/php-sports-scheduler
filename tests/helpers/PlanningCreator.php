@@ -8,7 +8,7 @@ use Exception;
 use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
-use SportsPlanning\Input\Configuration;
+use SportsPlanning\Input\Configuration as PlanningConfiguration;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\PlanningState;
 use SportsPlanning\Planning\TimeoutState;
@@ -17,7 +17,6 @@ use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstOneVsTwo;
 use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstTwoVsTwo;
 use SportsPlanning\Schedules\Cycles\ScheduleCycleTogether;
 use SportsPlanning\Schedules\ScheduleWithNrOfPlaces;
-use SportsPlanning\Sports\SportWithNrOfFields;
 use SportsPlanning\Input;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
@@ -28,7 +27,6 @@ use SportsScheduler\Schedules\CycleCreator;
 trait PlanningCreator
 {
     use LoggerCreator;
-
 
 //    protected function getAgainstH2hSportVariantWithFields(
 //        int $nrOfFields,
@@ -81,35 +79,36 @@ trait PlanningCreator
      * @param list<int> $pouleStructureAsArray
      * @param list<SportWithNrOfFieldsAndNrOfCycles>|null $sportWithNrOfFieldsAndNrOfCycles
      * @param PlanningRefereeInfo|null $refereeInfo
-     * @return Input
+     * @param bool $perPoule
+     * @return PlanningConfiguration
+     * @throws Exception
      */
-    protected function createInput(
+    protected function createConfiguration(
         array $pouleStructureAsArray,
         array|null $sportWithNrOfFieldsAndNrOfCycles = null,
         PlanningRefereeInfo|null $refereeInfo = null,
         bool $perPoule = false
-    ) {
+    ): PlanningConfiguration
+    {
         if ($sportWithNrOfFieldsAndNrOfCycles === null) {
             $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
         }
         if ($refereeInfo === null) {
             $refereeInfo = new PlanningRefereeInfo(2);
         }
-        $input = new Input( new Input\Configuration(
+        return new PlanningConfiguration(
             new PouleStructure(...$pouleStructureAsArray),
             $sportWithNrOfFieldsAndNrOfCycles,
             $refereeInfo,
             $perPoule
-        ) );
-
-        return $input;
+        );
     }
 
     /**
-     * @param Configuration $config
+     * @param PlanningConfiguration $config
      * @return array<int, list<ScheduleCycleTogether|ScheduleCycleAgainstOneVsOne|ScheduleCycleAgainstOneVsTwo|ScheduleCycleAgainstTwoVsTwo>>
      */
-    protected function createSportCyclesMap(Configuration $config): array {
+    protected function createSportCyclesMap(PlanningConfiguration $config): array {
         /** @var array<int, list<ScheduleCycleTogether|ScheduleCycleAgainstOneVsOne|ScheduleCycleAgainstOneVsTwo|ScheduleCycleAgainstTwoVsTwo>> $sportCyclesMap */
         $sportCyclesMap = [];
         {
@@ -127,7 +126,7 @@ trait PlanningCreator
 
 
     protected function createPlanning(
-        Configuration $configuration,
+        PlanningConfiguration $configuration,
         SportRange $nrOfBatchGamesRange = null,
         int $maxNrOfGamesInARow = 0,
         bool $disableThrowOnTimeout = false,

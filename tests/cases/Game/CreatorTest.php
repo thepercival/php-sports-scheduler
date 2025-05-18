@@ -52,7 +52,7 @@ class CreatorTest extends TestCase
         $config = new Input\Configuration(
             new PouleStructure(2),
             [
-                new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 2)
+                new SportWithNrOfFieldsAndNrOfCycles(new TogetherSport(1), 2, 2)
             ],
             new PlanningRefereeInfo(),
             false

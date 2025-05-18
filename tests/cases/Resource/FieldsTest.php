@@ -65,14 +65,9 @@ class FieldsTest extends TestCase
 
     public function testSixPoulesTwoFields(): void
     {
-        $input = $this->createInput([2,2,2,2,2,2]);
         $nrOfGamesPerBatchRange = new SportRange(2, 2);
-        $refereeInfo = new PlanningRefereeInfo();
-        $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
-        $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(3), $sportWithNrOfFieldsAndNrOfCycles, $refereeInfo, false),
-            $nrOfGamesPerBatchRange
-        );
+        $configuration = $this->createConfiguration([2,2,2,2,2,2]);
+        $planning = $this->createPlanning($configuration,$nrOfGamesPerBatchRange);
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -81,7 +76,7 @@ class FieldsTest extends TestCase
         self::assertInstanceOf(AgainstGame::class, $lastGame);
         $fields->assignToGame($lastGame);
 
-        $sport = $input->getSport(1);
-        self::assertFalse($fields->isSomeFieldAssignable($sport, $input->getPoule(6)));
+        $sport = $planning->getInput()->getSport(1);
+        self::assertFalse($fields->isSomeFieldAssignable($sport, $planning->getInput()->getPoule(6)));
     }
 }

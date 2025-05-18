@@ -171,7 +171,9 @@ class CycleCreatorAgainstOneVsOne extends CycleCreatorAgainstAbstract
 
             array_unshift($placeNrs, array_pop($placeNrs));
 
-            $cyclePartIt = $cyclePartIt->createNext();
+            if( $cyclePartNr < $nrOfPlaces) {
+                $cyclePartIt = $cyclePartIt->createNext();
+            }
         }
     }
 

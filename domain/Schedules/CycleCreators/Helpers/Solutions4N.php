@@ -114,12 +114,12 @@ class Solutions4N
         return array_map(function(array $homeAwayAsNumbers) use ($placeNrs): TwoVsTwoHomeAway {
             return new TwoVsTwoHomeAway(
                 new DuoPlaceNr(
-                    $placeNrs[$homeAwayAsNumbers[AgainstSide::Home->value][0]-1],
-                    $placeNrs[$homeAwayAsNumbers[AgainstSide::Home->value][1]-1],
+                    $placeNrs[$homeAwayAsNumbers[AgainstSide::Home->value][0]+1-1],
+                    $placeNrs[$homeAwayAsNumbers[AgainstSide::Home->value][1]+1-1],
                 ),
                 new DuoPlaceNr(
-                    $placeNrs[$homeAwayAsNumbers[AgainstSide::Away->value][0]-1],
-                    $placeNrs[$homeAwayAsNumbers[AgainstSide::Away->value][1]-1],
+                    $placeNrs[$homeAwayAsNumbers[AgainstSide::Away->value][0]+1-1],
+                    $placeNrs[$homeAwayAsNumbers[AgainstSide::Away->value][1]+1-1],
                 )
             );
         }, self::$map[$nrOfPlaces] );

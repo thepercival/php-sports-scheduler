@@ -21,7 +21,6 @@ use SportsScheduler\TestHelper\PlanningCreator;
 class GamesPerPlaceTest extends TestCase
 {
     use PlanningCreator;
-    use GppMarginCalculator;
 
     public function testSortHomeAway(): void {
 

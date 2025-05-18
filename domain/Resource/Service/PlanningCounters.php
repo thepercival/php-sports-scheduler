@@ -10,7 +10,7 @@ use SportsPlanning\Place;
 use SportsPlanning\Resource\GameCounter\Place as PlaceGameCounter;
 use SportsPlanning\Sports\SportWithNrOfFields;
 
-class AssignPlanningCounters
+class PlanningCounters
 {
     protected int $nrOfGames = 0;
     /**
