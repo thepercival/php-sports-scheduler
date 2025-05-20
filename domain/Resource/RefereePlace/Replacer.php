@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace SportsScheduler\Resource\RefereePlace;
 
 use DateTimeImmutable;
-use SportsPlanning\Batch\SelfReferee as SelfRefereeBatch;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsScheduler\Exceptions\TimeoutException;
 use SportsPlanning\Place as PlanningPlace;
 use SportsPlanning\Planning;
@@ -36,10 +37,11 @@ class Replacer
 
     /**
      * @param Planning $planning
-     * @param SelfRefereeBatch $firstBatch
+     * @param SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $firstBatch
      * @return bool
      */
-    public function replaceUnequals(Planning $planning, SelfRefereeBatch $firstBatch): bool
+    public function replaceUnequals(Planning $planning,
+        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $firstBatch): bool
     {
         $gameAssignmentValidator = new GameAssignmentValidator($planning);
         $unequals = $gameAssignmentValidator->getRefereePlaceUnequals();
@@ -55,18 +57,22 @@ class Replacer
         return $this->replaceUnequals($planning, $firstBatch);
     }
 
-    protected function replaceUnequal(SelfRefereeBatch $firstBatch, UnequalResource $unequal): bool
+    protected function replaceUnequal(
+        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $firstBatch, UnequalResource $unequal): bool
     {
         return $this->replaceUnequalHelper($firstBatch, $unequal->getMinGameCounters(), $unequal->getMaxGameCounters());
     }
 
     /**
-     * @param SelfRefereeBatch $firstBatch
+     * @param SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $firstBatch
      * @param array<int|string,GameCounter> $minGameCounters
      * @param array<int|string,GameCounter> $maxGameCounters
      * @return bool
      */
-    protected function replaceUnequalHelper(SelfRefereeBatch $firstBatch, array $minGameCounters, array $maxGameCounters): bool
+    protected function replaceUnequalHelper(
+        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $firstBatch,
+        array $minGameCounters,
+        array $maxGameCounters): bool
     {
         if (count($minGameCounters) === 0 || count($maxGameCounters) === 0) {
             return true;
@@ -103,7 +109,7 @@ class Replacer
     }
 
     public function replace(
-        SelfRefereeBatch $batch,
+        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch,
         PlanningPlace $replaced,
         PlanningPlace $replacement
     ): bool {

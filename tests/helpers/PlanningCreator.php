@@ -8,10 +8,13 @@ use Exception;
 use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
-use SportsPlanning\Input\Configuration as PlanningConfiguration;
+use SportsHelpers\Sports\TogetherSport;
+use SportsPlanning\Output\PlanningOutput;
+use SportsPlanning\Output\ScheduleOutput;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\PlanningState;
 use SportsPlanning\Planning\TimeoutState;
+use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstOneVsOne;
 use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstOneVsTwo;
 use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstTwoVsTwo;
@@ -141,13 +144,16 @@ trait PlanningCreator
             $planning->setTimeoutState($timeoutState);
         }
 
-        $sportCyclesMap = $this->createSportCyclesMap($configuration);
+        $sportRootCyclesMap = $this->createSportCyclesMap($configuration);
 
-//        $rootCycles = $cycleCreator->createCycles($scheduleWithNrOfPlaces);
-//        $schedules = $scheduleCreator->createFromInput($input);
+//        foreach( $sportRootCyclesMap as $placeNr => $sportRootCycles) {
+//            foreach( $sportRootCycles as $sportRootCycle) {
+//                (new ScheduleOutput($this->createLogger()))->outputCycle($sportRootCycle);
+//            }
+//        }
 
         $gameCreator = new PlannableGameCreator($this->createLogger());
-        $gameCreator->createGamesFromCycles($planning, $sportCyclesMap);
+        $gameCreator->createGamesFromCycles($planning, $sportRootCyclesMap);
 
         $gameAssigner = new GameAssigner($this->createLogger());
         if ($disableThrowOnTimeout) {

@@ -2,35 +2,36 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Tests\Input;
+namespace SportsScheduler\Tests\PlanningConfigurationIterators;
 
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SportRange;
-use SportsScheduler\Input\InputIterator as InputIterator;
+use SportsScheduler\PlanningConfigurationIterators\PlanningConfigurationIterator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class InputIteratorTest extends TestCase
+class PlanningConfigurationIteratorTest extends TestCase
 {
     use PlanningCreator;
 
     public function testRewind(): void
     {
-        $inputIterator = new InputIterator(
+        $nrOfCyclesRange = new SportRange(1, 2);
+        $configIterator = new PlanningConfigurationIterator(
             new SportRange(2, 6),
             new SportRange(2, 6),
             new SportRange(1, 3),
             new SportRange(0, 3),
             new SportRange(1, 3),
-            new SportRange(1, 2)
+            $nrOfCyclesRange
         );
 
-        $planningInput = $inputIterator->current();
-        self::assertNotNull($planningInput);
+        $planningConfig = $configIterator->current();
+        self::assertNotNull($planningConfig);
         // self::assertGreaterThan(30, $inputIterator->key());
-        self::assertEquals([2], $planningInput->createPouleStructure()->toArray());
-        self::assertCount(0, $planningInput->getReferees());
-        self::assertEquals(SelfReferee::Disabled, $planningInput->getSelfReferee());
+        self::assertEquals([2], $planningConfig->pouleStructure->toArray());
+        self::assertSame(0, $planningConfig->refereeInfo->nrOfReferees);
+        self::assertEquals(SelfReferee::Disabled, $planningConfig->refereeInfo->selfRefereeInfo->selfReferee);
     }
 
 //    public function testLast()
@@ -54,7 +55,7 @@ class InputIteratorTest extends TestCase
 
     public function testCount(): void
     {
-        $inputIterator = new InputIterator(
+        $configIterator = new PlanningConfigurationIterator(
             new SportRange(2, 6),
             new SportRange(2, 6),
             new SportRange(1, 3),
@@ -64,14 +65,14 @@ class InputIteratorTest extends TestCase
         );
 
         $nrOfPossibilities = 0;
-        while ($inputIterator->valid()) {
+        while ($configIterator->valid()) {
             // echo $inputIterator->key() . PHP_EOL;
             $nrOfPossibilities++;
-            $inputIterator->next();
+            $configIterator->next();
         }
-        $inputIterator->next(); // should do nothing
-        self::assertFalse($inputIterator->valid());
-        self::assertEquals(450, $nrOfPossibilities);
+        $configIterator->next(); // should do nothing
+        self::assertFalse($configIterator->valid());
+        self::assertEquals(690, $nrOfPossibilities);
         // last change => remove gamePlaceStrategy
     }
 }

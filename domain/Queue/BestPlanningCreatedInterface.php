@@ -2,9 +2,9 @@
 
 namespace SportsScheduler\Queue;
 
-use SportsPlanning\Input\Configuration;
+use SportsPlanning\PlanningConfiguration;
 
 interface BestPlanningCreatedInterface
 {
-    public function bestPlanningCreated(Configuration $inputConfiguration): void;
+    public function bestPlanningCreated(PlanningConfiguration $planningConfig): void;
 }

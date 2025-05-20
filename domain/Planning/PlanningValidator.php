@@ -5,11 +5,20 @@ declare(strict_types=1);
 namespace SportsScheduler\Planning;
 
 use Psr\Log\LoggerInterface;
+use SportsHelpers\Against\AgainstSide;
 use SportsHelpers\SelfReferee;
+use SportsHelpers\Sports\AgainstOneVsOne;
+use SportsHelpers\Sports\AgainstOneVsTwo;
+use SportsHelpers\Sports\AgainstTwoVsTwo;
+use SportsHelpers\Sports\TogetherSport;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\GameAbstract;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Planning\Validity as PlanningValidity;
+use SportsPlanning\Sports\Plannable\PlannableAgainstOneVsOne;
+use SportsPlanning\Sports\Plannable\PlannableAgainstOneVsTwo;
+use SportsPlanning\Sports\Plannable\PlannableAgainstTwoVsTwo;
+use SportsPlanning\Sports\Plannable\PlannableTogetherSport;
 use SportsScheduler\Exceptions\UnequalAssignedFieldsException;
 use SportsScheduler\Exceptions\UnequalAssignedRefereePlacesException;
 use SportsScheduler\Exceptions\UnequalAssignedRefereesException;
@@ -35,10 +44,10 @@ class PlanningValidator
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
-//        $validity = $this->validateGamesAndGamePlaces($planning);
-//        if (PlanningValidity::VALID !== $validity) {
-//            return $validity;
-//        }
+        $validity = $this->validateHasGamesAndAssignedGamePlaces($planning);
+        if (PlanningValidity::VALID !== $validity) {
+            return $validity;
+        }
         $validity = $this->validateGamesInARow($planning);
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
@@ -143,26 +152,21 @@ class PlanningValidator
         return PlanningValidity::VALID;
     }
 
-//    protected function validateGamesAndGamePlaces(Planning $planning): int
-//    {
-//        foreach ($planning->getInput()->getPoules() as $poule) {
-//            $pouleGames = $planning->getGamesForPoule($poule);
-//            if (count($pouleGames) === 0) {
-//                return PlanningValidity::NO_GAMES;
-//            }
-//            $validity = $this->validateNrOfBatches($planning);
-//            if (PlanningValidity::VALID !== $validity) {
-//                return $validity;
-//            }
-//
-//            $validity = $this->allPlacesInPouleSameNrOfGames($planning, $poule);
-//            if ($validity !== PlanningValidity::VALID) {
-//                return $validity;
-//            }
-//        }
-//        return PlanningValidity::VALID;
-//    }
-//
+    protected function validateHasGamesAndAssignedGamePlaces(Planning $planning): int
+    {
+        foreach ($planning->getInput()->getPoules() as $poule) {
+            $pouleGames = $planning->getGamesForPoule($poule);
+            if (count($pouleGames) === 0) {
+                return PlanningValidity::NO_GAMES;
+            }
+            $validity = $this->validateAllGamePlacesAssigned($planning, $poule);
+            if ($validity !== PlanningValidity::VALID) {
+                return $validity;
+            }
+        }
+        return PlanningValidity::VALID;
+    }
+
     protected function validateNrOfBatches(Planning $planning): int
     {
         $games = $planning->getGames();
@@ -176,146 +180,58 @@ class PlanningValidator
         );
         return $maxBatchNr === $planning->getNrOfBatches() ? PlanningValidity::VALID : PlanningValidity::INVALID_NROFBATCHES;
     }
-//
-//    protected function allPlacesInPouleSameNrOfGames(Planning $planning, Poule $poule): int
-//    {
-//        foreach ($planning->getInput()->getSports() as $sport) {
-//            $invalid = $this->allPlacesInPouleSameNrOfSportGames($planning, $poule, $sport);
-//            if ($invalid !== PlanningValidity::VALID) {
-//                return $invalid;
-//            }
-//        }
-//        return PlanningValidity::VALID;
-//    }
-//
-//    protected function allPlacesInPouleSameNrOfSportGames(
-//        Planning $planning,
-//        Poule $poule,
-//        TogetherSport|AgainstOneVsOne|AgainstOneVsTwo|AgainstTwoVsTwo $sport): int
-//    {
-//        $nrOfGamesPerPlace = [];
-//        $nrOfPlaces = count($poule->getPlaces());
-//        /** @var non-empty-array<int, int> $nrOfHomeSideGames */
-//        $nrOfHomeSideGames = [];
-//
-//        $sportWithNrOfPlaces = (new SportWithNrOfPlacesCreator())->create($nrOfPlaces, $sport);
-//        if (!($sport instanceof TogetherSport)) {
-//
-//            foreach ($poule->getPlaces() as $place) {
-//                $nrOfHomeSideGames[$place->getUniqueIndex()] = 0;
-//            }
-//            // if ($againstWithPoule instanceof AgainstH2hWithPoule || $againstWithPoule->allPlacesSameNrOfGamesAssignable()) {
-//                if ( $sport->hasMultipleSidePlaces()
-//                    // && ($againstWithNrOfPlaces instanceof AgainstH2hWithNrOfPlaces || $againstWithNrOfPlaces->allWithSameNrOfGamesAssignable())
-//                )
-//                {
-//
-//                    $withValidator = new WithValidator($nrOfPlaces);
-//                    $withValidator->addGames($planning, $poule);
-//                    if (!$withValidator->balanced()) {
-//                        return PlanningValidity::UNEQUAL_GAME_WITH;
-//                    }
-//                }
-////                if ($sportWithNrOfPlaces->allAgainstSameNrOfGamesAssignable()) {
-////                    $againstValidator = new AgainstValidator($nrOfPlaces);
-////                    $againstValidator->addGames($planning, $poule, $sport);
-////                    if (!$againstValidator->balanced()) {
-////                        $againstNrCounterMap = $againstValidator->cloneAgainstNrCounterMap();
-////                        $header = "PlanningValidity::UNEQUAL_GAME_AGAINST for againstNrCounterMap : ";
-////                        $this->logger->error($header);
-////                        $againstNrCounterMap->output($this->logger, '', $header);
-////                        return PlanningValidity::UNEQUAL_GAME_AGAINST;
-////                    }
-////                }
-//            // }
-//        }
 
-//        $plannableGames = array_filter($planning->getGamesForPoule($poule), function (AgainstGame|TogetherGame $game) use ($sport): bool {
-//            return $game->getSport() === $sport;
-//        });
-//        foreach ($plannableGames as $plannableGame) {
-//            $sport = $plannableGame->getSport()->sport;
-//            if ($sport instanceof TogetherSport && $sport->getNrOfGamePlaces() === null ) {
-//                if ($poule->getPlaces()->count() !== $plannableGame->getPlaces()->count()) {
-//                    return PlanningValidity::UNEQUAL_GAME_HOME_AWAY;
-//                }
-//            } else if( !($sport instanceof TogetherSport))
-//            {
-//                if( !($plannableGame instanceof AgainstGame )) {
-//                    return PlanningValidity::EMPTY_PLACE;
-//                }
-//
-//                $homePlaces = $plannableGame->getSidePlaces(AgainstSide::Home);
-//                $awayPlaces = $plannableGame->getSidePlaces(AgainstSide::Away);
-//                $nrOfHomePlaces = count($homePlaces);
-//                $nrOfAwayPlaces = count($awayPlaces);
-//                if ($nrOfHomePlaces === 0 || $nrOfAwayPlaces === 0) {
-//                    return PlanningValidity::EMPTY_PLACE;
-//                }
-//                if ($sport->nrOfHomePlaces === $sport->nrOfAwayPlaces) {
-//                    if ($sport->nrOfHomePlaces !== $nrOfHomePlaces
-//                        || $sport->nrOfAwayPlaces !== $nrOfAwayPlaces) {
-//                        return PlanningValidity::UNEQUAL_GAME_HOME_AWAY;
-//                    }
-//                } else {
-//                    if (
-//                        ($sport->nrOfHomePlaces !== $nrOfHomePlaces && $sport->nrOfAwayPlaces !== $nrOfHomePlaces)
-//                        ||
-//                        ($sport->nrOfHomePlaces !== $nrOfAwayPlaces && $sport->nrOfAwayPlaces !== $nrOfAwayPlaces)) {
-//                        return PlanningValidity::UNEQUAL_GAME_HOME_AWAY;
-//                    }
-//                }
-//
-//                foreach ($homePlaces as $homePlace) {
-//                    $nrOfHomeSideGames[$homePlace->getPlace()->getUniqueIndex()]++;
-//                }
-//            }
-//            if ($plannableGame->getPlaces()->count() === 0) {
-//                return PlanningValidity::EMPTY_PLACE;
-//            }
-//
-//            $places = $plannableGame->getPoulePlaces();
-//            foreach ($places as $place) {
-//                if (array_key_exists((string)$place, $nrOfGamesPerPlace) === false) {
-//                    $nrOfGamesPerPlace[(string)$place] = 0;
-//                }
-//                $nrOfGamesPerPlace[(string)$place]++;
-//            }
-//        }
-//
-//
-////        if (!($variantWithNrOfPlaces instanceof AgainstGppWithNrOfPlaces) || $variantWithNrOfPlaces->allPlacesSameNrOfGamesAssignable()) {
-////            $nrOfGamesFirstPlace = reset($nrOfGamesPerPlace);
-////            foreach ($nrOfGamesPerPlace as $nrOfGamesSomePlace) {
-////                if ($nrOfGamesFirstPlace !== $nrOfGamesSomePlace) {
-////                    return PlanningValidity::NOT_EQUALLY_ASSIGNED_PLACES;
-////                }
-////            }
-////        }
-////
-////        if ($variantWithNrOfPlaces instanceof SingleWithNrOfPlaces || $variantWithNrOfPlaces instanceof AllInOneGameWithNrOfPlaces) {
-////            return PlanningValidity::VALID;
-////        }
-////        if ($variantWithNrOfPlaces instanceof AgainstGppWithNrOfPlaces) {
-////            if (!$variantWithNrOfPlaces->allWithSameNrOfGamesAssignable(AgainstSide::Home)) {
-////                return PlanningValidity::VALID;
-////            }
-////        }
-//        $maxDifference = 1;
-//
-////        $totalNrOfHomePlaces = $variantWithPoule->getTotalNrOfGames() * $variantWithPoule->getSportVariant()->getNrOfHomePlaces();
-////        if (($totalNrOfHomePlaces % $nrOfPlaces ) > 0) {
-////            $maxDifference++;
-////        }
-//        $minValue = min($nrOfHomeSideGames);
-//        foreach ($nrOfHomeSideGames as $amount) {
-//            if ($amount - $minValue > $maxDifference) {
-//                return PlanningValidity::UNEQUAL_PLACE_NROFHOMESIDES;
-//            }
-//        }
-//
-//        return PlanningValidity::VALID;
-//    }
+    protected function validateAllGamePlacesAssigned(Planning $planning, Poule $poule): int
+    {
+        foreach ($planning->getInput()->getSports() as $plannableSport) {
+            $invalid = $this->validateAllGamePlacesAssignedForSport($planning, $poule, $plannableSport);
+            if ($invalid !== PlanningValidity::VALID) {
+                return $invalid;
+            }
+        }
+        return PlanningValidity::VALID;
+    }
+
+
+    protected function validateAllGamePlacesAssignedForSport(
+        Planning $planning,
+        Poule $poule,
+        PlannableTogetherSport|PlannableAgainstOneVsOne|PlannableAgainstOneVsTwo|PlannableAgainstTwoVsTwo $plannableSport): int
+    {
+        $nrOfGamesPerPlace = [];
+        $nrOfPlaces = count($poule->getPlaces());
+        /** @var non-empty-array<int, int> $nrOfHomeSideGames */
+        $nrOfHomeSideGames = [];
+
+        if (!($plannableSport->sport instanceof TogetherSport)) {
+
+            foreach ($poule->getPlaces() as $place) {
+                $nrOfHomeSideGames[$place->getUniqueIndex()] = 0;
+            }
+        }
+
+        $plannableGames = array_filter($planning->getGamesForPoule($poule), function (AgainstGame|TogetherGame $game) use ($plannableSport): bool {
+            return $game->getSport() === $plannableSport;
+        });
+        foreach ($plannableGames as $plannableGame) {
+            $sport = $plannableGame->getSport()->sport;
+            if( !($sport instanceof TogetherSport))
+            {
+                if( !($plannableGame instanceof AgainstGame )) {
+                    return PlanningValidity::EMPTY_PLACE;
+                }
+                $homePlaces = $plannableGame->getSidePlaces(AgainstSide::Home);
+                $awayPlaces = $plannableGame->getSidePlaces(AgainstSide::Away);
+                if (count($homePlaces) === 0 || count($awayPlaces) === 0) {
+                    return PlanningValidity::EMPTY_PLACE;
+                }
+            }
+            if ($plannableGame->getPlaces()->count() === 0) {
+                return PlanningValidity::EMPTY_PLACE;
+            }
+        }
+        return PlanningValidity::VALID;
+    }
 
     protected function validateResourcesCorrectlyAssigned(Planning $planning): int
     {

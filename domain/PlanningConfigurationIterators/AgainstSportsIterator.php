@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Input;
+namespace SportsScheduler\PlanningConfigurationIterators;
 
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;

@@ -11,10 +11,10 @@ use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
-use SportsPlanning\Batch;
-use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
-use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
-use SportsPlanning\Input\Configuration;
+use SportsPlanning\Batches\Batch;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
+use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Resource\ResourceType;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentValidator;
@@ -36,7 +36,7 @@ class GameAssignmentsTest extends TestCase
         ];
         $refereeInfo = new PlanningRefereeInfo();
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
         $resourceCounter = new ResourceCounter($planning);
@@ -54,9 +54,14 @@ class GameAssignmentsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
         ];
-        $refereeInfo = new PlanningRefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo(2);
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(
+                new PouleStructure(5),
+                $sportsWithNrOfFieldsAndNrOfCycles,
+                $refereeInfo,
+                false
+            )
         );
 
 //        $planningOutput = new PlanningOutput();
@@ -80,7 +85,7 @@ class GameAssignmentsTest extends TestCase
         ];
         $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
 //        $planningOutput = new PlanningOutput();
@@ -104,7 +109,7 @@ class GameAssignmentsTest extends TestCase
         ];
         $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
         $firstPoule = $planning->getInput()->getPoule(1);
@@ -154,7 +159,7 @@ class GameAssignmentsTest extends TestCase
         ];
         $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules, 1));
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(5, 4), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(new PouleStructure(5, 4), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
         $secondPoule = $planning->getInput()->getPoule(2);
@@ -186,7 +191,7 @@ class GameAssignmentsTest extends TestCase
         ];
         $refereeInfo = new PlanningRefereeInfo();
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
         // $planningGames = $planning->getPoule(1)->getGames();
@@ -209,7 +214,7 @@ class GameAssignmentsTest extends TestCase
         ];
         $refereeInfo = new PlanningRefereeInfo(3);
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
         // $planningGames = $planning->getPoule(1)->getGames();
@@ -234,7 +239,12 @@ class GameAssignmentsTest extends TestCase
         ];
         $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(
+                new PouleStructure(5),
+                $sportsWithNrOfFieldsAndNrOfCycles,
+                $refereeInfo,
+                false
+            )
         );
 
         $firstPoule = $planning->getInput()->getPoule(1);
@@ -266,7 +276,7 @@ class GameAssignmentsTest extends TestCase
         ];
         $refereeInfo = new PlanningRefereeInfo();
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
         $validator = new GameAssignmentValidator($planning);
@@ -281,7 +291,7 @@ class GameAssignmentsTest extends TestCase
         ];
         $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
 //        $planningOutput = new PlanningOutput();

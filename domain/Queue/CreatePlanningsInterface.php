@@ -2,10 +2,10 @@
 
 namespace SportsScheduler\Queue;
 
-use SportsPlanning\Input\Configuration;
-use SportsPlanning\Planning;
+use SportsPlanning\PlanningConfiguration;
 
 interface CreatePlanningsInterface
 {
-    public function createPlannings(Configuration $inputConfiguration, int|null $priority = null): void;
+    public function createPlannings(
+        PlanningConfiguration $planningConfig, int|null $priority = null): void;
 }

@@ -69,7 +69,10 @@ class PreAssignSorter
     protected function getPriority(AgainstGame|TogetherGame $game): int
     {
         if ($game instanceof AgainstGame) {
-            return $game->cyclePartNr;
+            $nrOfPlaces = count($game->getPlaces());
+            $sportWithNrOfPlaces = $game->getSport()->createSportWithNrOfPlaces($nrOfPlaces);
+            $nrOfGamesPerPlaceForSingleCycle = $sportWithNrOfPlaces->calculateNrOfGamesPerPlace(1);
+            return $game->cyclePartNr + ( ($game->cycleNr - 1) * $nrOfGamesPerPlaceForSingleCycle );
         }
         $cycleNrs = array_map(function (TogetherGamePlace $gamePlace): int {
             return $gamePlace->cycleNr;

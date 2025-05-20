@@ -6,9 +6,8 @@ namespace SportsScheduler\Tests\Poule;
 
 use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\Sports\AgainstOneVsOne;
-use SportsHelpers\Sports\AgainstTwoVsTwo;
 use SportsPlanning\Counters\GamePlacesCounterForPoule;
-use SportsPlanning\Input\Configuration;
+use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\TestHelper\PlanningCreator;
@@ -24,7 +23,12 @@ class PouleCounterTest extends \PHPUnit\Framework\TestCase
         ];
         $refereeInfo = new PlanningRefereeInfo();
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(3), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(
+                new PouleStructure(3),
+                $sportsWithNrOfFieldsAndNrOfCycles,
+                $refereeInfo,
+                false
+            )
         );
 
         $pouleOne = $planning->getInput()->getPoule(1);

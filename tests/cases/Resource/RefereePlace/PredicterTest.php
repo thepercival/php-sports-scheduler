@@ -9,9 +9,9 @@ use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\Sports\AgainstOneVsOne;
-use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
-use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
-use SportsPlanning\Input\Configuration;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
+use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Resource\RefereePlace\Predicter;
@@ -28,7 +28,12 @@ class PredicterTest extends TestCase
         $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
         $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(3), $sportWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(
+                new PouleStructure(3),
+                $sportWithNrOfFieldsAndNrOfCycles,
+                $refereeInfo,
+                false
+            )
         );
         $poules = array_values($planning->getInput()->getPoules()->toArray());
         $predicter = new Predicter($poules);
@@ -47,7 +52,12 @@ class PredicterTest extends TestCase
         self::expectException(\Exception::class);
         $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
         $this->createPlanning(
-            new Configuration(new PouleStructure(2), $sportWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(
+                new PouleStructure(2),
+                $sportWithNrOfFieldsAndNrOfCycles,
+                $refereeInfo,
+                false
+            )
         );
     }
 
@@ -56,7 +66,12 @@ class PredicterTest extends TestCase
         $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules));
         $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(3, 3), $sportWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(
+                new PouleStructure(3, 3),
+                $sportWithNrOfFieldsAndNrOfCycles,
+                $refereeInfo,
+                false
+            )
         );
 
         $poules = array_values($planning->getInput()->getPoules()->toArray());
@@ -75,7 +90,12 @@ class PredicterTest extends TestCase
         $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules, 2));
         $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
         $planning = $this->createPlanning(
-            new Configuration(new PouleStructure(5, 4), $sportWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
+            new PlanningConfiguration(
+                new PouleStructure(5, 4),
+                $sportWithNrOfFieldsAndNrOfCycles,
+                $refereeInfo,
+                false
+            )
         );
         $poules = array_values($planning->getInput()->getPoules()->toArray());
         $predicter = new Predicter($poules);

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Input;
+namespace SportsScheduler\PlanningConfigurationIterators;
 
 use SportsHelpers\PouleStructures\BalancedPouleStructure;
 use SportsHelpers\PouleStructures\BalancedIterator;
@@ -10,9 +10,11 @@ use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\TogetherSport;
+use SportsPlanning\Exceptions\SelfRefereeIncompatibleWithPouleStructureException;
+use SportsPlanning\Exceptions\SportsIncompatibleWithPouleStructureException;
 use SportsPlanning\Input as PlanningInput;
-use SportsPlanning\Input\Configuration;
 use SportsPlanning\Output\PlanningOutput;
+use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Referee\SelfRefereeValidator;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
@@ -22,7 +24,7 @@ use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
  * @template TValue
  * @implements \Iterator<TKey, TValue>
  */
-class InputIterator implements \Iterator
+class PlanningConfigurationIterator implements \Iterator
 {
     protected BalancedIterator $structureIterator;
     protected AgainstSportsIterator $againstSportsIterator;
@@ -30,7 +32,7 @@ class InputIterator implements \Iterator
     protected SelfRefereeValidator $selfRefereeValidator;
     protected int $nrOfReferees;
     protected SelfReferee $selfReferee;
-    protected PlanningInput|null $current = null;
+    protected PlanningConfiguration|null $current = null;
 
     public function __construct(
         SportRange $rangePlaces,
@@ -38,10 +40,10 @@ class InputIterator implements \Iterator
         SportRange $rangePoules,
         SportRange $rangeNrOfReferees,
         SportRange $rangeNrOfFields,
-        SportRange $rangeGameAmount
+        SportRange $nrOfCyclesRange
     ) {
         $this->structureIterator = new BalancedIterator($rangePlaces, $rangePlacesPerPoule, $rangePoules);
-        $this->againstSportsIterator = new AgainstSportsIterator($rangeNrOfFields, $rangeGameAmount);
+        $this->againstSportsIterator = new AgainstSportsIterator($rangeNrOfFields, $nrOfCyclesRange);
         $this->rangeNrOfReferees = $rangeNrOfReferees;
         $this->selfRefereeValidator = new SelfRefereeValidator();
         $this->rewind();
@@ -69,7 +71,7 @@ class InputIterator implements \Iterator
         $this->selfReferee = SelfReferee::Disabled;
     }
 
-    public function current(): ?PlanningInput
+    public function current(): ?PlanningConfiguration
     {
         return $this->current;
     }
@@ -80,7 +82,7 @@ class InputIterator implements \Iterator
         if ($this->current === null) {
             return 'no current value';
         }
-        return $planningInputOutput->getInputConfigurationAsString($this->current->createConfiguration());
+        return $planningInputOutput->getInputConfigurationAsString($this->current);
     }
 
     public function next(): void
@@ -97,9 +99,16 @@ class InputIterator implements \Iterator
         $pouleStructure = $this->structureIterator->current();
         $againstSportWithNrOfFieldsAndNrOfCycles = $this->againstSportsIterator->current();
         if ($pouleStructure === null || $againstSportWithNrOfFieldsAndNrOfCycles === null) {
+            $this->current = null;
             return;
         }
-        $this->current = $this->createInput($pouleStructure, $againstSportWithNrOfFieldsAndNrOfCycles);
+        try {
+            $this->current = $this->createPlanningConfiguration($pouleStructure, $againstSportWithNrOfFieldsAndNrOfCycles);
+        } catch(SelfRefereeIncompatibleWithPouleStructureException) {
+        } catch(SportsIncompatibleWithPouleStructureException ) {
+
+        }
+
 
 //        $maxNrOfRefereesInPlanning = $planningInput->getMaxNrOfBatchGames(
 //            Resources::FIELDS + Resources::PLACES
@@ -131,7 +140,7 @@ class InputIterator implements \Iterator
         if ($pouleStructure === null || $againstSport === null) {
             return;
         }
-        $this->current = $this->createInput($pouleStructure, $againstSport);
+        $this->current = $this->createPlanningConfiguration($pouleStructure, $againstSport);
     }
 
     public function valid(): bool
@@ -139,16 +148,16 @@ class InputIterator implements \Iterator
         return $this->current !== null;
     }
 
-    protected function createInput(
+    protected function createPlanningConfiguration(
         BalancedPouleStructure $pouleStructure,
         SportWithNrOfFieldsAndNrOfCycles $sportWithNrOfFieldsAndNrOfCycles
-    ): PlanningInput {
-        return new PlanningInput( new Configuration(
+    ): PlanningConfiguration {
+        return new PlanningConfiguration(
             $pouleStructure,
             [$sportWithNrOfFieldsAndNrOfCycles],
             new PlanningRefereeInfo($this->selfReferee === SelfReferee::Disabled ? $this->nrOfReferees : new SelfRefereeInfo($this->selfReferee)),
             false
-        ) );
+        );
     }
 
     protected function incrementValue(): bool
@@ -235,6 +244,7 @@ class InputIterator implements \Iterator
         if (!$this->structureIterator->valid()) {
             return false;
         }
+
         $this->rewindSports();
         return true;
     }

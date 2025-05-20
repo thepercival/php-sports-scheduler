@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace SportsScheduler\Resource\RefereePlace;
 
 use SportsHelpers\SelfReferee;
-use SportsPlanning\Batch\SelfReferee as SelfRefereeBatch;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Counters\GamePlacesCounterForPoule;
 use SportsPlanning\Poule;
 
@@ -20,7 +21,8 @@ class Predicter
     {
     }
 
-    public function canStillAssign(SelfRefereeBatch $batch, SelfReferee $selfReferee): bool
+    public function canStillAssign(
+        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch, SelfReferee $selfReferee): bool
     {
         if ($selfReferee === SelfReferee::Disabled) {
             return true;
@@ -30,12 +32,12 @@ class Predicter
                     $batch
                 );
         }
-        return $this->validatePouleAssignmentsOtherPoules($batch) && $this->validateTooMuchForcedAssignmentDiffernce(
-                $batch
-            );
+        return $this->validatePouleAssignmentsOtherPoules($batch)
+            && $this->validateTooMuchForcedAssignmentDiffernce($batch);
     }
 
-    protected function validatePouleAssignmentsSamePoule(SelfRefereeBatch $batch): bool
+    protected function validatePouleAssignmentsSamePoule(
+        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch): bool
     {
         $pouleCounterMap = $this->createGamePlacesCounterMap();
         $this->addGamesToPouleCounterMap($pouleCounterMap, $batch);
@@ -63,16 +65,18 @@ class Predicter
 
     /**
      * @param array<int,GamePlacesCounterForPoule> $pouleCounterMap
-     * @param SelfRefereeBatch $batch
+     * @param SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch
      */
-    protected function addGamesToPouleCounterMap(array $pouleCounterMap, SelfRefereeBatch $batch): void
+    protected function addGamesToPouleCounterMap(array $pouleCounterMap,
+        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch): void
     {
         foreach ($batch->getBase()->getGames() as $game) {
             $pouleCounterMap[$game->getPoule()->getNumber()]->add($game->getPlaces()->count());
         }
     }
 
-    protected function validatePouleAssignmentsOtherPoules(SelfRefereeBatch $batch): bool
+    protected function validatePouleAssignmentsOtherPoules(
+        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch): bool
     {
         $pouleCounterMap = $this->createGamePlacesCounterMap();
         $this->addGamesToPouleCounterMap($pouleCounterMap, $batch);
@@ -112,7 +116,8 @@ class Predicter
      * voor selfref = samepoule , per plek kijken hoevaak deze verplicht is als scheidsrechter
      * dit mag max. het gemiddelde + 1.500000001 zijn
      */
-    protected function validateTooMuchForcedAssignmentDiffernce(SelfRefereeBatch $batch): bool
+    protected function validateTooMuchForcedAssignmentDiffernce(
+        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch): bool
     {
         $totalNrOfForcedRefereePlaces = $batch->getTotalNrOfForcedRefereePlaces();
         $totalPouleCounters = $batch->getTotalPouleCounters();

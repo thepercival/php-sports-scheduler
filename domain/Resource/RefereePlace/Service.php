@@ -4,8 +4,8 @@ namespace SportsScheduler\Resource\RefereePlace;
 
 use DateTimeImmutable;
 use SportsHelpers\SelfReferee;
-use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
-use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Planning\PlanningState;
 use SportsScheduler\Exceptions\TimeoutException;
 use SportsPlanning\Game;

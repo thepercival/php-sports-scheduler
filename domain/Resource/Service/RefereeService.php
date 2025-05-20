@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Resource\Service;
 
-use SportsPlanning\Batch;
+use SportsPlanning\Batches\Batch;
 use SportsPlanning\Input;
 use SportsPlanning\Referee;
 

@@ -6,9 +6,9 @@ use Psr\Log\LoggerInterface;
 use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
-use SportsPlanning\Batch;
-use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeOtherPouleBatch;
-use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeSamePouleBatch;
+use SportsPlanning\Batches\Batch;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Exceptions\NoBestPlanningException;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
@@ -54,11 +54,12 @@ class Helper
     }
 
     /**
-     * @param Batch|SelfRefereeSamePouleBatch|SelfRefereeOtherPouleBatch $previousBatch
+     * @param Batch|SelfRefereeBatchSamePoule|SelfRefereeBatchOtherPoule $previousBatch
      * @param array<TogetherGame|AgainstGame> $gamesForBatchTmp
+     * @param PlanningCounters $infoToAssign
      */
     public function sortGamesForNextBatch(
-        Batch|SelfRefereeSamePouleBatch|SelfRefereeOtherPouleBatch $previousBatch,
+        Batch|SelfRefereeBatchSamePoule|SelfRefereeBatchOtherPoule $previousBatch,
         array &$gamesForBatchTmp,
         PlanningCounters $infoToAssign
     ): void {

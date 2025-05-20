@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace SportsScheduler\Game;
 
 use Psr\Log\LoggerInterface;
-use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
-use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
+use SportsPlanning\Output\GameOutput;
+use SportsPlanning\Output\PlanningOutput;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\PlanningState;
 use SportsPlanning\Planning\TimeoutConfig;
@@ -26,7 +28,7 @@ class GameAssigner
     public function assignGames(Planning $planning): PlanningState
     {
         $games = (new PreAssignSorter())->getGames($planning);
-        // (new GameOutput($this->logger))->outputGames($games);
+//        (new GameOutput($this->logger))->outputGames($games);
 
         $resourceService = new ResourceService($planning, $this->logger);
         if (!$this->throwOnTimeout) {
@@ -35,6 +37,7 @@ class GameAssigner
         if ($this->showHighestCompletedBatchNr) {
             $resourceService->showHighestCompletedBatchNr();
         }
+//        $resourceService->showHighestCompletedBatchNr();
         $state = $resourceService->assign($games);
         if ($state === PlanningState::Failed || $state === PlanningState::TimedOut) {
             $planning->getAgainstGames()->clear();

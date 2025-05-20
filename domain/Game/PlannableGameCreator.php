@@ -107,7 +107,7 @@ class PlannableGameCreator
         $cyclePart = $sportCycle->firstPart;
         while ($cyclePart !== null) {
             foreach ($cyclePart->getGamesAsHomeAways() as $homeAwayGame ) {
-                $game = new AgainstGame($planning, $poule, $defaultField, $cyclePart->getNumber());
+                $game = new AgainstGame($planning, $poule, $defaultField, $cyclePart->getNumber(), $sportCycle->getNumber());
                 foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
                     $sidePlaces = array_map(function (int $placeNr) use ($poule): Place {
                         return $poule->getPlace($placeNr);

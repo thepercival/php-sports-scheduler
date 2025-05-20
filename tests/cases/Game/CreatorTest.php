@@ -12,16 +12,12 @@ use SportsHelpers\Sports\AgainstTwoVsTwo;
 use SportsHelpers\Sports\TogetherSport;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Input;
-use SportsPlanning\Planning\PlanningState;
+use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
-use SportsScheduler\Game\GameAssigner as GameAssigner;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Planning;
-use SportsPlanning\Planning\Validity;
-use SportsPlanning\Output\PlanningOutput;
 use SportsScheduler\Game\PlannableGameCreator;
-use SportsScheduler\Planning\PlanningValidator as PlanningValidator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 class CreatorTest extends TestCase
@@ -30,7 +26,7 @@ class CreatorTest extends TestCase
 
     public function testGameInstanceAgainst(): void
     {
-        $config = new Input\Configuration(
+        $config = new PlanningConfiguration(
             new PouleStructure(2),
             [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 2)],
             new PlanningRefereeInfo(),
@@ -49,7 +45,7 @@ class CreatorTest extends TestCase
 
     public function testGameInstanceTogether(): void
     {
-        $config = new Input\Configuration(
+        $config = new PlanningConfiguration(
             new PouleStructure(2),
             [
                 new SportWithNrOfFieldsAndNrOfCycles(new TogetherSport(1), 2, 2)
@@ -70,7 +66,7 @@ class CreatorTest extends TestCase
 
     public function testMixedGameModes(): void
     {
-        $config = new Input\Configuration(
+        $config = new PlanningConfiguration(
             new PouleStructure(4),
             [
                 new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), 2, 1),

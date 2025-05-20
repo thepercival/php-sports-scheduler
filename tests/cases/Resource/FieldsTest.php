@@ -10,7 +10,7 @@ use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Input;
-use SportsPlanning\Input\Configuration;
+use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Resource\Fields;
@@ -28,7 +28,12 @@ class FieldsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
         ];
-        $config = new Configuration(new PouleStructure(2), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false);
+        $config = new PlanningConfiguration(
+            new PouleStructure(2),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            $refereeInfo,
+            false
+        );
         $input = new Input($config);
 
         $fields = new Fields($input);
@@ -56,7 +61,12 @@ class FieldsTest extends TestCase
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1),
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
         ];
-        $config = new Configuration(new PouleStructure(4), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false);
+        $config = new PlanningConfiguration(
+            new PouleStructure(4),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            $refereeInfo,
+            false
+        );
         $input = new Input($config);
         $fields = new Fields($input);
         self::assertCount(2, $fields->getAssignableFields($input->getSport(2)));
