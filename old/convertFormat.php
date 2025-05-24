@@ -9,6 +9,7 @@ if ($content !== false) {
         if( strlen($line) === 0) {
             continue;
         }
+
         // echo $line . PHP_EOL;
         $nrOfPlacesStartPos = strpos($line, 'n');
         if( $nrOfPlacesStartPos !== false) {
