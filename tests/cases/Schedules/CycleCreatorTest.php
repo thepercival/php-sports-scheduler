@@ -37,10 +37,10 @@ class CycleCreatorTest extends TestCase
         $sportRootCycles = $cycleCreator->createSportRootCycles($scheduleWithNrOfPlaces);
         foreach( $sportRootCycles as $rootCycle ) {
             if( $rootCycle instanceof ScheduleCycleTogether ) {
-                (new ScheduleCycleTogetherOutput())->output($rootCycle);
+//                (new ScheduleCycleTogetherOutput())->output($rootCycle);
                 self::assertCount($expectedNrOfGames, $rootCycle->getAllGames());
             } else {
-                (new ScheduleCyclePartAgainstOutput())->output($rootCycle->firstPart, true);
+//                (new ScheduleCyclePartAgainstOutput())->output($rootCycle->firstPart, true);
                 self::assertCount($expectedNrOfGames, $rootCycle->getAllCyclePartGames());
             }
         }

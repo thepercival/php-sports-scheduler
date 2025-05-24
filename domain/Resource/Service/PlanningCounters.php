@@ -38,7 +38,7 @@ class PlanningCounters
     {
         foreach ($games as $game) {
             $sportNr = $game->getSport()->getNumber();
-            if (!isset($this->sportInfoMap[$sportNr])) {
+            if (!array_key_exists($sportNr, $this->counterForSportMap)) {
                 $this->counterForSportMap[$sportNr] = new NrOfGamesAndUniquePlacesCounterForSport(
                     new SportWithNrOfFields( $game->getSport()->sport, $game->getSport()->getNrOfFields()
                     ));

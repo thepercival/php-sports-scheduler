@@ -2452,16 +2452,16 @@
         },
         {
             "name": "thepercival/php-sports-planning",
-            "version": "v1.0.239",
+            "version": "v1.0.240",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thepercival/php-sports-planning.git",
-                "reference": "f0194d4bcecde3fad7d3efd2ba168c9d781e135f"
+                "reference": "5e4423bf5b039274c82e0f9ff1bfca8bd0a4aa98"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thepercival/php-sports-planning/zipball/f0194d4bcecde3fad7d3efd2ba168c9d781e135f",
-                "reference": "f0194d4bcecde3fad7d3efd2ba168c9d781e135f",
+                "url": "https://api.github.com/repos/thepercival/php-sports-planning/zipball/5e4423bf5b039274c82e0f9ff1bfca8bd0a4aa98",
+                "reference": "5e4423bf5b039274c82e0f9ff1bfca8bd0a4aa98",
                 "shasum": ""
             },
             "require": {
@@ -2518,9 +2518,9 @@
             "support": {
                 "email": "coendunnink@gmail.com",
                 "issues": "https://github.com/thepercival/php-sports-planning/issues",
-                "source": "https://github.com/thepercival/php-sports-planning/tree/v1.0.239"
+                "source": "https://github.com/thepercival/php-sports-planning/tree/v1.0.240"
             },
-            "time": "2025-05-18T09:48:47+00:00"
+            "time": "2025-05-24T08:17:21+00:00"
         }
     ],
     "packages-dev": [
@@ -3907,16 +3907,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.12.26",
+            "version": "1.12.27",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "84cbf8f018e01834b9b1ac3dacf3b9780e209e53"
+                "reference": "3a6e423c076ab39dfedc307e2ac627ef579db162"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/84cbf8f018e01834b9b1ac3dacf3b9780e209e53",
-                "reference": "84cbf8f018e01834b9b1ac3dacf3b9780e209e53",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/3a6e423c076ab39dfedc307e2ac627ef579db162",
+                "reference": "3a6e423c076ab39dfedc307e2ac627ef579db162",
                 "shasum": ""
             },
             "require": {
@@ -3961,7 +3961,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-05-14T11:08:32+00:00"
+            "time": "2025-05-21T20:51:45+00:00"
         },
         {
             "name": "phpstan/phpstan-doctrine",

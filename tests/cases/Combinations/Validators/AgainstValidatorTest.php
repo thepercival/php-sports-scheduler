@@ -128,8 +128,8 @@ class AgainstValidatorTest extends TestCase
         $validator = new AgainstValidator($nrOfPlaces);
         $validator->addGames($planning);
 
-        $extras = Extra::Input->value + Extra::Games->value + Extra::Totals->value;
-        (new PlanningOutput())->output($planning, $extras);
+//        $extras = Extra::Input->value + Extra::Games->value + Extra::Totals->value;
+//        (new PlanningOutput())->output($planning, $extras);
 
         foreach($planning->getGames() as $game) {
             $validator->addGame($game);

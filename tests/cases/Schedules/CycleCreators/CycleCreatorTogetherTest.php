@@ -55,7 +55,7 @@ class CycleCreatorTogetherTest extends TestCase
         $togetherNrCounterMap = new TogetherNrCounterMap($scheduleWithNrOfPlaces->nrOfPlaces);
         foreach( $scheduleWithNrOfPlaces->getTogetherSportSchedules() as $togetherSchedule ) {
             $rootCycle = $cycleCreatorTogether->createRootCycleAndGames($togetherSchedule, $togetherNrCounterMap );
-            (new ScheduleCycleTogetherOutput())->output($rootCycle);
+//            (new ScheduleCycleTogetherOutput())->output($rootCycle);
             self::assertCount($expectedNrOfGames, $this->getTogetherGames($rootCycle));
         }
     }

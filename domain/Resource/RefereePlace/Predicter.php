@@ -107,7 +107,7 @@ class Predicter
         $nrOfPlacesAvailable = 0;
         foreach ($pouleCounters as $pouleCounter) {
             $nrOfPlaces = $pouleCounter->getPoule()->getPlaces()->count();
-            $nrOfPlacesAvailable += ($nrOfPlaces - $pouleCounter->getNrOfPlacesAssigned());
+            $nrOfPlacesAvailable += ($nrOfPlaces - $pouleCounter->calculateNrOfAssignedGamePlaces());
         }
         return $nrOfPlacesAvailable;
     }

@@ -7,6 +7,7 @@ namespace SportsScheduler\Game;
 use Psr\Log\LoggerInterface;
 use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
+use SportsPlanning\Output\BatchOutput;
 use SportsPlanning\Output\GameOutput;
 use SportsPlanning\Output\PlanningOutput;
 use SportsPlanning\Planning;
@@ -53,7 +54,7 @@ class GameAssigner
         }
 
         $firstBatch = $planning->createFirstBatch();
-//        (new BatchOutput())->output($firstBatch, '', null, null, true);
+//        (new BatchOutput())->output($firstBatch );
         if ($firstBatch instanceof SelfRefereeBatchOtherPoule || $firstBatch instanceof SelfRefereeBatchSamePoule) {
             $refereePlaceService = new RefereePlaceService($planning);
             if (!$this->throwOnTimeout) {
@@ -70,7 +71,7 @@ class GameAssigner
                 } else {
                     $planning->setTimeoutState(null);
                 }
-                $this->logger->error('   could not assign refereeplaces (plId:' . (string)$planning->getId() . ')');
+                $this->logger->error('   could not assign refereeplaces (plId:' . ($planning->getId() ?? '') . ')');
                 return $state;
             }
         }

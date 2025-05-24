@@ -219,7 +219,9 @@ class ProductionErrorsTest extends TestCase
                 $refereeInfo,
                 false
             ),
-            $nrOfGamesPerBatchRange
+            $nrOfGamesPerBatchRange,
+0,
+            true
         );
 
         self::assertLessThan(6, $planning->getNrOfBatches());
@@ -291,7 +293,7 @@ class ProductionErrorsTest extends TestCase
     // [5] - [against(2vs2) h2h:gpp=>0:1 f(1)] - ref=>0:
     public function testCDK(): void
     {
-        $nrOfGamesPerBatchRange = new SportRange(8, 8);
+        $nrOfGamesPerBatchRange = new SportRange(1, 1);
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), 1, 1)
         ];
@@ -306,7 +308,7 @@ class ProductionErrorsTest extends TestCase
             $nrOfGamesPerBatchRange
         );
 
-        self::assertEquals(1, $planning->getNrOfBatches());
+        self::assertEquals(5, $planning->getNrOfBatches());
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 

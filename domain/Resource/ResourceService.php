@@ -222,9 +222,11 @@ class ResourceService
 //            }
 //             ------------- END: OUTPUT --------------- //
 
+
             $unassignedPlanningCounters = new PlanningCounters($games);
             if (!$this->helper->canGamesBeAssigned($batch->getNumber(), $unassignedPlanningCounters)) {
 //                $this->batchOutput->output($batch, ' batch completed nr ' . $batch->getNumber());
+//                $this->logger->info(' batch completed nr ' . $batch->getNumber());
 //                $this->logger->info('unassinged games: ');
 //                $this->batchOutput->outputGames($games);
 //                if (count($games) >= $this->planning->getMinNrOfBatchGames()
@@ -233,13 +235,19 @@ class ResourceService
 //                }
                 return false;
             }
-//            if ($batch->getNumber() >= 37) {
-//                            $this->logger->info(
-//                                ' nr of games to process before gamesinarow-filter(max ' . $this->planning->getMaxNrOfGamesInARow(
-//                                ) . ') : ' . count($games)
-//                            );
-            ////                $this->gameOutput->outputGames($games);
-//                $e = 23;
+//            if ($batch->getNumber() >= 8) {
+////                            $this->logger->info(
+////                                ' nr of games to process before gamesinarow-filter(max ' . $this->planning->getMaxNrOfGamesInARow(
+////                                ) . ') : ' . count($games)
+////                            );
+//            //                $this->gameOutput->outputGames($games);
+////                $this->logger->info('unassinged games: ');
+////                $this->batchOutput->outputGames($games);
+//
+//                $unassignedPlanningCounters = new PlanningCounters($games);
+//                if (!$this->helper->canGamesBeAssigned($batch->getNumber(), $unassignedPlanningCounters)) {
+//                   return false;
+//                }
 //            }
             $gamesForBatchTmp = array_filter(
                 $games,
@@ -289,11 +297,11 @@ class ResourceService
                 $maxNrOfBatchGames
             );
         }
-//        if ($this->throwOnTimeout && (new DateTimeImmutable()) > $this->timeoutDateTime) {
-//            $nextTimeoutState = $this->timeoutConfig->nextTimeoutState($this->planning);
-//            $timeoutSeconds = $this->timeoutConfig->getTimeoutSeconds($this->planning->getInput(), $nextTimeoutState);
-//            throw new TimeoutException('exceeded maximum duration of ' . $timeoutSeconds . ' seconds', E_ERROR);
-//        }
+        if ($this->throwOnTimeout && (new DateTimeImmutable()) > $this->timeoutDateTime) {
+            $nextTimeoutState = $this->timeoutConfig->nextTimeoutState($this->planning);
+            $timeoutSeconds = $this->timeoutConfig->getTimeoutSeconds($this->planning->getInput(), $nextTimeoutState);
+            throw new TimeoutException('exceeded maximum duration of ' . $timeoutSeconds . ' seconds', E_ERROR);
+        }
         $minNrOfBatchGames = $this->planning->getMinNrOfBatchGames();
         if (count($games) >= $minNrOfBatchGames
             && (count($gamesForBatch) + count($batch->getGames())) < $minNrOfBatchGames) {
@@ -502,9 +510,10 @@ class ResourceService
         TogetherGame|AgainstGame $game
     ): bool {
         $poule = $game->getPoule();
-        $selfRefereePlace = 1;
-        $nrAvailable = $poule->getPlaces()->count() - $batch->getNrOfPlacesParticipating($poule, 0);
-        return $nrAvailable >= (count($game->getPlaces()) + $selfRefereePlace);
+        $nrOfRefereePlacesPerGame = 1;
+        $nrOfPlacesAlreadyParticipatingInBatch = $batch->getNrOfPlacesParticipating($poule, $nrOfRefereePlacesPerGame);
+        $nrAvailable = $poule->getPlaces()->count() - $nrOfPlacesAlreadyParticipatingInBatch;
+        return $nrAvailable >= (count($game->getPlaces()) + $nrOfRefereePlacesPerGame);
     }
 
     protected function refereePlacesCanBeAssigned(
