@@ -272,7 +272,7 @@ class PlanningValidator
 
     protected function validateGamesInARow(Planning $planning): int
     {
-        if ($planning->getMaxNrOfGamesInARow() === 0) {
+        if ($planning->maxNrOfGamesInARow === 0) {
             return PlanningValidity::VALID;
         }
         foreach ($planning->poules as $poule) {
@@ -326,7 +326,7 @@ class PlanningValidator
             return $maxNrOfGamesInRow;
         };
 
-        return $getMaxInARow($getBatchParticipations($place)) <= $planning->getMaxNrOfGamesInARow();
+        return $getMaxInARow($getBatchParticipations($place)) <= $planning->maxNrOfGamesInARow;
     }
 
 //    /**

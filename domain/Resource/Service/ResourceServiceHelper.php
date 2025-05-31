@@ -12,12 +12,9 @@ use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Exceptions\NoBestPlanningException;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
-use SportsPlanning\Input;
 use SportsPlanning\Place;
 use SportsPlanning\Planning\BatchGamesType;
-use SportsPlanning\Planning\Type as PlanningType;
 use SportsPlanning\Planning;
-use SportsPlanning\Planning\Filter as PlanningFilter;
 use SportsPlanning\PlanningPouleStructure;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 
@@ -26,8 +23,7 @@ class ResourceServiceHelper
     protected int $totalNrOfGames;
     public readonly PlanningPouleStructure $planningPouleStructure;
 
-    public function __construct(
-        protected Planning $planning, protected int|null $maxNrOfBatches, protected LoggerInterface $logger)
+    public function __construct(protected Planning $planning, protected LoggerInterface $logger)
     {
         $this->planningPouleStructure = $planning->getConfiguration()->planningPouleStructure;
         $this->totalNrOfGames = $this->planningPouleStructure->calculateNrOfGames();
@@ -91,14 +87,8 @@ class ResourceServiceHelper
         );
     }
 
-    /**
-     * @param int $batchNumber
-     * @param PlanningCounters $unassignedPlanningCounters
-     * @return bool
-     */
-    public function canGamesBeAssigned(int $batchNumber, PlanningCounters $unassignedPlanningCounters): bool
+    public function canGamesBeAssigned(int $batchNumber, int $maxNrOfBatches, PlanningCounters $unassignedPlanningCounters): bool
     {
-        $maxNrOfBatches = $this->maxNrOfBatches === null ? $this->planning->getMaxNrOfBatches() : $this->maxNrOfBatches;
         $maxNrOfBatchesToGo = $maxNrOfBatches - $batchNumber;
         if ($this->willMaxNrOfBatchesBeExceeded($maxNrOfBatchesToGo, $unassignedPlanningCounters)) {
             return false;
@@ -309,7 +299,7 @@ class ResourceServiceHelper
      */
     public function getRequiredPlaces(int $batchNumber, PlanningCounters $assignPlanningCounters): array
     {
-        $maxNrOfBatchesToGo = $this->planning->getMaxNrOfBatches() - $batchNumber;
+        $maxNrOfBatchesToGo = $this->calculateMaxNrOfBatches() - $batchNumber;
         $requiredPlaces = [];
         foreach ($assignPlanningCounters->getPlaceGameCounters() as $placeGameCounter) {
             if ($placeGameCounter->getNrOfGames() >= $maxNrOfBatchesToGo) {
@@ -317,6 +307,13 @@ class ResourceServiceHelper
             }
         }
         return $requiredPlaces;
+    }
+
+
+    private function calculateMaxNrOfBatches(): int
+    {
+        $totalNrOfGames = $this->planning->getConfiguration()->planningPouleStructure->calculateNrOfGames();
+        return (int)ceil($totalNrOfGames / $this->planning->minNrOfBatchGames);
     }
 
 

@@ -8,20 +8,17 @@ use Exception;
 use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
-use SportsHelpers\Sports\TogetherSport;
+use SportsPlanning\Exceptions\NoBestPlanningException;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Output\PlanningOutput;
 use SportsPlanning\Output\ScheduleOutput;
 use SportsPlanning\Planning;
+use SportsPlanning\Planning\PlanningFilter;
 use SportsPlanning\Planning\PlanningState;
+use SportsPlanning\Planning\PlanningType;
 use SportsPlanning\Planning\TimeoutState;
 use SportsPlanning\PlanningConfiguration;
-use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstOneVsOne;
-use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstOneVsTwo;
-use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstTwoVsTwo;
-use SportsPlanning\Schedules\Cycles\ScheduleCycleTogether;
-use SportsPlanning\Schedules\ScheduleWithNrOfPlaces;
 use SportsPlanning\Input;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
@@ -145,11 +142,39 @@ trait PlanningCreator
         if ($showHighestCompletedBatchNr) {
             $gameAssigner->showHighestCompletedBatchNr();
         }
-        $betterNrOfBatchGames = $input->caluclateBetterNrOfBatchGames($planning->getType(), $nrOfBatchGamesRange);
-        if( $gameAssigner->assignGames($planning, $betterNrOfBatchGames) !== PlanningState::Succeeded ) {
+        $betterNrOfBatches = $this->determineBetterNrOfBatches($input, $planning->getType(), $nrOfBatchGamesRange);
+        if( $betterNrOfBatches === null ) {
+            $betterNrOfBatches = $this->calculateMaxNrOfBatches($planning);
+        }
+        if( $gameAssigner->assignGames($planning, $betterNrOfBatches) !== PlanningState::Succeeded ) {
             throw new Exception("planning could not be created", E_ERROR);
         }
         return $planning;
+    }
+
+    private function calculateMaxNrOfBatches(Planning $planning): int
+    {
+        $totalNrOfGames = $planning->getConfiguration()->planningPouleStructure->calculateNrOfGames();
+        return (int)ceil($totalNrOfGames / $planning->minNrOfBatchGames);
+    }
+
+    public function determineBetterNrOfBatches(
+        Input $input, PlanningType $planningType, SportRange $batchGamesRange): int|null
+    {
+        try {
+            if ($planningType === PlanningType::BatchGames) {
+                // -1 because needs to be less nrOfBatches
+                return $input->getBestPlanning(null)->getNrOfBatches() - 1;
+            } else {
+                $planningFilter = new PlanningFilter( null, null, $batchGamesRange, 0);
+                $batchGamePlanning = $input->getPlanning($planningFilter);
+                if ($batchGamePlanning !== null) {
+                    return $batchGamePlanning->getNrOfBatches();
+                }
+            }
+        } catch (NoBestPlanningException $e) {
+        }
+        return null;
     }
 
     /**

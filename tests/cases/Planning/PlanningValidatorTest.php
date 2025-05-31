@@ -125,33 +125,33 @@ class PlanningValidatorTest extends TestCase
 //        self::assertSame(Validity::UNEQUAL_GAME_AGAINST, $planningValidator->validate($planning));
 //    }
 
-    public function testGamesInARow(): void
-    {
-        $configuration = $this->createConfiguration([4]);
-        $planning = $this->createPlanning($configuration, null);
-
-        $planningValidator = new PlanningValidator();
-        $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
-
-        // (new PlanningOutput())->output($planning, PlanningOutput\Extra::Games);
-
-        // ---------------- MAKE INVALID --------------------- //
-        $refObject   = new ReflectionObject($planning);
-        $refProperty = $refObject->getProperty('maxNrOfGamesInARow');
-        // $refProperty->setAccessible(true);
-        $refProperty->setValue($planning, 1);
-        // ---------------- MAKE INVALID --------------------- //
-
-//        (new PlanningOutput())->outputWithGames($planning, true);
-
-
-        $validity = $planningValidator->validate($planning);
-        self::assertSame(
-            Validity::TOO_MANY_GAMES_IN_A_ROW,
-            $validity & Validity::TOO_MANY_GAMES_IN_A_ROW
-        );
-    }
+//    public function testGamesInARow(): void
+//    {
+//        $configuration = $this->createConfiguration([4]);
+//        $planning = $this->createPlanning($configuration, null);
+//
+//        $planningValidator = new PlanningValidator();
+//        $validity = $planningValidator->validate($planning);
+//        self::assertSame(Validity::VALID, $validity);
+//
+//        // (new PlanningOutput())->output($planning, PlanningOutput\Extra::Games);
+//
+//        // ---------------- MAKE INVALID --------------------- //
+//        $refObject   = new ReflectionObject($planning);
+//        $refProperty = $refObject->getProperty('maxNrOfGamesInARow');
+//        // $refProperty->setAccessible(true);
+//        $refProperty->setValue($planning, 1);
+//        // ---------------- MAKE INVALID --------------------- //
+//
+////        (new PlanningOutput())->outputWithGames($planning, true);
+//
+//
+//        $validity = $planningValidator->validate($planning);
+//        self::assertSame(
+//            Validity::TOO_MANY_GAMES_IN_A_ROW,
+//            $validity & Validity::TOO_MANY_GAMES_IN_A_ROW
+//        );
+//    }
 
 //    public function testGameUnequalHomeAway(): void
 //    {

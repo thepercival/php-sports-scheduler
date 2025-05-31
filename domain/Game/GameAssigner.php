@@ -23,12 +23,12 @@ class GameAssigner
         $this->throwOnTimeout = true;
     }
 
-    public function assignGames(Planning $planning, int|null $maxNrOfBatches): PlanningState
+    public function assignGames(Planning $planning, int $maxNrOfBatches): PlanningState
     {
         $games = (new PreAssignSorter())->getGames($planning);
 //        (new GameOutput($this->logger))->outputGames($games);
 
-        $resourceService = new ResourceService($planning, $maxNrOfBatches, $this->logger);
+        $resourceService = new ResourceService($planning, $this->logger);
         if (!$this->throwOnTimeout) {
             $resourceService->disableThrowOnTimeout();
         }
@@ -36,7 +36,7 @@ class GameAssigner
             $resourceService->showHighestCompletedBatchNr();
         }
 //        $resourceService->showHighestCompletedBatchNr();
-        $state = $resourceService->assign($games);
+        $state = $resourceService->assign($games, $maxNrOfBatches);
         if ($state === PlanningState::Failed || $state === PlanningState::TimedOut) {
             $planning->removeGames();
             $planning->setState($state);
