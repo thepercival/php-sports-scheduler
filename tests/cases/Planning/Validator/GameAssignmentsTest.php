@@ -12,7 +12,7 @@ use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
 use SportsPlanning\Batches\Batch;
-use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Resource\ResourceType;
@@ -43,7 +43,7 @@ class GameAssignmentsTest extends TestCase
         $gameCounters = $resourceCounter->getCounters(ResourceType::Fields->value);
 
         $fieldGameCounters = $gameCounters[ResourceType::Fields->value];
-        $field = $planning->getInput()->getSport(1)->getField(1);
+        $field = $planning->getSport(1)->getField(1);
         $gameFieldCounter = $fieldGameCounters[$field->getUniqueIndex()];
         self::assertSame($field, $gameFieldCounter->getResource());
         self::assertSame(5, $gameFieldCounter->getNrOfGames());
@@ -70,10 +70,10 @@ class GameAssignmentsTest extends TestCase
         $resourceCounter = new ResourceCounter($planning);
         $gameCounters = $resourceCounter->getCounters(ResourceType::Referees->value);
 
-        /** @var GameCounter[] $gameRefereeCounters */
-        $gameRefereeCounters = $gameCounters[ResourceType::Referees->value];
-        $referee = $planning->getInput()->getReferee(1);
-        $gameRefereeCounter = $gameRefereeCounters[(string)$referee->getNumber()];
+        /** @var GameCounter[] $gameCountersForReferee */
+        $gameCountersForReferee = $gameCounters[ResourceType::Referees->value];
+        $referee = $planning->getReferee(1);
+        $gameRefereeCounter = $gameCountersForReferee[$referee->getUniqueIndex()];
         self::assertSame($referee, $gameRefereeCounter->getResource());
         self::assertSame(5, $gameRefereeCounter->getNrOfGames());
     }
@@ -96,8 +96,8 @@ class GameAssignmentsTest extends TestCase
 
         /** @var GameCounter[] $gameRefereePlaceCounters */
         $gameRefereePlaceCounters = $gameCounters[ResourceType::RefereePlaces->value];
-        $place = $planning->getInput()->getPoule(1)->getPlace(1);
-        $gameRefereePlaceCounter = $gameRefereePlaceCounters[(string)$place];
+        $place = $planning->getPoule(1)->getPlace(1);
+        $gameRefereePlaceCounter = $gameRefereePlaceCounters[$place->getUniqueIndex()];
         self::assertSame($place, $gameRefereePlaceCounter->getResource());
         self::assertSame(2, $gameRefereePlaceCounter->getNrOfGames());
     }
@@ -107,19 +107,20 @@ class GameAssignmentsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
         ];
-        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $selfReferee = SelfReferee::SamePoule;
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo($selfReferee));
         $planning = $this->createPlanning(
             new PlanningConfiguration(new PouleStructure(5), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
-        $firstPoule = $planning->getInput()->getPoule(1);
+        $firstPoule = $planning->getPoule(1);
         $replacedPlace = $firstPoule->getPlace(5);
         $replacedByPlace = $firstPoule->getPlace(1);
         $firstBatch = $planning->createFirstBatch();
-        self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoule
+        self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoules
             || $firstBatch instanceof SelfRefereeBatchSamePoule);
         $this->replaceRefereePlace(
-            $planning->getInput()->getSelfReferee() === SelfReferee::SamePoule,
+            $selfReferee === SelfReferee::SamePoule,
             $firstBatch,
             $replacedPlace,
             $replacedByPlace
@@ -162,11 +163,11 @@ class GameAssignmentsTest extends TestCase
             new PlanningConfiguration(new PouleStructure(5, 4), $sportsWithNrOfFieldsAndNrOfCycles, $refereeInfo, false)
         );
 
-        $secondPoule = $planning->getInput()->getPoule(2);
+        $secondPoule = $planning->getPoule(2);
         $replacedPlace = $secondPoule->getPlace(4);
         $replacedByPlace = $secondPoule->getPlace(3);
         $firstBatch = $planning->createFirstBatch();
-        self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoule
+        self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoules
                          || $firstBatch instanceof SelfRefereeBatchSamePoule);
         $this->replaceRefereePlace(
             $refereeInfo->selfRefereeInfo->selfReferee === SelfReferee::SamePoule,
@@ -195,8 +196,8 @@ class GameAssignmentsTest extends TestCase
         );
 
         // $planningGames = $planning->getPoule(1)->getGames();
-        $replacedField = $planning->getInput()->getSport(1)->getField(2);
-        $replacedByField = $planning->getInput()->getSport(1)->getField(1);
+        $replacedField = $planning->getSport(1)->getField(2);
+        $replacedByField = $planning->getSport(1)->getField(1);
         $this->replaceField($planning->createFirstBatch(), $replacedField, $replacedByField);
 
 //        $planningOutput = new PlanningOutput();
@@ -218,8 +219,8 @@ class GameAssignmentsTest extends TestCase
         );
 
         // $planningGames = $planning->getPoule(1)->getGames();
-        $replacedReferee = $planning->getInput()->getReferee(2);
-        $replacedByReferee = $planning->getInput()->getReferee(1);
+        $replacedReferee = $planning->getReferee(2);
+        $replacedByReferee = $planning->getReferee(1);
         $firstBatch = $planning->createFirstBatch();
         self::assertInstanceOf(Batch::class, $firstBatch);
         $this->replaceReferee($firstBatch, $replacedReferee, $replacedByReferee);
@@ -237,7 +238,8 @@ class GameAssignmentsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
         ];
-        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
+        $selfReferee = SelfReferee::SamePoule;
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo($selfReferee, 1));
         $planning = $this->createPlanning(
             new PlanningConfiguration(
                 new PouleStructure(5),
@@ -247,14 +249,14 @@ class GameAssignmentsTest extends TestCase
             )
         );
 
-        $firstPoule = $planning->getInput()->getPoule(1);
+        $firstPoule = $planning->getPoule(1);
         $replacedPlace = $firstPoule->getPlace(5);
         $replacedByPlace = $firstPoule->getPlace(1);
         $firstBatch = $planning->createFirstBatch();
-        self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoule
+        self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoules
                          || $firstBatch instanceof SelfRefereeBatchSamePoule);
         $this->replaceRefereePlace(
-            $planning->getInput()->getSelfReferee() === SelfReferee::SamePoule,
+            $selfReferee === SelfReferee::SamePoule,
             $firstBatch,
             $replacedPlace,
             $replacedByPlace

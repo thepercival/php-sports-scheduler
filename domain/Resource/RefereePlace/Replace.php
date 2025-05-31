@@ -2,7 +2,7 @@
 
 namespace SportsScheduler\Resource\RefereePlace;
 
-use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
@@ -11,14 +11,14 @@ use SportsPlanning\Place;
 class Replace
 {
     public function __construct(
-        protected SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch,
+        protected SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch,
         protected TogetherGame|AgainstGame $game,
-        protected Place $replacement,
-        protected Place $replaced
+        protected string $replacement,
+        protected string $replaced
     ) {
     }
 
-    public function getBatch(): SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule
+    public function getBatch(): SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule
     {
         return $this->batch;
     }
@@ -28,12 +28,12 @@ class Replace
         return $this->game;
     }
 
-    public function getReplaced(): Place
+    public function getReplaced(): string
     {
         return $this->replaced;
     }
 
-    public function getReplacement(): Place
+    public function getReplacement(): string
     {
         return $this->replacement;
     }

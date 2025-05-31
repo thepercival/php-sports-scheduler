@@ -31,11 +31,11 @@ class UniquePlacesCounter
     public function addGame(AgainstGame|TogetherGame $game): void
     {
         $this->gameCounter = $this->gameCounter->increment();
-        foreach ($game->getPlaces() as $gamePlace) {
-            if (array_key_exists($gamePlace->getPlace()->getPlaceNr(), $this->places)) {
+        foreach ($game->getPlaceNrs() as $placeNr) {
+            if (array_key_exists($placeNr, $this->places)) {
                 continue;
             }
-            $this->places[$gamePlace->getPlace()->getPlaceNr()] = true;
+            $this->places[$placeNr] = true;
         }
     }
 

@@ -6,6 +6,7 @@ namespace SportsScheduler\Schedules;
 
 use Psr\Log\LoggerInterface;
 use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
+use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstOneVsOne;
 use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstOneVsTwo;
 use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstTwoVsTwo;
@@ -31,6 +32,24 @@ class CycleCreator
 
     public function __construct(protected LoggerInterface $logger)
     {
+    }
+
+    /**
+     * @param PlanningConfiguration $config
+     * @return array<int, list<ScheduleCycleTogether|ScheduleCycleAgainstOneVsOne|ScheduleCycleAgainstOneVsTwo|ScheduleCycleAgainstTwoVsTwo>>
+     */
+    public function createSportCyclesMap(PlanningConfiguration $config): array {
+        $sportCyclesMap = [];
+        {
+            $pouleStructure = $config->pouleStructure;
+            for( $nrOfPlaces = $pouleStructure->getSmallestPoule() ; $nrOfPlaces <= $pouleStructure->getBiggestPoule() ; $nrOfPlaces++) {
+                $sportRootCycles = $this->createSportRootCycles(
+                    new ScheduleWithNrOfPlaces( $nrOfPlaces, $config->createSportsWithNrOfCycles())
+                );
+                $sportCyclesMap[$nrOfPlaces] = $sportRootCycles;
+            }
+        }
+        return $sportCyclesMap;
     }
 
     /**

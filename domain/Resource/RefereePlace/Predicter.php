@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SportsScheduler\Resource\RefereePlace;
 
 use SportsHelpers\SelfReferee;
-use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Counters\GamePlacesCounterForPoule;
 use SportsPlanning\Poule;
@@ -22,7 +22,7 @@ class Predicter
     }
 
     public function canStillAssign(
-        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch, SelfReferee $selfReferee): bool
+        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch, SelfReferee $selfReferee): bool
     {
         if ($selfReferee === SelfReferee::Disabled) {
             return true;
@@ -37,7 +37,7 @@ class Predicter
     }
 
     protected function validatePouleAssignmentsSamePoule(
-        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch): bool
+        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch): bool
     {
         $pouleCounterMap = $this->createGamePlacesCounterMap();
         $this->addGamesToPouleCounterMap($pouleCounterMap, $batch);
@@ -58,25 +58,25 @@ class Predicter
     {
         $pouleCounterMap = [];
         foreach ($this->poules as $poule) {
-            $pouleCounterMap[$poule->getNumber()] = new GamePlacesCounterForPoule($poule);
+            $pouleCounterMap[$poule->pouleNr] = new GamePlacesCounterForPoule($poule);
         }
         return $pouleCounterMap;
     }
 
     /**
      * @param array<int,GamePlacesCounterForPoule> $pouleCounterMap
-     * @param SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch
+     * @param SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch
      */
     protected function addGamesToPouleCounterMap(array $pouleCounterMap,
-        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch): void
+        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch): void
     {
         foreach ($batch->getBase()->getGames() as $game) {
-            $pouleCounterMap[$game->getPoule()->getNumber()]->add($game->getPlaces()->count());
+            $pouleCounterMap[$game->poule->pouleNr]->add(count($game->getGamePlaces()));
         }
     }
 
     protected function validatePouleAssignmentsOtherPoules(
-        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch): bool
+        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch): bool
     {
         $pouleCounterMap = $this->createGamePlacesCounterMap();
         $this->addGamesToPouleCounterMap($pouleCounterMap, $batch);
@@ -106,7 +106,7 @@ class Predicter
     {
         $nrOfPlacesAvailable = 0;
         foreach ($pouleCounters as $pouleCounter) {
-            $nrOfPlaces = $pouleCounter->getPoule()->getPlaces()->count();
+            $nrOfPlaces = count($pouleCounter->getPoule()->places);
             $nrOfPlacesAvailable += ($nrOfPlaces - $pouleCounter->calculateNrOfAssignedGamePlaces());
         }
         return $nrOfPlacesAvailable;
@@ -117,14 +117,14 @@ class Predicter
      * dit mag max. het gemiddelde + 1.500000001 zijn
      */
     protected function validateTooMuchForcedAssignmentDiffernce(
-        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch): bool
+        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch): bool
     {
         $totalNrOfForcedRefereePlaces = $batch->getTotalNrOfForcedRefereePlaces();
         $totalPouleCounters = $batch->getTotalPouleCounters();
 
         $pouleHasForcedRefereePlaces = function (Poule $poule) use ($totalNrOfForcedRefereePlaces): bool {
-            foreach ($poule->getPlaces() as $place) {
-                if (array_key_exists((string)$place, $totalNrOfForcedRefereePlaces)) {
+            foreach ($poule->places as $place) {
+                if (array_key_exists($place->getUniqueIndex(), $totalNrOfForcedRefereePlaces)) {
                     return true;
                 }
             }
@@ -141,9 +141,9 @@ class Predicter
             $minNrOfForcedRefereePlaces = null;
 
             $avgNrOfGamesForRefereePlace = 0;
-            if (array_key_exists($poule->getNumber(), $totalPouleCounters)) {
-                $avgNrOfGamesForRefereePlace = $totalPouleCounters[$poule->getNumber()]->getNrOfGames(
-                    ) / $poule->getPlaces()->count();
+            if (array_key_exists($poule->pouleNr, $totalPouleCounters)) {
+                $avgNrOfGamesForRefereePlace = $totalPouleCounters[$poule->pouleNr]->getNrOfGames(
+                    ) / count($poule->places);
             }
 
             $pouleMax = $avgNrOfGamesForRefereePlace + self::SAME_POULE_MAX_DELTA;
@@ -151,10 +151,10 @@ class Predicter
 
             // naast de forced referee assignments heb je ook dat places niet beschikbaar zijn, omdat ze zelf moeten
             // place met laagste nrOfForcedAssignment moet minimaal 1x beschikbaar zijn
-            foreach ($poule->getPlaces() as $place) {
+            foreach ($poule->places as $place) {
                 $nrOfForcedRefereePlaces = 0;
-                if (array_key_exists((string)$place, $totalNrOfForcedRefereePlaces)) {
-                    $nrOfForcedRefereePlaces = $totalNrOfForcedRefereePlaces[(string)$place];
+                if (array_key_exists($place->getUniqueIndex(), $totalNrOfForcedRefereePlaces)) {
+                    $nrOfForcedRefereePlaces = $totalNrOfForcedRefereePlaces[$place->getUniqueIndex()];
                 }
                 if ($nrOfForcedRefereePlaces >= $pouleMax /*|| $nrOfForcedRefereePlaces <= $pouleMin*/) {
                     return false;

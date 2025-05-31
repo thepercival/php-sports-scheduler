@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace SportsScheduler\Game;
 
 use Psr\Log\LoggerInterface;
-use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
-use SportsPlanning\Output\BatchOutput;
-use SportsPlanning\Output\GameOutput;
-use SportsPlanning\Output\PlanningOutput;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\PlanningState;
 use SportsPlanning\Planning\TimeoutConfig;
 use SportsScheduler\Resource\RefereePlace\Service as RefereePlaceService;
-use SportsScheduler\Resource\ResourceService as ResourceService;
+use SportsScheduler\Resource\ResourceService;
 
 class GameAssigner
 {
@@ -26,12 +23,12 @@ class GameAssigner
         $this->throwOnTimeout = true;
     }
 
-    public function assignGames(Planning $planning): PlanningState
+    public function assignGames(Planning $planning, int|null $maxNrOfBatches): PlanningState
     {
         $games = (new PreAssignSorter())->getGames($planning);
 //        (new GameOutput($this->logger))->outputGames($games);
 
-        $resourceService = new ResourceService($planning, $this->logger);
+        $resourceService = new ResourceService($planning, $maxNrOfBatches, $this->logger);
         if (!$this->throwOnTimeout) {
             $resourceService->disableThrowOnTimeout();
         }
@@ -41,8 +38,7 @@ class GameAssigner
 //        $resourceService->showHighestCompletedBatchNr();
         $state = $resourceService->assign($games);
         if ($state === PlanningState::Failed || $state === PlanningState::TimedOut) {
-            $planning->getAgainstGames()->clear();
-            $planning->getTogetherGames()->clear();
+            $planning->removeGames();
             $planning->setState($state);
             $planning->setNrOfBatches(0);
             if ($state === PlanningState::TimedOut) {
@@ -55,15 +51,14 @@ class GameAssigner
 
         $firstBatch = $planning->createFirstBatch();
 //        (new BatchOutput())->output($firstBatch );
-        if ($firstBatch instanceof SelfRefereeBatchOtherPoule || $firstBatch instanceof SelfRefereeBatchSamePoule) {
+        if ($firstBatch instanceof SelfRefereeBatchOtherPoules || $firstBatch instanceof SelfRefereeBatchSamePoule) {
             $refereePlaceService = new RefereePlaceService($planning);
             if (!$this->throwOnTimeout) {
                 $refereePlaceService->disableThrowOnTimeout();
             }
             $state = $refereePlaceService->assign($firstBatch);
             if ($state === PlanningState::Failed || $state === PlanningState::TimedOut) {
-                $planning->getAgainstGames()->clear();
-                $planning->getTogetherGames()->clear();
+                $planning->removeGames();
                 $planning->setState($state);
                 $planning->setNrOfBatches(0);
                 if ($state === PlanningState::TimedOut) {

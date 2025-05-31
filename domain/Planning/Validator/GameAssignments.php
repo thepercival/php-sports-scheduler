@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SportsScheduler\Planning\Validator;
 
 use SportsHelpers\SelfReferee;
+use SportsPlanning\Resource\GameCounter\GameCounterForPlace;
 use SportsPlanning\Resource\ResourceType;
 use SportsScheduler\Exceptions\UnequalAssignedFieldsException;
 use SportsScheduler\Exceptions\UnequalAssignedRefereePlacesException;
@@ -12,7 +13,6 @@ use SportsScheduler\Exceptions\UnequalAssignedRefereesException;
 use SportsPlanning\Place;
 use SportsPlanning\Planning;
 use SportsPlanning\Resource\GameCounter;
-use SportsPlanning\Resource\GameCounter\Place as PlaceGameCounter;
 use SportsScheduler\Resource\GameCounter\Unequal as UnequalGameCounter;
 use SportsPlanning\Resource\ResourceCounter as ResourceCounterManager;
 use stdClass;
@@ -31,7 +31,7 @@ class GameAssignments
 
     public function validate(): void
     {
-        if (!$this->planning->getInput()->hasMultipleSports()) {
+        if (count($this->planning->sports) === 1) {
             $fieldMap = $this->counterManager->getCounter(ResourceType::Fields);
             $unequalFields = $this->getMaxUnequal($fieldMap);
             if ($unequalFields !== null) {
@@ -59,18 +59,20 @@ class GameAssignments
 
     protected function shouldValidatePerPoule(): bool
     {
-        $nrOfPoules = $this->planning->getInput()->getPoules()->count();
-        if ($this->planning->getInput()->getSelfReferee() === SelfReferee::SamePoule) {
+        $selfRefereeInfo = $this->planning->getConfiguration()->refereeInfo->selfRefereeInfo;
+
+        $nrOfPoules = count($this->planning->poules);
+        if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule) {
             return true;
         }
-        if (($this->planning->getInput()->getPlaces()->count() % $nrOfPoules) === 0) {
+        if (($this->planning->getNrOfPlaces() % $nrOfPoules) === 0) {
             return false;
         }
         if ($nrOfPoules === 2) {
             return true;
         }
-        $input = $this->planning->getInput();
-        if ($nrOfPoules > 2 && $input->selfRefereeEnabled()) {
+
+        if ($nrOfPoules > 2 && $selfRefereeInfo->selfReferee !== SelfReferee::Disabled) {
             return true;
         }
         return false;
@@ -91,7 +93,7 @@ class GameAssignments
                     $unequals[] = $unequal;
                 }
             }
-        } elseif ($this->planning->getInput()->createPouleStructure()->isAlmostBalanced()) {
+        } elseif ($this->planning->getConfiguration()->pouleStructure->isAlmostBalanced()) {
             $refereePlaceMap = $this->counterManager->getCounter(ResourceType::RefereePlaces);
             $unequal = $this->getMaxUnequal($refereePlaceMap);
             if ($unequal !== null) {
@@ -102,17 +104,17 @@ class GameAssignments
     }
 
     /**
-     * @return array<int,array<string|int,PlaceGameCounter>>
+     * @return array<int,array<string|int,GameCounterForPlace>>
      */
     protected function getRefereePlacesPerPoule(): array
     {
         $refereePlacesPerPoule = [];
         $refereePlaceMap = $this->counterManager->getCounter(ResourceType::RefereePlaces);
-        /** @var PlaceGameCounter $gameCounter */
+        /** @var GameCounterForPlace $gameCounter */
         foreach ($refereePlaceMap as $gameCounter) {
             /** @var Place $place */
             $place = $gameCounter->getResource();
-            $pouleNr = $place->getPoule()->getNumber();
+            $pouleNr = $place->pouleNr;
             if (!array_key_exists($pouleNr, $refereePlacesPerPoule)) {
                 $refereePlacesPerPoule[$pouleNr] = [];
             }

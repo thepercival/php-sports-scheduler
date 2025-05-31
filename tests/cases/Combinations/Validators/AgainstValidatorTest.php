@@ -40,9 +40,7 @@ class AgainstValidatorTest extends TestCase
         // (new PlanningOutput())->outputWithGames($planning, true);
 
         $validator = new AgainstValidator($nrOfPlaces);
-        foreach($planning->getGames() as $game) {
-            $validator->addGame($game);
-        }
+        $validator->addGames($planning);
         self::assertTrue($validator->balanced());
     }
 
@@ -62,9 +60,7 @@ class AgainstValidatorTest extends TestCase
         // (new PlanningOutput())->outputWithGames($planning, true);
 
         $validator = new AgainstValidator($nrOfPlaces);
-        foreach($planning->getGames() as $game) {
-            $validator->addGame($game);
-        }
+        $validator->addGames($planning);
         self::assertTrue($validator->balanced());
     }
 
@@ -84,8 +80,8 @@ class AgainstValidatorTest extends TestCase
         // (new PlanningOutput())->outputWithGames($planning, true);
 
         $validator = new AgainstValidator($nrOfPlaces);
-        foreach($planning->getGames() as $game) {
-            $validator->addGame($game);
+        foreach($this->getAgainstGames($planning) as $game) {
+            $validator->addGame($planning, $game);
         }
         self::assertTrue($validator->balanced());
     }
@@ -106,9 +102,7 @@ class AgainstValidatorTest extends TestCase
         // (new PlanningOutput())->outputWithGames($planning, true);
 
         $validator = new AgainstValidator($nrOfPlaces);
-        foreach($planning->getGames() as $game) {
-            $validator->addGame($game);
-        }
+        $validator->addGames($planning);
         self::assertTrue($validator->balanced());
     }
 
@@ -131,9 +125,6 @@ class AgainstValidatorTest extends TestCase
 //        $extras = Extra::Input->value + Extra::Games->value + Extra::Totals->value;
 //        (new PlanningOutput())->output($planning, $extras);
 
-        foreach($planning->getGames() as $game) {
-            $validator->addGame($game);
-        }
         self::assertTrue($validator->balanced());
     }
 

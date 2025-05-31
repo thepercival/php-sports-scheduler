@@ -7,7 +7,11 @@ namespace SportsScheduler\Resource\Service;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Place;
-use SportsPlanning\Resource\GameCounter\Place as PlaceGameCounter;
+use SportsPlanning\Resource\GameCounter\GameCounterForPlace;
+use SportsPlanning\Sports\Plannable\AgainstOneVsOneWithNrAndFields;
+use SportsPlanning\Sports\Plannable\AgainstOneVsTwoWithNrAndFields;
+use SportsPlanning\Sports\Plannable\AgainstTwoVsTwoWithNrAndFields;
+use SportsPlanning\Sports\Plannable\TogetherSportWithNrAndFields;
 use SportsPlanning\Sports\SportWithNrOfFields;
 
 class PlanningCounters
@@ -19,37 +23,40 @@ class PlanningCounters
     protected array $counterForSportMap = [];
 
     /**
-     * @var array<string, PlaceGameCounter> $placeGameCounters
+     * @var array<string, GameCounterForPlace> $placeGameCounters
      */
     protected array $placeGameCounters = [];
 
     /**
+     * @param list<TogetherSportWithNrAndFields|AgainstOneVsOneWithNrAndFields|AgainstOneVsTwoWithNrAndFields|AgainstTwoVsTwoWithNrAndFields> $sportsWithNrAndFields
      * @param list<AgainstGame|TogetherGame> $games
      */
-    public function __construct(array $games)
+    public function __construct(array $sportsWithNrAndFields, array $games)
     {
-        $this->init($games);
+        $this->init($sportsWithNrAndFields, $games);
     }
 
     /**
+     * @param list<TogetherSportWithNrAndFields|AgainstOneVsOneWithNrAndFields|AgainstOneVsTwoWithNrAndFields|AgainstTwoVsTwoWithNrAndFields> $sportsWithNrAndFields
      * @param list<TogetherGame|AgainstGame> $games
      */
-    private function init(array $games): void
+    private function init(array $sportsWithNrAndFields, array $games): void
     {
+        foreach ($sportsWithNrAndFields as $sportWithNrAndFields) {
+            $sportNr = $sportWithNrAndFields->sportNr;
+            $this->counterForSportMap[$sportNr] = new NrOfGamesAndUniquePlacesCounterForSport(
+                new SportWithNrOfFields($sportWithNrAndFields->sport, count($sportWithNrAndFields->fields))
+            );
+        }
+
         foreach ($games as $game) {
-            $sportNr = $game->getSport()->getNumber();
-            if (!array_key_exists($sportNr, $this->counterForSportMap)) {
-                $this->counterForSportMap[$sportNr] = new NrOfGamesAndUniquePlacesCounterForSport(
-                    new SportWithNrOfFields( $game->getSport()->sport, $game->getSport()->getNrOfFields()
-                    ));
-            }
+            $sportNr = $game->getField()->sportNr;
             $this->counterForSportMap[$sportNr]->addGame($game);
             $this->nrOfGames++;
 
-            foreach ($game->getPlaces() as $gamePlace) {
-                $place = $gamePlace->getPlace();
+            foreach ($game->getPlaces() as $place) {
                 if (!isset($this->placeGameCounters[$place->getUniqueIndex()])) {
-                    $this->placeGameCounters[$place->getUniqueIndex()] = new PlaceGameCounter($place, 1);
+                    $this->placeGameCounters[$place->getUniqueIndex()] = new GameCounterForPlace($place, 1);
                 } else {
                     $placeGameCounter = $this->placeGameCounters[$place->getUniqueIndex()];
                     $this->placeGameCounters[$place->getUniqueIndex()] = $placeGameCounter->increment();
@@ -67,7 +74,7 @@ class PlanningCounters
     }
 
     /**
-     * @return list<PlaceGameCounter>
+     * @return list<GameCounterForPlace>
      */
     public function getPlaceGameCounters(): array
     {

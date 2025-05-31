@@ -4,25 +4,20 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Planning;
 
-use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\AgainstSide;
 use SportsHelpers\SelfReferee;
-use SportsHelpers\Sports\AgainstOneVsOne;
-use SportsHelpers\Sports\AgainstOneVsTwo;
-use SportsHelpers\Sports\AgainstTwoVsTwo;
 use SportsHelpers\Sports\TogetherSport;
 use SportsPlanning\Game\AgainstGame;
-use SportsPlanning\Game\GameAbstract;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Planning\Validity as PlanningValidity;
-use SportsPlanning\Sports\Plannable\PlannableAgainstOneVsOne;
-use SportsPlanning\Sports\Plannable\PlannableAgainstOneVsTwo;
-use SportsPlanning\Sports\Plannable\PlannableAgainstTwoVsTwo;
-use SportsPlanning\Sports\Plannable\PlannableTogetherSport;
+use SportsPlanning\Sports\Plannable\AgainstOneVsOneWithNrAndFields;
+use SportsPlanning\Sports\Plannable\AgainstOneVsTwoWithNrAndFields;
+use SportsPlanning\Sports\Plannable\AgainstTwoVsTwoWithNrAndFields;
+use SportsPlanning\Sports\Plannable\SportWithNrAndFields;
+use SportsPlanning\Sports\Plannable\TogetherSportWithNrAndFields;
 use SportsScheduler\Exceptions\UnequalAssignedFieldsException;
 use SportsScheduler\Exceptions\UnequalAssignedRefereePlacesException;
 use SportsScheduler\Exceptions\UnequalAssignedRefereesException;
-use SportsPlanning\Input;
 use SportsPlanning\Place;
 use SportsPlanning\Planning;
 use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentsValidator;
@@ -30,7 +25,7 @@ use SportsPlanning\Poule;
 
 class PlanningValidator
 {
-    public function __construct(private LoggerInterface $logger)
+    public function __construct()
     {
     }
 
@@ -40,7 +35,7 @@ class PlanningValidator
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
-        $validity = $this->validateRefereesWithSelf($planning->getInput());
+        $validity = $this->validateRefereesWithSelf($planning);
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
@@ -144,9 +139,10 @@ class PlanningValidator
         return $invalidations;
     }
 
-    protected function validateRefereesWithSelf(Input $input): int
+    protected function validateRefereesWithSelf(Planning $planning): int
     {
-        if ($input->selfRefereeEnabled() && $input->getReferees()->count() > 0) {
+        $refereeInfo = $planning->getConfiguration()->refereeInfo;
+        if ($refereeInfo->selfRefereeInfo->selfReferee !== SelfReferee::Disabled && count($planning->referees) > 0) {
             return PlanningValidity::INVALID_REFEREESELF_AND_REFEREES;
         }
         return PlanningValidity::VALID;
@@ -154,8 +150,8 @@ class PlanningValidator
 
     protected function validateHasGamesAndAssignedGamePlaces(Planning $planning): int
     {
-        foreach ($planning->getInput()->getPoules() as $poule) {
-            $pouleGames = $planning->getGamesForPoule($poule);
+        foreach ($planning->poules as $poule) {
+            $pouleGames = $poule->getGames();
             if (count($pouleGames) === 0) {
                 return PlanningValidity::NO_GAMES;
             }
@@ -183,8 +179,8 @@ class PlanningValidator
 
     protected function validateAllGamePlacesAssigned(Planning $planning, Poule $poule): int
     {
-        foreach ($planning->getInput()->getSports() as $plannableSport) {
-            $invalid = $this->validateAllGamePlacesAssignedForSport($planning, $poule, $plannableSport);
+        foreach ($planning->sports as $sportWithNrAndFields) {
+            $invalid = $this->validateAllGamePlacesAssignedForSport($planning, $poule, $sportWithNrAndFields);
             if ($invalid !== PlanningValidity::VALID) {
                 return $invalid;
             }
@@ -194,39 +190,39 @@ class PlanningValidator
 
 
     protected function validateAllGamePlacesAssignedForSport(
-        Planning $planning,
-        Poule $poule,
-        PlannableTogetherSport|PlannableAgainstOneVsOne|PlannableAgainstOneVsTwo|PlannableAgainstTwoVsTwo $plannableSport): int
+        Planning $planning, Poule $poule,
+        TogetherSportWithNrAndFields|AgainstOneVsOneWithNrAndFields|AgainstOneVsTwoWithNrAndFields|AgainstTwoVsTwoWithNrAndFields $sportWithNrAndFields): int
     {
         $nrOfGamesPerPlace = [];
-        $nrOfPlaces = count($poule->getPlaces());
+        $nrOfPlaces = count($poule->places);
         /** @var non-empty-array<int, int> $nrOfHomeSideGames */
         $nrOfHomeSideGames = [];
 
-        if (!($plannableSport->sport instanceof TogetherSport)) {
+        if (!($sportWithNrAndFields->sport instanceof TogetherSport)) {
 
-            foreach ($poule->getPlaces() as $place) {
+            foreach ($poule->places as $place) {
                 $nrOfHomeSideGames[$place->getUniqueIndex()] = 0;
             }
         }
 
-        $plannableGames = array_filter($planning->getGamesForPoule($poule), function (AgainstGame|TogetherGame $game) use ($plannableSport): bool {
-            return $game->getSport() === $plannableSport;
-        });
-        foreach ($plannableGames as $plannableGame) {
-            $sport = $plannableGame->getSport()->sport;
-            if( !($sport instanceof TogetherSport))
+        $games = array_filter($poule->getGames(),
+            function (AgainstGame|TogetherGame $game) use ($sportWithNrAndFields): bool {
+                return $game->getField()->sportNr === $sportWithNrAndFields->sportNr;
+            });
+        foreach ($games as $game) {
+            $gameSportWithNrAndFields = $planning->getSport($game->getField()->sportNr);
+            if( !($gameSportWithNrAndFields->sport instanceof TogetherSport))
             {
-                if( !($plannableGame instanceof AgainstGame )) {
+                if( !($game instanceof AgainstGame )) {
                     return PlanningValidity::EMPTY_PLACE;
                 }
-                $homePlaces = $plannableGame->getSidePlaces(AgainstSide::Home);
-                $awayPlaces = $plannableGame->getSidePlaces(AgainstSide::Away);
-                if (count($homePlaces) === 0 || count($awayPlaces) === 0) {
+                $homeGamePlaces = $game->getSideGamePlaces(AgainstSide::Home);
+                $awayGamePlaces = $game->getSideGamePlaces(AgainstSide::Away);
+                if (count($homeGamePlaces) === 0 || count($awayGamePlaces) === 0) {
                     return PlanningValidity::EMPTY_PLACE;
                 }
             }
-            if ($plannableGame->getPlaces()->count() === 0) {
+            if (count($game->getPlaces()) === 0) {
                 return PlanningValidity::EMPTY_PLACE;
             }
         }
@@ -235,7 +231,7 @@ class PlanningValidator
 
     protected function validateResourcesCorrectlyAssigned(Planning $planning): int
     {
-        foreach ($planning->getInput()->getPoules() as $poule) {
+        foreach ($planning->poules as $poule) {
             $validity = $this->validateResourcesCorrectlyAssignedHelper($planning, $poule);
             if ($validity !== PlanningValidity::VALID) {
                 return $validity;
@@ -246,23 +242,26 @@ class PlanningValidator
 
     protected function validateResourcesCorrectlyAssignedHelper(Planning $planning, Poule $poule): int
     {
-        foreach ($planning->getGamesForPoule($poule) as $game) {
-            if ($planning->getInput()->selfRefereeEnabled()) {
-                $refereePlace = $game->getRefereePlace();
-                if ($refereePlace === null) {
+        $selfRefereeInfo = $planning->getConfiguration()->refereeInfo->selfRefereeInfo;
+        foreach ($poule->getGames() as $game) {
+            if ($selfRefereeInfo->selfReferee !== SelfReferee::Disabled) {
+                $refereePlaceUniqueIndex = $game->getRefereePlaceUniqueIndex();
+                if ($refereePlaceUniqueIndex === null) {
                     return PlanningValidity::EMPTY_REFEREEPLACE;
                 }
-                if ($planning->getInput()->getSelfReferee() === SelfReferee::SamePoule
-                    && $refereePlace->getPoule() !== $game->getPoule()) {
+                $refereePlace = $planning->getPlace($refereePlaceUniqueIndex);
+                $refereePoule = $planning->getPoule($refereePlace->pouleNr);
+                if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule
+                    && $refereePoule !== $game->poule) {
                     return PlanningValidity::INVALID_ASSIGNED_REFEREEPLACE;
                 }
-                if ($planning->getInput()->getSelfReferee() === SelfReferee::OtherPoules
-                    && $refereePlace->getPoule() === $game->getPoule()) {
+                if ($selfRefereeInfo->selfReferee === SelfReferee::OtherPoules
+                    && $refereePoule === $game->poule) {
                     return PlanningValidity::INVALID_ASSIGNED_REFEREEPLACE;
                 }
             } else {
-                if ($planning->getInput()->getReferees()->count() > 0) {
-                    if ($game->getReferee() === null) {
+                if (count($planning->referees) > 0) {
+                    if ($game->getRefereeNr() === null) {
                         return PlanningValidity::EMPTY_REFEREE;
                     }
                 }
@@ -276,8 +275,8 @@ class PlanningValidator
         if ($planning->getMaxNrOfGamesInARow() === 0) {
             return PlanningValidity::VALID;
         }
-        foreach ($planning->getInput()->getPoules() as $poule) {
-            foreach ($poule->getPlaces() as $place) {
+        foreach ($planning->poules as $poule) {
+            foreach ($poule->places as $place) {
                 if ($this->checkGamesInARowForPlace($planning, $place) === false) {
                     return PlanningValidity::TOO_MANY_GAMES_IN_A_ROW;
                 }
@@ -293,7 +292,7 @@ class PlanningValidator
          * @return array<int,bool>
          */
         $getBatchParticipations = function (Place $place) use ($planning): array {
-            $games = $planning->getGames(GameAbstract::ORDER_BY_BATCH);
+            $games = $planning->getGames(Planning::ORDER_GAMES_BY_BATCH);
             $batchMap = [];
             foreach ($games as $game) {
                 if (array_key_exists($game->getBatchNr(), $batchMap) === false) {
@@ -302,7 +301,7 @@ class PlanningValidator
                 if ($batchMap[$game->getBatchNr()] === true) {
                     continue;
                 }
-                $batchMap[$game->getBatchNr()] = $game->isParticipating($place);
+                $batchMap[$game->getBatchNr()] = $game->isParticipating($place->placeNr);
             }
             return $batchMap;
         };
@@ -346,16 +345,16 @@ class PlanningValidator
 
     protected function validateResourcesPerBatch(Planning $planning): int
     {
-        $games = $planning->getGames(GameAbstract::ORDER_BY_BATCH);
+        $games = $planning->getGames(Planning::ORDER_GAMES_BY_BATCH);
         $batchMap = [];
         foreach ($games as $game) {
             if (array_key_exists($game->getBatchNr(), $batchMap) === false) {
                 $batchMap[$game->getBatchNr()] = array("fields" => [], "referees" => [], "places" => []);
             }
-            $places = $game->getPoulePlaces();
-            $refereePlace = $game->getRefereePlace();
-            if ($refereePlace !== null) {
-                $places[] = $refereePlace;
+            $places = $game->getPlaces();
+            $refereePlaceUniqueIndex = $game->getRefereePlaceUniqueIndex();
+            if ($refereePlaceUniqueIndex !== null) {
+                $places[] = $planning->getPlace($refereePlaceUniqueIndex);
             }
             foreach ($places as $placeIt) {
                 /** @var bool|int|string $search */
@@ -373,8 +372,9 @@ class PlanningValidator
             }
             array_push($batchMap[$game->getBatchNr()]["fields"], $game->getField());
 
-            $referee = $game->getReferee();
-            if ($referee !== null) {
+            $refereeNr = $game->getRefereeNr();
+            if ($refereeNr !== null) {
+                $referee = $planning->getReferee($refereeNr);
                 /** @var bool|int|string $search */
                 $search = array_search($referee, $batchMap[$game->getBatchNr()]["referees"], true);
                 if ($search !== false) {

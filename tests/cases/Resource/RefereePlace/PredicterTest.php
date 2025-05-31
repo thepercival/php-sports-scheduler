@@ -9,14 +9,13 @@ use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\Sports\AgainstOneVsOne;
-use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Resource\RefereePlace\Predicter;
 use SportsScheduler\TestHelper\PlanningCreator;
-// use SportsScheduler\TestHelper\PlanningReplacer;
 
 class PredicterTest extends TestCase
 {
@@ -35,12 +34,11 @@ class PredicterTest extends TestCase
                 false
             )
         );
-        $poules = array_values($planning->getInput()->getPoules()->toArray());
-        $predicter = new Predicter($poules);
+        $predicter = new Predicter($planning->poules);
         $firstBatch = $planning->createFirstBatch();
         self::assertTrue(
             $firstBatch instanceof SelfRefereeBatchSamePoule
-            || $firstBatch instanceof SelfRefereeBatchOtherPoule
+            || $firstBatch instanceof SelfRefereeBatchOtherPoules
         );
         $canStillAssign = $predicter->canStillAssign($firstBatch, SelfReferee::SamePoule);
         self::assertTrue($canStillAssign);
@@ -74,12 +72,11 @@ class PredicterTest extends TestCase
             )
         );
 
-        $poules = array_values($planning->getInput()->getPoules()->toArray());
-        $predicter = new Predicter($poules);
+        $predicter = new Predicter($planning->poules);
         $firstBatch = $planning->createFirstBatch();
         self::assertTrue(
             $firstBatch instanceof SelfRefereeBatchSamePoule
-            || $firstBatch instanceof SelfRefereeBatchOtherPoule
+            || $firstBatch instanceof SelfRefereeBatchOtherPoules
         );
         $canStillAssign = $predicter->canStillAssign($firstBatch, SelfReferee::OtherPoules);
         self::assertTrue($canStillAssign);
@@ -97,12 +94,12 @@ class PredicterTest extends TestCase
                 false
             )
         );
-        $poules = array_values($planning->getInput()->getPoules()->toArray());
+        $poules = $planning->poules;
         $predicter = new Predicter($poules);
         $firstBatch = $planning->createFirstBatch();
         self::assertTrue(
             $firstBatch instanceof SelfRefereeBatchSamePoule
-            || $firstBatch instanceof SelfRefereeBatchOtherPoule
+            || $firstBatch instanceof SelfRefereeBatchOtherPoules
         );
         $canStillAssign = $predicter->canStillAssign($firstBatch, SelfReferee::OtherPoules);
         self::assertTrue($canStillAssign);

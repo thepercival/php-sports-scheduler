@@ -4,44 +4,29 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Tests\Planning;
 
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
-use Monolog\Processor\UidProcessor;
+use Exception;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use ReflectionObject;
-use SportsHelpers\Against\AgainstSide;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
 use SportsPlanning\Batches\Batch;
-use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Game\AgainstGame;
-use SportsPlanning\Game\AgainstGamePlace;
-use SportsPlanning\Input;
-use SportsPlanning\Output\PlanningOutput;
-use SportsPlanning\Output\PlanningOutput\Extra;
-use SportsPlanning\Schedules\ScheduleWithNrOfPlaces;
-use SportsPlanning\Sports\SportWithNrOfCycles;
-use SportsPlanning\Sports\SportWithNrOfFields;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
-use SportsScheduler\Game\GameAssigner as GameAssigner;
-use SportsPlanning\Planning;
 use SportsPlanning\Planning\PlanningState;
-use SportsScheduler\Game\PlannableGameCreator;
 use SportsScheduler\Planning\PlanningValidator as PlanningValidator;
 use SportsPlanning\Planning\Validity;
 use SportsPlanning\Referee as PlanningReferee;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsScheduler\Resource\RefereePlace\Service as RefereePlaceService;
-use SportsScheduler\Schedules\CycleCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 use SportsScheduler\TestHelper\PlanningReplacer;
 
-class PlannimgValidatorTest extends TestCase
+class PlanningValidatorTest extends TestCase
 {
     use PlanningCreator;
     use PlanningReplacer;
@@ -51,28 +36,28 @@ class PlannimgValidatorTest extends TestCase
 //        $config = $this->createConfiguration([3,3]);
 //        $planning = new Planning(new Input($config), new SportRange(1, 1), 1);
 //
-//        $planningValidator = new PlanningValidator($this->createLogger());
+//        $planningValidator = new PlanningValidator();
 //        $validity = $planningValidator->validate($planning);
 //        self::assertSame(Validity::NO_GAMES, $validity & Validity::NO_GAMES);
 //    }
 
-    public function testHasEmptyGamePlace(): void
-    {
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), 1, 1)
-        ];
-        $configuration = $this->createConfiguration([5], $sportsWithNrOfFieldsAndNrOfCycles);
-        $planning = $this->createPlanning($configuration);
-        $firstGame = $planning->getAgainstGames()->first();
-        self::assertNotFalse($firstGame);
-        $firstGame->getPlaces()->clear();
-
-        //(new PlanningOutput())->outputWithGames($planning, true);
-
-        $planningValidator = new PlanningValidator($this->createLogger());
-        $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::EMPTY_PLACE, $validity & Validity::EMPTY_PLACE);
-    }
+//    public function testHasEmptyGamePlace(): void
+//    {
+//        $sportsWithNrOfFieldsAndNrOfCycles = [
+//            new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), 1, 1)
+//        ];
+//        $configuration = $this->createConfiguration([5], $sportsWithNrOfFieldsAndNrOfCycles);
+//        $planning = $this->createPlanning($configuration);
+//        $firstGame = $planning->getGames()[0];
+//        self::assertNotFalse($firstGame);
+//        $firstGame->getPlaces()->clear();
+//
+//        //(new PlanningOutput())->outputWithGames($planning, true);
+//
+//        $planningValidator = new PlanningValidator();
+//        $validity = $planningValidator->validate($planning);
+//        self::assertSame(Validity::EMPTY_PLACE, $validity & Validity::EMPTY_PLACE);
+//    }
 
     public function testHasEmptyGameRefereePlace(): void
     {
@@ -82,15 +67,15 @@ class PlannimgValidatorTest extends TestCase
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
 
         //(new PlanningOutput())->outputWithGames($planning, true);
         // --------- BEGIN EDITING --------------
         /** @var AgainstGame $firstGame */
-        $firstGame = $planning->getAgainstGames()->first();
-        $firstGame->setRefereePlace(null);
+        $firstGame = $planning->getGames()[0];
+        $firstGame->setRefereePlaceUniqueIndex(null);
 //        $firstBatch = $planning->createFirstBatch();
 //        $firstBatch->removeAsReferee( $firstGame->getRefereePlace()/*, $firstGame*/ );
         // --------- BEGIN EDITING --------------
@@ -109,10 +94,10 @@ class PlannimgValidatorTest extends TestCase
         $planning = $this->createPlanning($configuration);
 
         /** @var AgainstGame $planningGame */
-        $planningGame = $planning->getAgainstGames()->first();
-        $planningGame->emptyReferee();
+        $planningGame = $planning->getGames()[0];
+        $planningGame->setRefereeNr(null);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::EMPTY_REFEREE, $validity & Validity::EMPTY_REFEREE);
     }
@@ -129,7 +114,7 @@ class PlannimgValidatorTest extends TestCase
 //        );
 //        $planning = $this->createPlanning($planningConfig, new SportRange(1, 1), 1);
 //
-//        $planningValidator = new PlanningValidator($this->createLogger());
+//        $planningValidator = new PlanningValidator();
 //
 //        /** @var AgainstGame $planningGame */
 //        $planningGame = $planning->getAgainstGames()->first();
@@ -145,7 +130,7 @@ class PlannimgValidatorTest extends TestCase
         $configuration = $this->createConfiguration([4]);
         $planning = $this->createPlanning($configuration, null);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
 
@@ -181,7 +166,7 @@ class PlannimgValidatorTest extends TestCase
 //        self::assertInstanceOf(AgainstGamePlace::class, $firstHomeGamePlace);
 //        $planningGame->getPlaces()->add($firstHomeGamePlace);
 //
-//        $planningValidator = new PlanningValidator($this->createLogger());
+//        $planningValidator = new PlanningValidator();
 //        $validity = $planningValidator->validate($planning);
 //        self::assertSame(
 //            Validity::UNEQUAL_GAME_HOME_AWAY,
@@ -194,15 +179,15 @@ class PlannimgValidatorTest extends TestCase
         $configuration = $this->createConfiguration([5]);
         $planning = $this->createPlanning($configuration, new SportRange(2, 2));
 
-        $planningGame = $planning->getAgainstGames()->first();
+        $planningGame = $planning->getGames()[0];
         self::assertInstanceOf(AgainstGame::class, $planningGame);
         $field = $planningGame->getField();
-        $newFieldNr = $field->getNumber() === 1 ? 2 : 1;
-        $planningGame->setField($planning->getInput()->getSport(1)->getField($newFieldNr));
+        $newFieldNr = $field->fieldNr === 1 ? 2 : 1;
+        $planningGame->setField($planning->getSport(1)->getField($newFieldNr));
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(
             Validity::MULTIPLE_ASSIGNED_FIELDS_IN_BATCH,
@@ -216,16 +201,16 @@ class PlannimgValidatorTest extends TestCase
         $configuration = $this->createConfiguration([4]);
         $planning = $this->createPlanning($configuration, new SportRange(2, 2));
 
-        $planningGame = $planning->getAgainstGames()->first();
+        $planningGame = $planning->getGames()[0];
         self::assertInstanceOf(AgainstGame::class, $planningGame);
-        $referee = $planningGame->getReferee();
-        self::assertNotNull($referee);
-        $newRefereeNr = $referee->getNumber() === 1 ? 2 : 1;
-        $planningGame->setReferee($planning->getInput()->getReferee($newRefereeNr));
+        $refereeNr = $planningGame->getRefereeNr();
+        self::assertNotNull($refereeNr);
+        $newRefereeNr = $refereeNr === 1 ? 2 : 1;
+        $planningGame->setRefereeNr($newRefereeNr);
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(
             Validity::MULTIPLE_ASSIGNED_REFEREES_IN_BATCH,
@@ -238,7 +223,7 @@ class PlannimgValidatorTest extends TestCase
         $configuration = $this->createConfiguration([4]);
         $planning = $this->createPlanning($configuration);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
     }
@@ -251,13 +236,13 @@ class PlannimgValidatorTest extends TestCase
         $configuration = $this->createConfiguration([4], $sportsWithNrOfFieldsAndNrOfCycles);
         $planning = $this->createPlanning($configuration);
 
-        $planningGame = $planning->getAgainstGames()->first();
+        $planningGame = $planning->getGames()[0];
         self::assertInstanceOf(AgainstGame::class, $planningGame);
         $field = $planningGame->getField();
-        $newFieldNr = $field->getNumber() === 3 ? 1 : 3;
-        $planningGame->setField($planning->getInput()->getSport(1)->getField($newFieldNr));
+        $newFieldNr = $field->fieldNr === 3 ? 1 : 3;
+        $planningGame->setField($planning->getSport(1)->getField($newFieldNr));
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(
             Validity::UNEQUALLY_ASSIGNED_FIELDS,
@@ -293,12 +278,12 @@ class PlannimgValidatorTest extends TestCase
 
         $batch = $planning->createFirstBatch();
         self::assertInstanceOf(Batch::class, $batch);
-        $this->replaceReferee($batch, $planning->getInput()->getReferee(1), $planning->getInput()->getReferee(2), 2);
+        $this->replaceReferee($batch, $planning->getReferee(1), $planning->getReferee(2), 2);
 
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->output($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(
             Validity::UNEQUALLY_ASSIGNED_REFEREES,
@@ -315,10 +300,10 @@ class PlannimgValidatorTest extends TestCase
         $amountReplaced = 0;
         /** @var AgainstGame $game */
         foreach ($batch->getGames() as $game) {
-            if ($game->getReferee() !== $fromReferee || $this->batchHasReferee($batch, $toReferee)) {
+            if ($game->getRefereeNr() !== $fromReferee->refereeNr || $this->batchHasReferee($batch, $toReferee->refereeNr)) {
                 continue;
             }
-            $game->setReferee($toReferee);
+            $game->setRefereeNr($toReferee->refereeNr);
             if (++$amountReplaced === $amount) {
                 return;
             }
@@ -329,10 +314,10 @@ class PlannimgValidatorTest extends TestCase
         }
     }
 
-    protected function batchHasReferee(Batch $batch, PlanningReferee $referee): bool
+    protected function batchHasReferee(Batch $batch, int $refereeNr): bool
     {
         foreach ($batch->getGames() as $game) {
-            if ($game->getReferee() === $referee) {
+            if ($game->getRefereeNr() === $refereeNr) {
                 return true;
             }
         }
@@ -344,15 +329,16 @@ class PlannimgValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1),
         ];
+        $selfReferee = SelfReferee::SamePoule;
         $configuration = $this->createConfiguration(
             [3,3],
             $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule)));
+            new PlanningRefereeInfo(new SelfRefereeInfo($selfReferee)));
         $planning = $this->createPlanning($configuration);
 
         $firstBatch = $planning->createFirstBatch();
         self::assertTrue($firstBatch instanceof SelfRefereeBatchSamePoule
-                         || $firstBatch instanceof SelfRefereeBatchOtherPoule);
+                         || $firstBatch instanceof SelfRefereeBatchOtherPoules);
         $refereePlaceService = new RefereePlaceService($planning);
         $refereePlaceService->assign($firstBatch);
 
@@ -361,18 +347,18 @@ class PlannimgValidatorTest extends TestCase
 
         $firstBatch = $planning->createFirstBatch();
         self::assertTrue($firstBatch instanceof SelfRefereeBatchSamePoule
-                         || $firstBatch instanceof SelfRefereeBatchOtherPoule);
+                         || $firstBatch instanceof SelfRefereeBatchOtherPoules);
         $this->replaceRefereePlace(
-            $planning->getInput()->getSelfReferee() !== SelfReferee::SamePoule,
+            $selfReferee !== SelfReferee::SamePoule,
             $firstBatch,
-            $planning->getInput()->getPoule(1)->getPlace(1),
-            $planning->getInput()->getPoule(2)->getPlace(1)
+            $planning->getPoule(1)->getPlace(1),
+            $planning->getPoule(2)->getPlace(1)
         );
 
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(
             Validity::INVALID_ASSIGNED_REFEREEPLACE,
@@ -394,27 +380,36 @@ class PlannimgValidatorTest extends TestCase
         $firstBatch = $planning->createFirstBatch();
         self::assertTrue(
             $firstBatch instanceof SelfRefereeBatchSamePoule
-            || $firstBatch instanceof SelfRefereeBatchOtherPoule
+            || $firstBatch instanceof SelfRefereeBatchOtherPoules
         );
         $refereePlaceService = new RefereePlaceService($planning);
         $refereePlaceService->assign($firstBatch);
 
         // ----------------- BEGIN EDITING --------------------------
 //        (new PlanningOutput())->outputWithGames($planning, true);
-        $pouleOne = $planning->getInput()->getPoule(1);
-        $gamesPouleOne = $planning->getGamesForPoule($pouleOne);
-        $refereePlaceTooMuch = $gamesPouleOne[0]->getRefereePlace();
-        self::assertNotNull($refereePlaceTooMuch);
+        $pouleOne = $planning->getPoule(1);
+        $gamesPouleOne = $pouleOne->getGames();
+        $refereePlaceUniqueIndexTooMuch = $gamesPouleOne[0]->getRefereePlaceUniqueIndex();
+        self::assertNotNull($refereePlaceUniqueIndexTooMuch);
+
         foreach (array_reverse($gamesPouleOne) as $game) {
-            if (!$game->isParticipating($refereePlaceTooMuch) && $game->getRefereePlace() !== $refereePlaceTooMuch) {
-                $game->setRefereePlace($refereePlaceTooMuch);
-                break;
+            if ( $game->getRefereePlaceUniqueIndex() !== $refereePlaceUniqueIndexTooMuch) {
+                $startPlaceNrPos = strpos($refereePlaceUniqueIndexTooMuch, ".", );
+                if( $startPlaceNrPos === false ) {
+                    throw new Exception('UniqueIndex should contain ' . $refereePlaceUniqueIndexTooMuch);
+                }
+                $placeNr = (int)substr($refereePlaceUniqueIndexTooMuch, $startPlaceNrPos + 1);
+                $isParticipating = $game->isParticipating($placeNr);
+                if( $firstBatch instanceof SelfRefereeBatchOtherPoules || !$isParticipating ) {
+                    $game->setRefereePlaceUniqueIndex($refereePlaceUniqueIndexTooMuch);
+                    break;
+                }
             }
         }
 //        (new PlanningOutput())->outputWithGames($planning, true);
         // ----------------- END EDITING --------------------------
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(
             Validity::UNEQUALLY_ASSIGNED_REFEREEPLACES,
@@ -437,10 +432,10 @@ class PlannimgValidatorTest extends TestCase
         $refereePlaceService = new RefereePlaceService($planning);
         $firstBatch = $planning->createFirstBatch();
         self::assertTrue($firstBatch instanceof SelfRefereeBatchSamePoule
-            || $firstBatch instanceof SelfRefereeBatchOtherPoule);
+            || $firstBatch instanceof SelfRefereeBatchOtherPoules);
         $refereePlaceService->assign($firstBatch);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
     }
@@ -454,7 +449,7 @@ class PlannimgValidatorTest extends TestCase
             $refereeInfo);
         $planning = $this->createPlanning($configuration);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $planningValidator->validate($planning);
         $descriptions = $planningValidator->getValidityDescriptions(Validity::ALL_INVALID, $planning);
         self::assertCount(17, $descriptions);
@@ -464,12 +459,12 @@ class PlannimgValidatorTest extends TestCase
 
         $firstBatch = $planning->createFirstBatch();
         self::assertTrue($firstBatch instanceof Batch);
-        $this->replaceReferee($firstBatch, $planning->getInput()->getReferee(3), $planning->getInput()->getReferee(1));
+        $this->replaceReferee($firstBatch, $planning->getReferee(3), $planning->getReferee(1));
 
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $planningValidator->validate($planning);
         $descriptions = $planningValidator->getValidityDescriptions(Validity::ALL_INVALID, $planning);
         self::assertCount(17, $descriptions);
@@ -504,7 +499,7 @@ class PlannimgValidatorTest extends TestCase
 //
 //        // (new PlanningOutput())->outputWithGames($planning, true);
 //
-//        $planningValidator = new PlanningValidator($this->createLogger());
+//        $planningValidator = new PlanningValidator();
 //
 //        $validity = $planningValidator->validate($planning);
 //        self::assertSame(
@@ -529,7 +524,7 @@ class PlannimgValidatorTest extends TestCase
 
         self::assertSame(PlanningState::Succeeded, $planning->getState());
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
 
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);

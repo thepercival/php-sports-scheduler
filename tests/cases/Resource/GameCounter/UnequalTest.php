@@ -9,7 +9,7 @@ use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Referee\PlanningRefereeInfo;
-use SportsPlanning\Resource\GameCounter\Place as PlaceCounter;
+use SportsPlanning\Resource\GameCounter\GameCounterForPlace;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Resource\GameCounter\Unequal;
 use SportsScheduler\TestHelper\PlanningCreator;
@@ -32,10 +32,10 @@ class UnequalTest extends TestCase
                 false)
         );
 
-        $placeOne = $planning->getInput()->getPoule(1)->getPlace(1);
-        $placeTwo = $planning->getInput()->getPoule(1)->getPlace(2);
-        $gameCounterPlaceOne = new PlaceCounter($placeOne);
-        $gameCounterPlaceTwo = new PlaceCounter($placeTwo);
+        $placeOne = $planning->getPoule(1)->getPlace(1);
+        $placeTwo = $planning->getPoule(1)->getPlace(2);
+        $gameCounterPlaceOne = new GameCounterForPlace($placeOne);
+        $gameCounterPlaceTwo = new GameCounterForPlace($placeTwo);
 
         $unequal = new Unequal(1, [$gameCounterPlaceOne], 3, [$gameCounterPlaceTwo]);
         $unequal->setPouleNr(1);

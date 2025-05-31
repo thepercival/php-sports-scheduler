@@ -5,24 +5,21 @@ declare(strict_types=1);
 namespace SportsScheduler\Resource\Service;
 
 use SportsPlanning\Batches\Batch;
-use SportsPlanning\Input;
 use SportsPlanning\Referee;
 
 class RefereeService
 {
-    public function __construct(private Input $input)
+    /**
+     * @param list<Referee> $referees
+     */
+    public function __construct(private array $referees)
     {
     }
 
-    protected function refereesEnabled(): bool
-    {
-        return !$this->input->selfRefereeEnabled() && $this->input->getReferees()->count() > 0;
-    }
 
     public function assign(Batch $batch): void
     {
-        $referees = array_values($this->input->getReferees()->toArray());
-        $this->assignBatch($batch->getFirst(), $referees);
+        $this->assignBatch($batch->getFirst(), $this->referees);
     }
 
     /**
@@ -36,7 +33,7 @@ class RefereeService
             if ($referee === null) {
                 break;
             }
-            $game->setReferee($referee);
+            $game->setRefereeNr($referee->refereeNr);
             array_push($referees, $referee);
         }
         $nextBatch = $batch->getNext();

@@ -9,7 +9,7 @@ use SportsPlanning\Schedules\Cycles\ScheduleCycleTogether;
 
 trait ScheduleHelper
 {
-    protected function getTogetherGames(
+    protected function getTogetherScheduleGames(
         ScheduleCycleTogether $rootCycle
     ): array {
         $games = [];
@@ -23,7 +23,7 @@ trait ScheduleHelper
         return $games;
     }
 
-    protected function getAgainstOneVsOneGames(
+    protected function getAgainstOneVsOneScheduleGames(
         ScheduleCycleAgainstOneVsOne $rootCycle
     ): array {
         $games = [];
@@ -37,7 +37,7 @@ trait ScheduleHelper
         return $games;
     }
 
-    protected function getAgainstOneVsTwoGames(
+    protected function getAgainstOneVsTwoScheduleGames(
         ScheduleCycleAgainstOneVsTwo $rootCycle
     ): array {
         $games = [];
@@ -51,7 +51,7 @@ trait ScheduleHelper
         return $games;
     }
 
-    protected function getAgainstTwoVsTwoGames(
+    protected function getAgainstTwoVsTwoScheduleGames(
         ScheduleCycleAgainstTwoVsTwo $rootCycle
     ): array {
         $games = [];

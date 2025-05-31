@@ -41,6 +41,6 @@ class CycleCreatorAgainstOneVsOneTest extends TestCase
 
 //        (new ScheduleCyclePartAgainstOutput())->output($rootCycle->firstPart, false);
 
-        self::assertCount($expectedNrOfGames, $this->getAgainstOneVsOneGames($rootCycle));
+        self::assertCount($expectedNrOfGames, $this->getAgainstOneVsOneScheduleGames($rootCycle));
     }
 }

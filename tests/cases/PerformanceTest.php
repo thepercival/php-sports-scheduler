@@ -36,7 +36,7 @@ class PerformanceTest extends TestCase
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
 
@@ -62,7 +62,7 @@ class PerformanceTest extends TestCase
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
 //
@@ -93,7 +93,7 @@ class PerformanceTest extends TestCase
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
 //

@@ -31,8 +31,8 @@ class PlannableGameCreator
      */
     public function createGamesFromCycles(Planning $planning, array $sportCyclesMap): void
     {
-        foreach ($planning->getInput()->getPoules() as $poule) {
-            $sportCycles = $sportCyclesMap[count($poule->getPlaces())];
+        foreach ($planning->poules as $poule) {
+            $sportCycles = $sportCyclesMap[count($poule->places)];
             foreach ($sportCycles as $sportCycle) {
                 $this->createSportGames($planning, $poule, $sportCycle);
             }
@@ -79,14 +79,14 @@ class PlannableGameCreator
         Planning $planning, Poule $poule, ScheduleCycleTogether $sportCycle
     ): void
     {
-        $plannableSport = $planning->getInput()->getSport($sportCycle->sportSchedule->number);
-        $defaultField = $plannableSport->getField(1);
+        $sportWithNrAndFields = $planning->getSport($sportCycle->sportSchedule->number);
+        $defaultField = $sportWithNrAndFields->getField(1);
 
         foreach ($sportCycle->getGames() as $scheduleGame) {
-            $game = new TogetherGame($planning, $poule, $defaultField);
+            $game = new TogetherGame($poule, $defaultField);
             foreach ($scheduleGame->getGamePlaces() as $scheduleGamePlace) {
                 $place = $poule->getPlace($scheduleGamePlace->placeNr);
-                new TogetherGamePlace($game, $place, $scheduleGamePlace->cycleNr);
+                $game->addGamePlace( new TogetherGamePlace($place->placeNr, $scheduleGamePlace->cycleNr) );
             }
         }
 
@@ -101,19 +101,19 @@ class PlannableGameCreator
         ScheduleCycleAgainstOneVsOne|ScheduleCycleAgainstOneVsTwo|ScheduleCycleAgainstTwoVsTwo $sportCycle
     ): void
     {
-        $plannableSport = $planning->getInput()->getSport($sportCycle->sportSchedule->number);
-        $defaultField = $plannableSport->getField(1);
+        $sportWithNrAndFields = $planning->getSport($sportCycle->sportSchedule->number);
+        $defaultField = $sportWithNrAndFields->getField(1);
 
         $cyclePart = $sportCycle->firstPart;
         while ($cyclePart !== null) {
             foreach ($cyclePart->getGamesAsHomeAways() as $homeAwayGame ) {
-                $game = new AgainstGame($planning, $poule, $defaultField, $cyclePart->getNumber(), $sportCycle->getNumber());
+                $game = new AgainstGame($poule, $defaultField, $cyclePart->getNumber(), $sportCycle->getNumber());
                 foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
                     $sidePlaces = array_map(function (int $placeNr) use ($poule): Place {
                         return $poule->getPlace($placeNr);
                     }, $homeAwayGame->convertToPlaceNrs($side) );
                     foreach ($sidePlaces as $place) {
-                        new AgainstGamePlace($game, $place, $side);
+                        $game->addGamePlace($side, $place->placeNr);
                     }
                 }
             }

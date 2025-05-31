@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Combinations\Validators;
 
+use SportsHelpers\Against\AgainstSide;
 use SportsPlanning\Counters\Maps\Schedule\AgainstNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\TogetherNrCounterMap;
 use SportsPlanning\Counters\Maps\Schedule\WithNrCounterMap;
 use SportsPlanning\Counters\Reports\DuoPlaceNrCountersPerAmountReport;
 use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Game\AgainstGamePlace;
 use SportsPlanning\Game\TogetherGame;
+use SportsPlanning\HomeAways\OneVsOneHomeAway;
+use SportsPlanning\HomeAways\OneVsTwoHomeAway;
+use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
 use SportsPlanning\Planning;
-use SportsPlanning\Poule;
-use SportsPlanning\Sport;
 
 abstract class ValidatorAbstract
 {
@@ -36,18 +39,9 @@ abstract class ValidatorAbstract
 //        return new PlaceCombination($poulePlaces);
 //    }
 
-    public function addGames(Planning $planning): void
-    {
-        foreach ($planning->getGames() as $game) {
-            $this->addGame($game);
-        }
-    }
-
     protected function duoPlaceNrCounterMapIsBalanced(AgainstNrCounterMap|TogetherNrCounterMap|WithNrCounterMap $duoPlaceNrCounterMap): bool
     {
         $report = new DuoPlaceNrCountersPerAmountReport($duoPlaceNrCounterMap);
         return $report->range->getAmountDifference() === 0;
     }
-
-     abstract public function addGame(TogetherGame|AgainstGame $game): void;
 }

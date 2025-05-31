@@ -18,6 +18,7 @@ use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Planning;
 use SportsScheduler\Game\PlannableGameCreator;
+use SportsScheduler\Schedules\CycleCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 class CreatorTest extends TestCase
@@ -35,9 +36,10 @@ class CreatorTest extends TestCase
         $nrOfBatchGamesRange = new SportRange(1,1);
         $planning = new Planning(new Input($config), $nrOfBatchGamesRange, 0);
 
-        $sportCyclesMap = $this->createSportCyclesMap($config);
+        $cycleCreator = new CycleCreator($this->createLogger());
+        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($config);
         $gameCreator = new PlannableGameCreator($this->createLogger());
-        $gameCreator->createGamesFromCycles($planning, $sportCyclesMap);
+        $gameCreator->createGamesFromCycles($planning, $sportRootCyclesMap);
 
         $games = $planning->getGames();
         self::assertInstanceOf(AgainstGame::class, reset($games));
@@ -56,9 +58,10 @@ class CreatorTest extends TestCase
         $nrOfBatchGamesRange = new SportRange(1,1);
         $planning = new Planning(new Input($config), $nrOfBatchGamesRange, 0);
 
-        $sportCyclesMap = $this->createSportCyclesMap($config);
+        $cycleCreator = new CycleCreator($this->createLogger());
+        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($config);
         $gameCreator = new PlannableGameCreator($this->createLogger());
-        $gameCreator->createGamesFromCycles($planning, $sportCyclesMap);
+        $gameCreator->createGamesFromCycles($planning, $sportRootCyclesMap);
 
         $games = $planning->getGames();
         self::assertInstanceOf(TogetherGame::class, reset($games));
@@ -78,14 +81,18 @@ class CreatorTest extends TestCase
         $nrOfBatchGamesRange = new SportRange(1,1);
         $planning = new Planning(new Input($config), $nrOfBatchGamesRange, 0);
 
-        $sportCyclesMap = $this->createSportCyclesMap($config);
+        $cycleCreator = new CycleCreator($this->createLogger());
+        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($config);
+
         $gameCreator = new PlannableGameCreator($this->createLogger());
-        $gameCreator->createGamesFromCycles($planning, $sportCyclesMap);
+        $gameCreator->createGamesFromCycles($planning, $sportRootCyclesMap);
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
-        self::assertCount(3, $planning->getAgainstGames());
-        self::assertCount(8, $planning->getTogetherGames());
+        self::assertCount(3, $this->getAgainstGames($planning));
+        self::assertCount(8, $this->getTogetherGames($planning));
     }
+
+
 
 //    public function testAgainstBasic(): void
 //    {

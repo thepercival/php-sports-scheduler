@@ -81,7 +81,7 @@ class CycleCreatorAgainstTwoVsTwoTest extends TestCase
 //         (new ScheduleOutput($this->createLogger()))->outputCycle($rootCycle);
 //         (new ScheduleOutput($this->createLogger()))->outputCycleTotals($rootCycle);
 
-        self::assertCount($expectedNrOfGames, $this->getAgainstTwoVsTwoGames($rootCycle));
+        self::assertCount($expectedNrOfGames, $this->getAgainstTwoVsTwoScheduleGames($rootCycle));
     }
 
 //    public function test2V2With4PlacesAnd2GamesPerPlace(): void

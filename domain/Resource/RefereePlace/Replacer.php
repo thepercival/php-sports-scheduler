@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace SportsScheduler\Resource\RefereePlace;
 
 use DateTimeImmutable;
-use SportsPlanning\Batches\SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
+use SportsPlanning\Resource\GameCounter\GameCounterForPlace;
 use SportsScheduler\Exceptions\TimeoutException;
-use SportsPlanning\Place as PlanningPlace;
+use SportsPlanning\Place;
 use SportsPlanning\Planning;
 use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentValidator;
 use SportsPlanning\Resource\GameCounter;
-use SportsPlanning\Resource\GameCounter\Place as PlaceGameCounter;
 use SportsScheduler\Resource\GameCounter\Unequal as UnequalResource;
 
 class Replacer
@@ -37,11 +37,11 @@ class Replacer
 
     /**
      * @param Planning $planning
-     * @param SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $firstBatch
+     * @param SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $firstBatch
      * @return bool
      */
     public function replaceUnequals(Planning $planning,
-        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $firstBatch): bool
+        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $firstBatch): bool
     {
         $gameAssignmentValidator = new GameAssignmentValidator($planning);
         $unequals = $gameAssignmentValidator->getRefereePlaceUnequals();
@@ -58,19 +58,19 @@ class Replacer
     }
 
     protected function replaceUnequal(
-        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $firstBatch, UnequalResource $unequal): bool
+        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $firstBatch, UnequalResource $unequal): bool
     {
         return $this->replaceUnequalHelper($firstBatch, $unequal->getMinGameCounters(), $unequal->getMaxGameCounters());
     }
 
     /**
-     * @param SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $firstBatch
+     * @param SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $firstBatch
      * @param array<int|string,GameCounter> $minGameCounters
      * @param array<int|string,GameCounter> $maxGameCounters
      * @return bool
      */
     protected function replaceUnequalHelper(
-        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $firstBatch,
+        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $firstBatch,
         array $minGameCounters,
         array $maxGameCounters): bool
     {
@@ -78,9 +78,9 @@ class Replacer
             return true;
         }
 
-        /** @var PlaceGameCounter $replacedGameCounter */
+        /** @var GameCounterForPlace $replacedGameCounter */
         foreach ($maxGameCounters as $replacedGameCounter) {
-            /** @var PlaceGameCounter $replacementGameCounter */
+            /** @var GameCounterForPlace $replacementGameCounter */
             foreach ($minGameCounters as $replacementGameCounter) {
                 if ($this->throwOnTimeout && (new DateTimeImmutable()) > $this->timeoutDateTime) {
                     throw new TimeoutException(
@@ -90,8 +90,8 @@ class Replacer
                 }
                 if (!$this->replace(
                     $firstBatch,
-                    $replacedGameCounter->getPlace(),
-                    $replacementGameCounter->getPlace(),
+                    $replacedGameCounter->place,
+                    $replacementGameCounter->place,
                 )) {
                     continue;
                 }
@@ -109,31 +109,31 @@ class Replacer
     }
 
     public function replace(
-        SelfRefereeBatchOtherPoule|SelfRefereeBatchSamePoule $batch,
-        PlanningPlace $replaced,
-        PlanningPlace $replacement
+        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch,
+        Place $replaced,
+        Place $replacement
     ): bool {
         $batchHasReplacement = $batch->getBase()->isParticipating($replacement)
             || $batch->isParticipatingAsReferee($replacement);
         if (!$batchHasReplacement && $batch->isParticipatingAsReferee($replaced)) {
             foreach ($batch->getBase()->getGames() as $game) {
-                $refereePlace = $game->getRefereePlace();
-                if ($refereePlace === null || $refereePlace !== $replaced) {
+                $refereePlaceUniqueIndex = $game->getRefereePlaceUniqueIndex();
+                if ($refereePlaceUniqueIndex === null || $refereePlaceUniqueIndex !== $replaced->getUniqueIndex()) {
                     continue;
                 }
-                if (($game->getPoule() === $replacement->getPoule() && !$this->samePoule)
-                    || ($game->getPoule() !== $replacement->getPoule() && $this->samePoule)) {
+                if (($game->poule->pouleNr === $replacement->pouleNr && !$this->samePoule)
+                    || ($game->poule->pouleNr !== $replacement->pouleNr && $this->samePoule)) {
                     continue;
                 }
-                $replace = new Replace($batch, $game, $replacement, $refereePlace);
+                $replace = new Replace($batch, $game, $replacement->getUniqueIndex(), $refereePlaceUniqueIndex);
                 if ($this->isAlreadyReplaced($replace)) {
                     return false;
                 }
                 $this->revertableReplaces[] = $replace;
-                $game->setRefereePlace(null);
-                $batch->removeReferee($refereePlace);
-                $game->setRefereePlace($replacement);
-                $batch->addReferee($replacement);
+                $game->setRefereePlaceUniqueIndex(null);
+                $batch->removeReferee($refereePlaceUniqueIndex);
+                $game->setRefereePlaceUniqueIndex($replacement->getUniqueIndex());
+                $batch->addRefereeUniqueIndex($replacement->getUniqueIndex());
                 return true;
             }
         }
@@ -161,10 +161,10 @@ class Replacer
     {
         while (count($this->revertableReplaces) > 0) {
             $replace = array_pop($this->revertableReplaces);
-            $replace->getGame()->setRefereePlace(null);
+            $replace->getGame()->setRefereePlaceUniqueIndex(null);
             $replace->getBatch()->removeReferee($replace->getReplacement());
-            $replace->getGame()->setRefereePlace($replace->getReplaced());
-            $replace->getBatch()->addReferee($replace->getReplaced());
+            $replace->getGame()->setRefereePlaceUniqueIndex($replace->getReplaced());
+            $replace->getBatch()->addRefereeUniqueIndex($replace->getReplaced());
         }
     }
 

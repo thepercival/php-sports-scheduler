@@ -41,7 +41,7 @@ class ProductionErrorsTest extends TestCase
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
 
@@ -69,7 +69,7 @@ class ProductionErrorsTest extends TestCase
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
     }
@@ -105,7 +105,7 @@ class ProductionErrorsTest extends TestCase
 //
 //    //        (new PlanningOutput())->outputWithGames($planning, true);
 //
-//        $planningValidator = new PlanningValidator($this->createLogger());
+//        $planningValidator = new PlanningValidator();
 //        $validity = $planningValidator->validate($planning);
 //        self::assertSame(PlanningValidator::VALID, $validity);
 //    }
@@ -128,7 +128,7 @@ class ProductionErrorsTest extends TestCase
 ////        (new PlanningOutput())->outputWithGames($planning, true);
 ////        (new PlanningOutput())->outputWithTotals($planning, true);
 //
-//        $planningValidator = new PlanningValidator($this->createLogger());
+//        $planningValidator = new PlanningValidator();
 //        $validity = $planningValidator->validate($planning);
 //        self::assertSame(PlanningValidator::VALID, $validity);
 //    }
@@ -158,7 +158,7 @@ class ProductionErrorsTest extends TestCase
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
     }
@@ -198,7 +198,7 @@ class ProductionErrorsTest extends TestCase
 //
 //    //        (new PlanningOutput())->outputWithGames($planning, true);
 //
-//        $planningValidator = new PlanningValidator($this->createLogger());
+//        $planningValidator = new PlanningValidator();
 //        $validity = $planningValidator->validate($planning);
 //        self::assertSame(PlanningValidator::VALID, $validity);
 //    }
@@ -228,7 +228,7 @@ class ProductionErrorsTest extends TestCase
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
     }
@@ -257,7 +257,7 @@ class ProductionErrorsTest extends TestCase
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
     }
@@ -285,7 +285,7 @@ class ProductionErrorsTest extends TestCase
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
     }
@@ -312,7 +312,7 @@ class ProductionErrorsTest extends TestCase
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
-        $planningValidator = new PlanningValidator($this->createLogger());
+        $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(Validity::VALID, $validity);
     }
@@ -351,7 +351,7 @@ class ProductionErrorsTest extends TestCase
 //
 //        (new PlanningOutput())->outputWithGames($planning, true);
 //
-//        $planningValidator = new PlanningValidator($this->createLogger());
+//        $planningValidator = new PlanningValidator();
 //        $validity = $planningValidator->validate($planning);
 //        self::assertSame(PlanningValidator::VALID, $validity);
 //    }
@@ -385,7 +385,7 @@ class ProductionErrorsTest extends TestCase
 //
 //        (new PlanningOutput())->outputWithGames($planning, true);
 //
-//        $planningValidator = new PlanningValidator($this->createLogger());
+//        $planningValidator = new PlanningValidator();
 //        $validity = $planningValidator->validate($planning);
 //        self::assertSame(PlanningValidator::VALID, $validity);
 //    }
@@ -412,7 +412,7 @@ class ProductionErrorsTest extends TestCase
 //
 //        (new PlanningOutput())->outputWithGames($planning, true);
 //
-//        $planningValidator = new PlanningValidator($this->createLogger());
+//        $planningValidator = new PlanningValidator();
 //        $validity = $planningValidator->validate($planning);
 //        self::assertSame(PlanningValidator::VALID, $validity);
 //    }

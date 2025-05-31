@@ -34,11 +34,10 @@ class FieldsTest extends TestCase
             $refereeInfo,
             false
         );
-        $input = new Input($config);
+        $planning = $this->createPlanning($config);
+        $fields = new Fields($planning);
 
-        $fields = new Fields($input);
-
-        $sport = $input->getSport(1);
+        $sport = $planning->getSport(1);
         self::assertCount(2, $fields->getAssignableFields($sport));
     }
 
@@ -67,10 +66,10 @@ class FieldsTest extends TestCase
             $refereeInfo,
             false
         );
-        $input = new Input($config);
-        $fields = new Fields($input);
-        self::assertCount(2, $fields->getAssignableFields($input->getSport(2)));
-        self::assertCount(2, $fields->getAssignableFields($input->getSport(1)));
+        $planning = $this->createPlanning($config);
+        $fields = new Fields($planning);
+        self::assertCount(2, $fields->getAssignableFields($planning->getSport(2)));
+        self::assertCount(2, $fields->getAssignableFields($planning->getSport(1)));
     }
 
     public function testSixPoulesTwoFields(): void
@@ -81,12 +80,13 @@ class FieldsTest extends TestCase
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
-        $fields = new Fields($planning->getInput());
-        $lastGame = $planning->getAgainstGames()->last();
+        $fields = new Fields($planning);
+        $games = $planning->getGames();
+        $nrOfGames = count($games);
+        $lastGame = $games[$nrOfGames > 0 ? $nrOfGames - 1 : 0];
         self::assertInstanceOf(AgainstGame::class, $lastGame);
         $fields->assignToGame($lastGame);
 
-        $sport = $planning->getInput()->getSport(1);
-        self::assertFalse($fields->isSomeFieldAssignable($sport, $planning->getInput()->getPoule(6)));
+        self::assertFalse($fields->isSomeFieldAssignable(1, $planning->getPoule(6)));
     }
 }

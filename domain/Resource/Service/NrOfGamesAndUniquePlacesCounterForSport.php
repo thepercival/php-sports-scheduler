@@ -27,9 +27,9 @@ class NrOfGamesAndUniquePlacesCounterForSport
     public function addGame(AgainstGame|TogetherGame $game): void
     {
         $this->nrOfGames++;
-        $pouleNr = $game->getPoule()->getNumber();
+        $pouleNr = $game->poule->pouleNr;
         if (!array_key_exists($pouleNr, $this->uniquePlacesCounterMap)) {
-            $this->uniquePlacesCounterMap[$pouleNr] = new UniquePlacesCounter($game->getPoule());
+            $this->uniquePlacesCounterMap[$pouleNr] = new UniquePlacesCounter($game->poule);
         }
         $this->uniquePlacesCounterMap[$pouleNr]->addGame($game);
     }

@@ -9,6 +9,8 @@ use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\TogetherSport;
+use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Output\PlanningOutput;
 use SportsPlanning\Output\ScheduleOutput;
 use SportsPlanning\Planning;
@@ -107,27 +109,6 @@ trait PlanningCreator
         );
     }
 
-    /**
-     * @param PlanningConfiguration $config
-     * @return array<int, list<ScheduleCycleTogether|ScheduleCycleAgainstOneVsOne|ScheduleCycleAgainstOneVsTwo|ScheduleCycleAgainstTwoVsTwo>>
-     */
-    protected function createSportCyclesMap(PlanningConfiguration $config): array {
-        /** @var array<int, list<ScheduleCycleTogether|ScheduleCycleAgainstOneVsOne|ScheduleCycleAgainstOneVsTwo|ScheduleCycleAgainstTwoVsTwo>> $sportCyclesMap */
-        $sportCyclesMap = [];
-        {
-            $cycleCreator = new CycleCreator($this->createLogger());
-            $pouleStructure = $config->pouleStructure;
-            for( $nrOfPlaces = $pouleStructure->getSmallestPoule() ; $nrOfPlaces <= $pouleStructure->getBiggestPoule() ; $nrOfPlaces++) {
-                $sportRootCycles = $cycleCreator->createSportRootCycles(
-                    new ScheduleWithNrOfPlaces( $nrOfPlaces, $config->createSportsWithNrOfCycles())
-                );
-                $sportCyclesMap[$nrOfPlaces] = $sportRootCycles;
-            }
-        }
-        return $sportCyclesMap;
-    }
-
-
     protected function createPlanning(
         PlanningConfiguration $configuration,
         SportRange $nrOfBatchGamesRange = null,
@@ -139,12 +120,14 @@ trait PlanningCreator
         if ($nrOfBatchGamesRange === null) {
             $nrOfBatchGamesRange = new SportRange(1, 1);
         }
-        $planning = new Planning(new Input($configuration), $nrOfBatchGamesRange, $maxNrOfGamesInARow);
+        $input = new Input($configuration);
+        $planning = new Planning($input, $nrOfBatchGamesRange, $maxNrOfGamesInARow);
         if ($timeoutState !== null) {
             $planning->setTimeoutState($timeoutState);
         }
 
-        $sportRootCyclesMap = $this->createSportCyclesMap($configuration);
+        $cycleCreator = new CycleCreator($this->createLogger());
+        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($configuration);
 
 //        foreach( $sportRootCyclesMap as $placeNr => $sportRootCycles) {
 //            foreach( $sportRootCycles as $sportRootCycle) {
@@ -162,9 +145,34 @@ trait PlanningCreator
         if ($showHighestCompletedBatchNr) {
             $gameAssigner->showHighestCompletedBatchNr();
         }
-        if( $gameAssigner->assignGames($planning) !== PlanningState::Succeeded ) {
+        $betterNrOfBatchGames = $input->caluclateBetterNrOfBatchGames($planning->getType(), $nrOfBatchGamesRange);
+        if( $gameAssigner->assignGames($planning, $betterNrOfBatchGames) !== PlanningState::Succeeded ) {
             throw new Exception("planning could not be created", E_ERROR);
         }
         return $planning;
+    }
+
+    /**
+     * @param Planning $planning
+     * @return list<AgainstGame>
+     */
+    protected function getAgainstGames(Planning $planning): array {
+        $games = [];
+        foreach($planning->poules as $poule) {
+            $games = array_merge($poule->getAgainstGames());
+        }
+        return $games;
+    }
+
+    /**
+     * @param Planning $planning
+     * @return list<TogetherGame>
+     */
+    protected function getTogetherGames(Planning $planning): array {
+        $games = [];
+        foreach($planning->poules as $poule) {
+            $games = array_merge($poule->getTogetherGames());
+        }
+        return $games;
     }
 }
