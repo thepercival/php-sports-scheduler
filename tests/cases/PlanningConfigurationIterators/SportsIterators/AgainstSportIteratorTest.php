@@ -2,30 +2,29 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Tests\PlanningConfigurationIterators;
+namespace SportsScheduler\Tests\PlanningConfigurationIterators\SportsIterators;
 
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
-use SportsScheduler\PlanningConfigurationIterators\AgainstSportsIterator;
+use SportsScheduler\PlanningConfigurationIterators\SportsIterators\AgainstSportIterator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class AgainstSportsIteratorTest extends TestCase
+class AgainstSportIteratorTest extends TestCase
 {
     use PlanningCreator;
 
     public function testRewind(): void
     {
         $rangeNrOfFields = new SportRange(1, 2);
-        $rangeGameAmount = new SportRange(1, 2);
-        $sportsIterator = new AgainstSportsIterator($rangeNrOfFields, $rangeGameAmount);
+        $rangeNrOfCycles = new SportRange(1, 2);
+        $sportsIterator = new AgainstSportIterator($rangeNrOfFields, $rangeNrOfCycles);
 
         $sportWithNrOfFieldsAndNrOfCycles = $sportsIterator->current();
         self::assertNotNull($sportWithNrOfFieldsAndNrOfCycles);
         $sport = $sportWithNrOfFieldsAndNrOfCycles->sport;
         self::assertInstanceOf(AgainstOneVsOne::class, $sport);
-        self::assertGreaterThan(50, $sportsIterator->key());
         self::assertEquals(2, $sport->getNrOfGamePlaces());
         self::assertEquals(1, $sportWithNrOfFieldsAndNrOfCycles->nrOfFields);
 //        self::assertEquals(1, $sportVariant->getNrOfH2H());
@@ -34,8 +33,8 @@ class AgainstSportsIteratorTest extends TestCase
     public function testLast(): void
     {
         $rangeNrOfFields = new SportRange(1, 2);
-        $rangeGameAmount = new SportRange(1, 2);
-        $sportsIterator = new AgainstSportsIterator($rangeNrOfFields, $rangeGameAmount);
+        $rangeNrOfCycles = new SportRange(1, 2);
+        $sportsIterator = new AgainstSportIterator($rangeNrOfFields, $rangeNrOfCycles);
 
         $sportWithNrOfFieldsAndNrOfCycles = null;
         while ($sportsIterator->current() !== null) {
@@ -50,20 +49,37 @@ class AgainstSportsIteratorTest extends TestCase
         self::assertEquals(2, $sportWithNrOfFieldsAndNrOfCycles->nrOfFields);
     }
 
-    public function testCount(): void
+    public function testNrOfPossibilitiesSmallRange(): void
     {
         $rangeNrOfFields = new SportRange(1, 2);
-        $rangeGameAmount = new SportRange(1, 2);
-        $sportsIterator = new AgainstSportsIterator($rangeNrOfFields, $rangeGameAmount);
+        $rangeNrOfCycles = new SportRange(1, 2);
+        $sportIterator = new AgainstSportIterator($rangeNrOfFields, $rangeNrOfCycles);
+
+        $nrOfPossibilities = 0;
+        while ($sportIterator->valid()) {
+            // echo json_encode($sportIterator->current()) . PHP_EOL;
+            $nrOfPossibilities++;
+            $sportIterator->next();
+        }
+        $sportIterator->next(); // should do nothing
+        self::assertFalse($sportIterator->valid());
+        self::assertEquals(12, $nrOfPossibilities);
+    }
+
+    public function testNrOfPossibilitiesLargerRange(): void
+    {
+        $rangeNrOfFields = new SportRange(1, 5);
+        $rangeNrOfCycles = new SportRange(1, 4);
+        $sportsIterator = new AgainstSportIterator($rangeNrOfFields, $rangeNrOfCycles);
 
         $nrOfPossibilities = 0;
         while ($sportsIterator->valid()) {
-            // echo $sportsIterator->key() . PHP_EOL;
+//            echo json_encode($sportsIterator->current()) . PHP_EOL;
             $nrOfPossibilities++;
             $sportsIterator->next();
         }
         $sportsIterator->next(); // should do nothing
         self::assertFalse($sportsIterator->valid());
-        self::assertEquals(12, $nrOfPossibilities);
+        self::assertEquals(60, $nrOfPossibilities);
     }
 }

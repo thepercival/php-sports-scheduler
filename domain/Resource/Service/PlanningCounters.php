@@ -8,10 +8,10 @@ use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Place;
 use SportsPlanning\Resource\GameCounter\GameCounterForPlace;
-use SportsPlanning\Sports\Plannable\AgainstOneVsOneWithNrAndFields;
-use SportsPlanning\Sports\Plannable\AgainstOneVsTwoWithNrAndFields;
-use SportsPlanning\Sports\Plannable\AgainstTwoVsTwoWithNrAndFields;
-use SportsPlanning\Sports\Plannable\TogetherSportWithNrAndFields;
+use SportsPlanning\Sports\SportsWithNrAndFields\AgainstOneVsOneWithNrAndFields;
+use SportsPlanning\Sports\SportsWithNrAndFields\AgainstOneVsTwoWithNrAndFields;
+use SportsPlanning\Sports\SportsWithNrAndFields\AgainstTwoVsTwoWithNrAndFields;
+use SportsPlanning\Sports\SportsWithNrAndFields\TogetherSportWithNrAndFields;
 use SportsPlanning\Sports\SportWithNrOfFields;
 
 class PlanningCounters

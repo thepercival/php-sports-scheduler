@@ -25,7 +25,7 @@ class ResourceServiceHelper
 
     public function __construct(protected Planning $planning, protected LoggerInterface $logger)
     {
-        $this->planningPouleStructure = $planning->getConfiguration()->planningPouleStructure;
+        $this->planningPouleStructure = $planning->getConfiguration()->createPlanningPouleStructure();
         $this->totalNrOfGames = $this->planningPouleStructure->calculateNrOfGames();
     }
 
@@ -312,7 +312,7 @@ class ResourceServiceHelper
 
     private function calculateMaxNrOfBatches(): int
     {
-        $totalNrOfGames = $this->planning->getConfiguration()->planningPouleStructure->calculateNrOfGames();
+        $totalNrOfGames = $this->planning->getConfiguration()->createPlanningPouleStructure()->calculateNrOfGames();
         return (int)ceil($totalNrOfGames / $this->planning->minNrOfBatchGames);
     }
 

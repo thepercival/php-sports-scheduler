@@ -154,7 +154,7 @@ trait PlanningCreator
 
     private function calculateMaxNrOfBatches(Planning $planning): int
     {
-        $totalNrOfGames = $planning->getConfiguration()->planningPouleStructure->calculateNrOfGames();
+        $totalNrOfGames = $planning->getConfiguration()->createPlanningPouleStructure()->calculateNrOfGames();
         return (int)ceil($totalNrOfGames / $planning->minNrOfBatchGames);
     }
 

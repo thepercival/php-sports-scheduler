@@ -10,7 +10,10 @@ use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Planning;
 use SportsPlanning\Poule;
-use SportsPlanning\Sports\Plannable\SportWithNrAndFields;
+use SportsPlanning\Sports\SportsWithNrAndFields\AgainstOneVsOneWithNrAndFields;
+use SportsPlanning\Sports\SportsWithNrAndFields\AgainstOneVsTwoWithNrAndFields;
+use SportsPlanning\Sports\SportsWithNrAndFields\AgainstTwoVsTwoWithNrAndFields;
+use SportsPlanning\Sports\SportsWithNrAndFields\TogetherSportWithNrAndFields;
 
 class Fields
 {
@@ -76,10 +79,10 @@ class Fields
 
 
     /**
-     * @param SportWithNrAndFields $sportWithNrAndFields
+     * @param TogetherSportWithNrAndFields|AgainstOneVsOneWithNrAndFields|AgainstOneVsTwoWithNrAndFields|AgainstTwoVsTwoWithNrAndFields $sportWithNrAndFields
      * @return list<Field>
      */
-    public function getAssignableFields(SportWithNrAndFields $sportWithNrAndFields): array
+    public function getAssignableFields(TogetherSportWithNrAndFields|AgainstOneVsOneWithNrAndFields|AgainstOneVsTwoWithNrAndFields|AgainstTwoVsTwoWithNrAndFields $sportWithNrAndFields): array
     {
         return array_values(array_filter( $sportWithNrAndFields->fields, function (Field $field): bool {
             return $this->isUnassigned($field);

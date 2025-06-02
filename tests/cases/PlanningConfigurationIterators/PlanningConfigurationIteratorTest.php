@@ -16,14 +16,16 @@ class PlanningConfigurationIteratorTest extends TestCase
 
     public function testRewind(): void
     {
-        $nrOfCyclesRange = new SportRange(1, 2);
+        $rangeNrOfTogetherCycles = new SportRange(1, 2);
         $configIterator = new PlanningConfigurationIterator(
             new SportRange(2, 6),
             new SportRange(2, 6),
             new SportRange(1, 3),
             new SportRange(0, 3),
             new SportRange(1, 3),
-            $nrOfCyclesRange
+            new SportRange(1, 3),
+            $rangeNrOfTogetherCycles,
+            new SportRange(1, 4)
         );
 
         $planningConfig = $configIterator->current();
@@ -60,8 +62,10 @@ class PlanningConfigurationIteratorTest extends TestCase
             new SportRange(2, 6),
             new SportRange(1, 3),
             new SportRange(0, 3),
-            new SportRange(1, 3),
-            new SportRange(1, 2)
+            new SportRange(1, 2),
+            new SportRange(1, 2),
+            new SportRange(1, 5),
+            new SportRange(1, 4)
         );
 
         $nrOfPossibilities = 0;
@@ -72,7 +76,7 @@ class PlanningConfigurationIteratorTest extends TestCase
         }
         $configIterator->next(); // should do nothing
         self::assertFalse($configIterator->valid());
-        self::assertEquals(690, $nrOfPossibilities);
+        self::assertEquals(2050, $nrOfPossibilities);
         // last change => remove gamePlaceStrategy
     }
 }

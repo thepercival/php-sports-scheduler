@@ -9,10 +9,10 @@ use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
+use SportsPlanning\Planning\PlanningValidity;
 use SportsPlanning\Planning\TimeoutConfig;
 use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
-use SportsPlanning\Planning\Validity;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsScheduler\Planning\PlanningValidator;
 use SportsScheduler\TestHelper\PlanningCreator;
@@ -43,7 +43,7 @@ class ProductionErrorsTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
 
         //(new PlanningOutput())->outputWithGames($planning, true);
         // echo "============ " . (microtime(true) - $time_start);
@@ -71,7 +71,7 @@ class ProductionErrorsTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
     }
 
 
@@ -160,7 +160,7 @@ class ProductionErrorsTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
     }
 
 //     [8] - [
@@ -230,7 +230,7 @@ class ProductionErrorsTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
     }
 
     //  [7,6] - [against(1vs1) h2h:gpp=>1:0 f(6)] - ref=>0:
@@ -259,7 +259,7 @@ class ProductionErrorsTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
     }
 
     // [7,7,6,6] - [against(1vs1) h2h:gpp=>1:0 f(8)] - ref=>0:
@@ -287,7 +287,7 @@ class ProductionErrorsTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
     }
 
     // [5] - [against(2vs2) h2h:gpp=>0:1 f(1)] - ref=>0:
@@ -314,7 +314,7 @@ class ProductionErrorsTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
     }
 
     // ----------------     NOT OK FROM HERE   --------------------------------

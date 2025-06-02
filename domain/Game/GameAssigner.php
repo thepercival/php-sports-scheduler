@@ -9,6 +9,7 @@ use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\PlanningState;
+use SportsPlanning\Planning\PlanningValidity;
 use SportsPlanning\Planning\TimeoutConfig;
 use SportsScheduler\Resource\RefereePlace\Service as RefereePlaceService;
 use SportsScheduler\Resource\ResourceService;
@@ -66,13 +67,14 @@ class GameAssigner
                 } else {
                     $planning->setTimeoutState(null);
                 }
-                $this->logger->error('   could not assign refereeplaces (plId:' . ($planning->getId() ?? '') . ')');
+                $this->logger->error('   could not assign refereeplaces (plId:' . ($planning->id ?? '') . ')');
                 return $state;
             }
         }
         $planning->setState(PlanningState::Succeeded);
-        $planning->setTimeoutState(null);
         $planning->setNrOfBatches($firstBatch->getLeaf()->getNumber());
+        $planning->setValidity(PlanningValidity::NOT_VALIDATED);
+        $planning->setTimeoutState(null);
         return PlanningState::Succeeded;
     }
 

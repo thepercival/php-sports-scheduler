@@ -9,10 +9,10 @@ use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
+use SportsPlanning\Planning\PlanningValidity;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Planning\PlanningValidator as PlanningValidator;
-use SportsPlanning\Planning\Validity;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 class PerformanceTest extends TestCase
@@ -38,7 +38,7 @@ class PerformanceTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
 
         //(new PlanningOutput())->outputWithGames($planning, true);
         // echo "============ " . (microtime(true) - $time_start);
@@ -64,7 +64,7 @@ class PerformanceTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
 //
         // (new PlanningOutput())->outputWithGames($planning, true);
 //        (new BatchOutput())->output($planning->createFirstBatch(), null, null, null, true);
@@ -95,7 +95,7 @@ class PerformanceTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
 //
         // (new PlanningOutput())->outputWithGames($planning, true);
 //        (new BatchOutput())->output($planning->createFirstBatch(), null, null, null, true);

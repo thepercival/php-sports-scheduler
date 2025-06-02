@@ -16,10 +16,10 @@ use SportsPlanning\Batches\Batch;
 use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Planning\PlanningValidity;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsPlanning\Planning\PlanningState;
 use SportsScheduler\Planning\PlanningValidator as PlanningValidator;
-use SportsPlanning\Planning\Validity;
 use SportsPlanning\Referee as PlanningReferee;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsScheduler\Resource\RefereePlace\Service as RefereePlaceService;
@@ -38,7 +38,7 @@ class PlanningValidatorTest extends TestCase
 //
 //        $planningValidator = new PlanningValidator();
 //        $validity = $planningValidator->validate($planning);
-//        self::assertSame(Validity::NO_GAMES, $validity & Validity::NO_GAMES);
+//        self::assertSame(PlanningValidity::NO_GAMES, $validity & PlanningValidity::NO_GAMES);
 //    }
 
 //    public function testHasEmptyGamePlace(): void
@@ -56,7 +56,7 @@ class PlanningValidatorTest extends TestCase
 //
 //        $planningValidator = new PlanningValidator();
 //        $validity = $planningValidator->validate($planning);
-//        self::assertSame(Validity::EMPTY_PLACE, $validity & Validity::EMPTY_PLACE);
+//        self::assertSame(PlanningValidity::EMPTY_PLACE, $validity & PlanningValidity::EMPTY_PLACE);
 //    }
 
     public function testHasEmptyGameRefereePlace(): void
@@ -69,7 +69,7 @@ class PlanningValidatorTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
 
         //(new PlanningOutput())->outputWithGames($planning, true);
         // --------- BEGIN EDITING --------------
@@ -83,8 +83,8 @@ class PlanningValidatorTest extends TestCase
 
         $validity = $planningValidator->validate($planning);
         self::assertSame(
-            Validity::EMPTY_REFEREEPLACE,
-            $validity & Validity::EMPTY_REFEREEPLACE
+            PlanningValidity::EMPTY_REFEREEPLACE,
+            $validity & PlanningValidity::EMPTY_REFEREEPLACE
         );
     }
 
@@ -99,7 +99,7 @@ class PlanningValidatorTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::EMPTY_REFEREE, $validity & Validity::EMPTY_REFEREE);
+        self::assertSame(PlanningValidity::EMPTY_REFEREE, $validity & PlanningValidity::EMPTY_REFEREE);
     }
 
 //    public function testAllPlacesSameNrOfGames(): void
@@ -122,7 +122,7 @@ class PlanningValidatorTest extends TestCase
 //
 //        (new PlanningOutput())->output($planning, PlanningOutput\Extra::Games->value + PlanningOutput\Extra::Input->value);
 //
-//        self::assertSame(Validity::UNEQUAL_GAME_AGAINST, $planningValidator->validate($planning));
+//        self::assertSame(PlanningValidity::UNEQUAL_GAME_AGAINST, $planningValidator->validate($planning));
 //    }
 
 //    public function testGamesInARow(): void
@@ -132,7 +132,7 @@ class PlanningValidatorTest extends TestCase
 //
 //        $planningValidator = new PlanningValidator();
 //        $validity = $planningValidator->validate($planning);
-//        self::assertSame(Validity::VALID, $validity);
+//        self::assertSame(PlanningValidity::VALID, $validity);
 //
 //        // (new PlanningOutput())->output($planning, PlanningOutput\Extra::Games);
 //
@@ -148,8 +148,8 @@ class PlanningValidatorTest extends TestCase
 //
 //        $validity = $planningValidator->validate($planning);
 //        self::assertSame(
-//            Validity::TOO_MANY_GAMES_IN_A_ROW,
-//            $validity & Validity::TOO_MANY_GAMES_IN_A_ROW
+//            PlanningValidity::TOO_MANY_GAMES_IN_A_ROW,
+//            $validity & PlanningValidity::TOO_MANY_GAMES_IN_A_ROW
 //        );
 //    }
 
@@ -169,8 +169,8 @@ class PlanningValidatorTest extends TestCase
 //        $planningValidator = new PlanningValidator();
 //        $validity = $planningValidator->validate($planning);
 //        self::assertSame(
-//            Validity::UNEQUAL_GAME_HOME_AWAY,
-//            $validity & Validity::UNEQUAL_GAME_HOME_AWAY
+//            PlanningValidity::UNEQUAL_GAME_HOME_AWAY,
+//            $validity & PlanningValidity::UNEQUAL_GAME_HOME_AWAY
 //        );
 //    }
 
@@ -190,8 +190,8 @@ class PlanningValidatorTest extends TestCase
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(
-            Validity::MULTIPLE_ASSIGNED_FIELDS_IN_BATCH,
-            Validity::MULTIPLE_ASSIGNED_FIELDS_IN_BATCH & $validity
+            PlanningValidity::MULTIPLE_ASSIGNED_FIELDS_IN_BATCH,
+            PlanningValidity::MULTIPLE_ASSIGNED_FIELDS_IN_BATCH & $validity
         );
     }
 
@@ -213,8 +213,8 @@ class PlanningValidatorTest extends TestCase
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(
-            Validity::MULTIPLE_ASSIGNED_REFEREES_IN_BATCH,
-            Validity::MULTIPLE_ASSIGNED_REFEREES_IN_BATCH & $validity
+            PlanningValidity::MULTIPLE_ASSIGNED_REFEREES_IN_BATCH,
+            PlanningValidity::MULTIPLE_ASSIGNED_REFEREES_IN_BATCH & $validity
         );
     }
 
@@ -225,7 +225,7 @@ class PlanningValidatorTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
     }
 
     public function testValidateNrOfGamesPerField(): void
@@ -245,8 +245,8 @@ class PlanningValidatorTest extends TestCase
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(
-            Validity::UNEQUALLY_ASSIGNED_FIELDS,
-            $validity & Validity::UNEQUALLY_ASSIGNED_FIELDS
+            PlanningValidity::UNEQUALLY_ASSIGNED_FIELDS,
+            $validity & PlanningValidity::UNEQUALLY_ASSIGNED_FIELDS
         );
     }
     public function testValidatePerPouleTooMuchCompetitors(): void
@@ -286,8 +286,8 @@ class PlanningValidatorTest extends TestCase
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(
-            Validity::UNEQUALLY_ASSIGNED_REFEREES,
-            $validity & Validity::UNEQUALLY_ASSIGNED_REFEREES
+            PlanningValidity::UNEQUALLY_ASSIGNED_REFEREES,
+            $validity & PlanningValidity::UNEQUALLY_ASSIGNED_REFEREES
         );
     }
 
@@ -361,8 +361,8 @@ class PlanningValidatorTest extends TestCase
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(
-            Validity::INVALID_ASSIGNED_REFEREEPLACE,
-            $validity & Validity::INVALID_ASSIGNED_REFEREEPLACE
+            PlanningValidity::INVALID_ASSIGNED_REFEREEPLACE,
+            $validity & PlanningValidity::INVALID_ASSIGNED_REFEREEPLACE
         );
     }
 
@@ -412,8 +412,8 @@ class PlanningValidatorTest extends TestCase
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
         self::assertSame(
-            Validity::UNEQUALLY_ASSIGNED_REFEREEPLACES,
-            $validity & Validity::UNEQUALLY_ASSIGNED_REFEREEPLACES
+            PlanningValidity::UNEQUALLY_ASSIGNED_REFEREEPLACES,
+            $validity & PlanningValidity::UNEQUALLY_ASSIGNED_REFEREEPLACES
         );
     }
 
@@ -437,7 +437,7 @@ class PlanningValidatorTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
     }
 
     public function testValidityDescriptions(): void
@@ -451,7 +451,7 @@ class PlanningValidatorTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $planningValidator->validate($planning);
-        $descriptions = $planningValidator->getValidityDescriptions(Validity::ALL_INVALID, $planning);
+        $descriptions = $planningValidator->getValidityDescriptions(PlanningValidity::ALL_INVALID, $planning);
         self::assertCount(17, $descriptions);
 
 //        $planningOutput = new PlanningOutput();
@@ -466,7 +466,7 @@ class PlanningValidatorTest extends TestCase
 
         $planningValidator = new PlanningValidator();
         $planningValidator->validate($planning);
-        $descriptions = $planningValidator->getValidityDescriptions(Validity::ALL_INVALID, $planning);
+        $descriptions = $planningValidator->getValidityDescriptions(PlanningValidity::ALL_INVALID, $planning);
         self::assertCount(17, $descriptions);
     }
 
@@ -503,8 +503,8 @@ class PlanningValidatorTest extends TestCase
 //
 //        $validity = $planningValidator->validate($planning);
 //        self::assertSame(
-//            Validity::UNEQUAL_PLACE_NROFHOMESIDES,
-//            $validity & Validity::UNEQUAL_PLACE_NROFHOMESIDES
+//            PlanningValidity::UNEQUAL_PLACE_NROFHOMESIDES,
+//            $validity & PlanningValidity::UNEQUAL_PLACE_NROFHOMESIDES
 //        );
 //    }
 
@@ -527,6 +527,6 @@ class PlanningValidatorTest extends TestCase
         $planningValidator = new PlanningValidator();
 
         $validity = $planningValidator->validate($planning);
-        self::assertSame(Validity::VALID, $validity);
+        self::assertSame(PlanningValidity::VALID, $validity);
     }
 }

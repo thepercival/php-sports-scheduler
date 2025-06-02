@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\PlanningConfigurationIterators;
+namespace SportsScheduler\PlanningConfigurationIterators\SportsIterators;
 
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
@@ -13,7 +13,7 @@ use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 /**
  * @implements \Iterator<string, SportWithNrOfFieldsAndNrOfCycles|null>
  */
-class AgainstSportsIterator implements \Iterator
+class AgainstSportIterator implements \Iterator
 {
     protected SportRange $sidePlacesRange;
 
@@ -29,12 +29,6 @@ class AgainstSportsIterator implements \Iterator
     ) {
         $this->sidePlacesRange = new SportRange(1, 2);
         $this->rewind();
-    }
-
-    protected function rewindNrOfFields(): void
-    {
-        $this->nrOfFields = $this->fieldRange->getMin();
-        $this->rewindNrOfHomePlaces();
     }
 
     protected function rewindNrOfHomePlaces(): void
@@ -55,6 +49,12 @@ class AgainstSportsIterator implements \Iterator
         if ($this->nrOfAwayPlaces < $this->nrOfHomePlaces) {
             $this->nrOfAwayPlaces = $this->nrOfHomePlaces;
         }
+        $this->rewindNrOfFields();
+    }
+
+    protected function rewindNrOfFields(): void
+    {
+        $this->nrOfFields = $this->fieldRange->getMin();
         $this->rewindNrOfCycles();
     }
 
@@ -70,7 +70,7 @@ class AgainstSportsIterator implements \Iterator
 
     public function key(): string
     {
-        return (string)$this->current;
+        throw new \Exception('has no key');
     }
 
     public function next(): void
@@ -87,7 +87,7 @@ class AgainstSportsIterator implements \Iterator
 
     public function rewind(): void
     {
-        $this->rewindNrOfFields();
+        $this->rewindNrOfHomePlaces();
         $this->current = $this->createSport();
     }
 
@@ -116,9 +116,19 @@ class AgainstSportsIterator implements \Iterator
     protected function incrementNrOfCycles(): bool
     {
         if ($this->nrOfCycles === $this->nrOfCyclesRange->getMax()) {
-            return $this->incrementNrOfAwayPlaces();
+            return $this->incrementNrOfFields();
         }
         $this->nrOfCycles++;
+        return true;
+    }
+
+    protected function incrementNrOfFields(): bool
+    {
+        if ($this->nrOfFields === $this->fieldRange->getMax()) {
+            return $this->incrementNrOfAwayPlaces();
+        }
+        $this->nrOfFields++;
+        $this->rewindNrOfCycles();
         return true;
     }
 
@@ -128,27 +138,19 @@ class AgainstSportsIterator implements \Iterator
             return $this->incrementNrOfHomePlaces();
         }
         $this->nrOfAwayPlaces++;
-        $this->rewindNrOfCycles();
+        $this->rewindNrOfFields();
         return true;
     }
 
     protected function incrementNrOfHomePlaces(): bool
     {
         if ($this->nrOfHomePlaces === $this->sidePlacesRange->getMax()) {
-            return $this->incrementNrOfFields();
+            return false;
         }
         $this->nrOfHomePlaces++;
         $this->rewindNrOfAwayPlaces();
         return true;
     }
 
-    protected function incrementNrOfFields(): bool
-    {
-        if ($this->nrOfFields === $this->fieldRange->getMax()) {
-            return false;
-        }
-        $this->nrOfFields++;
-        $this->rewindNrOfHomePlaces();
-        return true;
-    }
+
 }
