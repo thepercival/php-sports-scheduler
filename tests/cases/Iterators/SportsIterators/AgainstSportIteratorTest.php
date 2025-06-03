@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Tests\PlanningConfigurationIterators\SportsIterators;
+namespace SportsScheduler\Tests\Iterators\SportsIterators;
 
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
-use SportsScheduler\PlanningConfigurationIterators\SportsIterators\AgainstSportIterator;
+use SportsScheduler\Iterators\SportsIterators\AgainstSportIterator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 class AgainstSportIteratorTest extends TestCase

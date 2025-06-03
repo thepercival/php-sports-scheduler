@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\PlanningConfigurationIterators\SportsIterators;
+namespace SportsScheduler\Iterators\SportsIterators;
 
 use SportsHelpers\SportRange;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;

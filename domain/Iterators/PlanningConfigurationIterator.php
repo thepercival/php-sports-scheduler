@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\PlanningConfigurationIterators;
+namespace SportsScheduler\Iterators;
 
-use SportsHelpers\PouleStructures\BalancedIterator;
 use SportsHelpers\PouleStructures\BalancedPouleStructure;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
@@ -17,9 +16,9 @@ use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Referee\SelfRefereeValidator;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
-use SportsScheduler\PlanningConfigurationIterators\SportsIterators\AgainstSportIterator;
-use SportsScheduler\PlanningConfigurationIterators\SportsIterators\SportIterator;
-use SportsScheduler\PlanningConfigurationIterators\SportsIterators\TogetherSportIterator;
+use SportsScheduler\Iterators\SportsIterators\AgainstSportIterator;
+use SportsScheduler\Iterators\SportsIterators\SportIterator;
+use SportsScheduler\Iterators\SportsIterators\TogetherSportIterator;
 
 /**
  * @template TKey
@@ -28,7 +27,7 @@ use SportsScheduler\PlanningConfigurationIterators\SportsIterators\TogetherSport
  */
 class PlanningConfigurationIterator implements \Iterator
 {
-    protected BalancedIterator $structureIterator;
+    protected BalancedPouleStructureIterator $structureIterator;
     protected SportIterator $sportIterator;
     protected SportRange $rangeNrOfReferees;
     protected SelfRefereeValidator $selfRefereeValidator;
@@ -46,7 +45,7 @@ class PlanningConfigurationIterator implements \Iterator
         SportRange $rangeNrOfTogetherCycles,
         SportRange $rangeNrOfTogetherGamePlaces
     ) {
-        $this->structureIterator = new BalancedIterator($rangePlaces, $rangePlacesPerPoule, $rangePoules);
+        $this->structureIterator = new BalancedPouleStructureIterator($rangePlaces, $rangePlacesPerPoule, $rangePoules);
         $this->sportIterator = new SportIterator(
             $rangeNrOfFields,
             $rangeNrOfAgainstCycles,

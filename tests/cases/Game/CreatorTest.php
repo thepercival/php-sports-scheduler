@@ -11,8 +11,8 @@ use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
 use SportsHelpers\Sports\TogetherSport;
 use SportsPlanning\Game\AgainstGame;
-use SportsPlanning\Input;
 use SportsPlanning\PlanningConfiguration;
+use SportsPlanning\PlanningOrchestration;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsPlanning\Game\TogetherGame;
@@ -34,7 +34,7 @@ class CreatorTest extends TestCase
             false
         );
         $nrOfBatchGamesRange = new SportRange(1,1);
-        $planning = new Planning(new Input($config), $nrOfBatchGamesRange, 0);
+        $planning = new Planning(new PlanningOrchestration($config), $nrOfBatchGamesRange, 0);
 
         $cycleCreator = new CycleCreator($this->createLogger());
         $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($config);
@@ -56,7 +56,7 @@ class CreatorTest extends TestCase
             false
         );
         $nrOfBatchGamesRange = new SportRange(1,1);
-        $planning = new Planning(new Input($config), $nrOfBatchGamesRange, 0);
+        $planning = new Planning(new PlanningOrchestration($config), $nrOfBatchGamesRange, 0);
 
         $cycleCreator = new CycleCreator($this->createLogger());
         $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($config);
@@ -79,7 +79,7 @@ class CreatorTest extends TestCase
             false
         );
         $nrOfBatchGamesRange = new SportRange(1,1);
-        $planning = new Planning(new Input($config), $nrOfBatchGamesRange, 0);
+        $planning = new Planning(new PlanningOrchestration($config), $nrOfBatchGamesRange, 0);
 
         $cycleCreator = new CycleCreator($this->createLogger());
         $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($config);

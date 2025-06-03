@@ -2,38 +2,53 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\PlanningConfigurationIterators\SportsIterators;
+namespace SportsScheduler\Iterators\SportsIterators;
 
 use SportsHelpers\SportRange;
-use SportsHelpers\Sports\TogetherSport;
+use SportsHelpers\Sports\AgainstOneVsOne;
+use SportsHelpers\Sports\AgainstOneVsTwo;
+use SportsHelpers\Sports\AgainstTwoVsTwo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 
 /**
  * @implements \Iterator<string, SportWithNrOfFieldsAndNrOfCycles|null>
  */
-class TogetherSportIterator implements \Iterator
+class AgainstSportIterator implements \Iterator
 {
+    protected SportRange $sidePlacesRange;
 
     protected int $nrOfFields;
-    protected int $nrOfGamePlaces;
+    protected int $nrOfHomePlaces;
+    protected int $nrOfAwayPlaces;
     protected int $nrOfCycles;
     protected SportWithNrOfFieldsAndNrOfCycles|null $current;
 
     public function __construct(
-        protected SportRange $gamePlacesRange,
         protected SportRange $fieldRange,
         protected SportRange $nrOfCyclesRange
     ) {
+        $this->sidePlacesRange = new SportRange(1, 2);
         $this->rewind();
     }
 
-    protected function rewindNrOfGamePlaces(): void
+    protected function rewindNrOfHomePlaces(): void
     {
-        $this->nrOfGamePlaces = $this->gamePlacesRange->getMin();
-        if ($this->nrOfGamePlaces < 1) {
-            $this->nrOfGamePlaces = 1;
+        $this->nrOfHomePlaces = $this->sidePlacesRange->getMin();
+        if ($this->nrOfHomePlaces < 1) {
+            $this->nrOfHomePlaces = 1;
         }
+        $this->rewindNrOfAwayPlaces();
+    }
 
+    protected function rewindNrOfAwayPlaces(): void
+    {
+        $this->nrOfAwayPlaces = $this->sidePlacesRange->getMin();
+        if ($this->nrOfAwayPlaces < 1) {
+            $this->nrOfAwayPlaces = 1;
+        }
+        if ($this->nrOfAwayPlaces < $this->nrOfHomePlaces) {
+            $this->nrOfAwayPlaces = $this->nrOfHomePlaces;
+        }
         $this->rewindNrOfFields();
     }
 
@@ -72,7 +87,7 @@ class TogetherSportIterator implements \Iterator
 
     public function rewind(): void
     {
-        $this->rewindNrOfGamePlaces();
+        $this->rewindNrOfHomePlaces();
         $this->current = $this->createSport();
     }
 
@@ -83,11 +98,14 @@ class TogetherSportIterator implements \Iterator
 
     protected function createSport(): SportWithNrOfFieldsAndNrOfCycles
     {
-        return new SportWithNrOfFieldsAndNrOfCycles(
-            new TogetherSport($this->nrOfGamePlaces),
-            $this->nrOfFields,
-            $this->nrOfCycles
-        );
+        if ($this->nrOfHomePlaces === 1 && $this->nrOfAwayPlaces == 1) {
+            return new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), $this->nrOfFields, $this->nrOfCycles);
+        } else if ($this->nrOfHomePlaces === 1 && $this->nrOfAwayPlaces == 2) {
+            return new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsTwo(), $this->nrOfFields, $this->nrOfCycles);
+        } else if ($this->nrOfHomePlaces === 2 && $this->nrOfAwayPlaces == 2) {
+            return new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), $this->nrOfFields, $this->nrOfCycles);
+        }
+        throw new \Exception('unknown homeawaycombination');
     }
 
     protected function incrementValue(): bool
@@ -107,20 +125,32 @@ class TogetherSportIterator implements \Iterator
     protected function incrementNrOfFields(): bool
     {
         if ($this->nrOfFields === $this->fieldRange->getMax()) {
-            return $this->incrementNrOfGamePlaces();
+            return $this->incrementNrOfAwayPlaces();
         }
         $this->nrOfFields++;
         $this->rewindNrOfCycles();
         return true;
     }
 
-    protected function incrementNrOfGamePlaces(): bool
+    protected function incrementNrOfAwayPlaces(): bool
     {
-        if ($this->nrOfGamePlaces === $this->gamePlacesRange->getMax()) {
-            return false;
+        if ($this->nrOfAwayPlaces === $this->sidePlacesRange->getMax()) {
+            return $this->incrementNrOfHomePlaces();
         }
-        $this->nrOfGamePlaces++;
+        $this->nrOfAwayPlaces++;
         $this->rewindNrOfFields();
         return true;
     }
+
+    protected function incrementNrOfHomePlaces(): bool
+    {
+        if ($this->nrOfHomePlaces === $this->sidePlacesRange->getMax()) {
+            return false;
+        }
+        $this->nrOfHomePlaces++;
+        $this->rewindNrOfAwayPlaces();
+        return true;
+    }
+
+
 }

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Tests\PlanningConfigurationIterators\SportsIterators;
+namespace SportsScheduler\Tests\Iterators\SportsIterators;
 
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\SportRange;
-use SportsScheduler\PlanningConfigurationIterators\SportsIterators\TogetherSportIterator;
+use SportsScheduler\Iterators\SportsIterators\TogetherSportIterator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 class TogetherSportIteratorTest extends TestCase

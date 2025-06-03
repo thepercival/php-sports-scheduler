@@ -19,7 +19,7 @@ use SportsPlanning\Planning\PlanningState;
 use SportsPlanning\Planning\PlanningType;
 use SportsPlanning\Planning\TimeoutState;
 use SportsPlanning\PlanningConfiguration;
-use SportsPlanning\Input;
+use SportsPlanning\PlanningOrchestration;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Game\GameAssigner;
@@ -117,8 +117,8 @@ trait PlanningCreator
         if ($nrOfBatchGamesRange === null) {
             $nrOfBatchGamesRange = new SportRange(1, 1);
         }
-        $input = new Input($configuration);
-        $planning = new Planning($input, $nrOfBatchGamesRange, $maxNrOfGamesInARow);
+        $orchestration = new PlanningOrchestration($configuration);
+        $planning = new Planning($orchestration, $nrOfBatchGamesRange, $maxNrOfGamesInARow);
         if ($timeoutState !== null) {
             $planning->setTimeoutState($timeoutState);
         }
@@ -142,7 +142,7 @@ trait PlanningCreator
         if ($showHighestCompletedBatchNr) {
             $gameAssigner->showHighestCompletedBatchNr();
         }
-        $betterNrOfBatches = $this->determineBetterNrOfBatches($input, $planning->getType(), $nrOfBatchGamesRange);
+        $betterNrOfBatches = $this->determineBetterNrOfBatches($orchestration, $planning->getType(), $nrOfBatchGamesRange);
         if( $betterNrOfBatches === null ) {
             $betterNrOfBatches = $this->calculateMaxNrOfBatches($planning);
         }
@@ -159,15 +159,15 @@ trait PlanningCreator
     }
 
     public function determineBetterNrOfBatches(
-        Input $input, PlanningType $planningType, SportRange $batchGamesRange): int|null
+        PlanningOrchestration $orchestration, PlanningType $planningType, SportRange $batchGamesRange): int|null
     {
         try {
             if ($planningType === PlanningType::BatchGames) {
                 // -1 because needs to be less nrOfBatches
-                return $input->getBestPlanning(null)->getNrOfBatches() - 1;
+                return $orchestration->getBestPlanning(null)->getNrOfBatches() - 1;
             } else {
                 $planningFilter = new PlanningFilter( null, null, $batchGamesRange, 0);
-                $batchGamePlanning = $input->getPlanning($planningFilter);
+                $batchGamePlanning = $orchestration->getPlanning($planningFilter);
                 if ($batchGamePlanning !== null) {
                     return $batchGamePlanning->getNrOfBatches();
                 }
