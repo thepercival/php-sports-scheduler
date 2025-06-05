@@ -14,7 +14,7 @@ use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
 use SportsPlanning\Planning;
 
-class AgainstValidator extends ValidatorAbstract
+final class AgainstValidator extends ValidatorAbstract
 {
     protected AgainstNrCounterMap $againstNrCounterMap;
 

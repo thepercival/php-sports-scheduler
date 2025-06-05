@@ -9,7 +9,7 @@ use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Sports\SportWithNrOfFields;
 use SportsScheduler\Resource\UniquePlacesCounter;
 
-class NrOfGamesAndUniquePlacesCounterForSport
+final class NrOfGamesAndUniquePlacesCounterForSport
 {
     protected int $nrOfGames = 0;
     /**

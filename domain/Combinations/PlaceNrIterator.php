@@ -12,7 +12,7 @@ use SportsPlanning\Poule;
 /**
  * @implements Iterator<int, int|null>
  */
-class PlaceNrIterator implements Iterator
+final class PlaceNrIterator implements Iterator
 {
     private int|null $current;
 
@@ -28,16 +28,19 @@ class PlaceNrIterator implements Iterator
         $this->current = $range->getMin();
     }
 
+    #[\Override]
     public function key(): int|null
     {
         return $this->current;
     }
 
+    #[\Override]
     public function current(): int|null
     {
         return $this->current;
     }
 
+    #[\Override]
     public function next(): void
     {
         if ($this->current === $this->range->getMax()) {
@@ -50,11 +53,13 @@ class PlaceNrIterator implements Iterator
         }
     }
 
+    #[\Override]
     public function valid(): bool
     {
         return $this->current !== null;
     }
 
+    #[\Override]
     public function rewind(): void
     {
         $this->current = $this->range->getMin();

@@ -14,7 +14,7 @@ use SportsPlanning\Sports\SportWithNrOfFields;
 use SportsScheduler\Resource\Service\SimCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class SimCalculatorTest extends TestCase
+final class SimCalculatorTest extends TestCase
 {
     use PlanningCreator;
 

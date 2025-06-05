@@ -17,7 +17,7 @@ use SportsPlanning\Schedules\Sports\ScheduleTogetherSport;
 use SportsPlanning\Sports\SportWithNrOfPlaces\TogetherSportWithNrOfPlaces;
 use SportsScheduler\Schedules\CycleCreators\Helpers\PlaceNrCycleNr;
 
-class CycleCreatorTogether
+final class CycleCreatorTogether
 {
 //    protected GameRoundOutput $gameRoundOutput;
 //    /**

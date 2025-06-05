@@ -11,7 +11,7 @@ use SportsPlanning\Sports\SportWithNrOfPlaces\AgainstOneVsTwoWithNrOfPlaces;
 use SportsPlanning\Sports\SportWithNrOfPlaces\AgainstTwoVsTwoWithNrOfPlaces;
 use SportsPlanning\Sports\SportWithNrOfPlaces\TogetherSportWithNrOfPlaces;
 
-class SportWithNrOfPlacesCreator
+final class SportWithNrOfPlacesCreator
 {
     public function create(
         int $nrOfPlaces,

@@ -13,7 +13,7 @@ use SportsHelpers\SportRange;
 /**
  * @template-implements Iterator<string,BalancedPouleStructure|null>
  */
-class BalancedPouleStructureIterator implements Iterator
+final class BalancedPouleStructureIterator implements Iterator
 {
     private SportRange $pouleRange;
     private BalancedPouleStructure|null $current;
@@ -34,16 +34,19 @@ class BalancedPouleStructureIterator implements Iterator
         $this->validateNrOfPlacesPerPouleAfterNext();
     }
 
+    #[\Override]
     public function current(): BalancedPouleStructure|null
     {
         return $this->current;
     }
 
+    #[\Override]
     public function key(): string
     {
         throw new Exception('no key implemented');
     }
 
+    #[\Override]
     public function next(): void
     {
         if ($this->current === null) {
@@ -94,11 +97,13 @@ class BalancedPouleStructureIterator implements Iterator
         }
     }
 
+    #[\Override]
     public function rewind(): void
     {
         throw new Exception("rewind is not implemented", E_ERROR);
     }
 
+    #[\Override]
     public function valid(): bool
     {
         return $this->current !== null;

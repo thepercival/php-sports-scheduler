@@ -17,7 +17,7 @@ use SportsScheduler\Resource\GameCounter\Unequal as UnequalGameCounter;
 use SportsPlanning\Resource\ResourceCounter as ResourceCounterManager;
 use stdClass;
 
-class GameAssignments
+final class GameAssignments
 {
     private ResourceCounterManager $counterManager;
 
@@ -186,6 +186,6 @@ class GameAssignments
     protected function getUnequalDescription(UnequalGameCounter $unequal, string $suffix): string
     {
         $retVal = "too much difference(" . $unequal->getDifference() . ") in number of games for " . $suffix;
-        return $retVal . '(' . $unequal . ')';
+        return $retVal . '(' .(string)$unequal . ')';
     }
 }

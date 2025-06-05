@@ -17,7 +17,7 @@ use SportsPlanning\Place;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\TimeoutConfig;
 
-class Service
+final class Service
 {
     protected int $nrOfPlaces;
     private Replacer $replacer;

@@ -8,7 +8,7 @@ use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Place;
 
-class Replace
+final class Replace
 {
     public function __construct(
         protected SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch,

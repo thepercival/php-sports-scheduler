@@ -25,7 +25,7 @@ use SportsScheduler\Resource\Service\ResourceServiceHelper;
 use SportsScheduler\Resource\Service\PlanningCounters;
 use SportsScheduler\Resource\Service\RefereeService;
 
-class ResourceService
+final class ResourceService
 {
     private DateTimeImmutable|null $timeoutDateTime = null;
     private Predicter $refereePlacePredicter;

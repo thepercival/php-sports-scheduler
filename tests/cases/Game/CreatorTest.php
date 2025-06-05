@@ -21,7 +21,7 @@ use SportsScheduler\Game\PlannableGameCreator;
 use SportsScheduler\Schedules\CycleCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class CreatorTest extends TestCase
+final class CreatorTest extends TestCase
 {
     use PlanningCreator;
 

@@ -20,7 +20,7 @@ use SportsPlanning\Planning;
 use SportsScheduler\Schedules\CycleCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class AgainstValidatorTest extends TestCase
+final class AgainstValidatorTest extends TestCase
 {
     use PlanningCreator;
 

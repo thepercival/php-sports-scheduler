@@ -9,7 +9,7 @@ use SportsPlanning\Schedules\CycleParts\ScheduleCyclePartAgainstOneVsTwo;
 use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstOneVsTwo;
 use SportsPlanning\Schedules\Sports\ScheduleAgainstOneVsTwo;
 
-class CycleCreatorAgainstOneVsTwo extends CycleCreatorAgainstAbstract
+final class CycleCreatorAgainstOneVsTwo extends CycleCreatorAgainstAbstract
 {
     public function __construct(LoggerInterface $logger)
     {

@@ -11,7 +11,7 @@ use SportsHelpers\Sports\AgainstTwoVsTwo;
 use SportsScheduler\Iterators\SportsIterators\AgainstSportIterator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class AgainstSportIteratorTest extends TestCase
+final class AgainstSportIteratorTest extends TestCase
 {
     use PlanningCreator;
 

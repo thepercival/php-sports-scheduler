@@ -13,7 +13,7 @@ use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 /**
  * @implements \Iterator<string, SportWithNrOfFieldsAndNrOfCycles|null>
  */
-class AgainstSportIterator implements \Iterator
+final class AgainstSportIterator implements \Iterator
 {
     protected SportRange $sidePlacesRange;
 
@@ -63,16 +63,19 @@ class AgainstSportIterator implements \Iterator
         $this->nrOfCycles = $this->nrOfCyclesRange->getMin();
     }
 
+    #[\Override]
     public function current(): SportWithNrOfFieldsAndNrOfCycles|null
     {
         return $this->current;
     }
 
+    #[\Override]
     public function key(): string
     {
         throw new \Exception('has no key');
     }
 
+    #[\Override]
     public function next(): void
     {
         if ($this->current === null) {
@@ -85,12 +88,14 @@ class AgainstSportIterator implements \Iterator
         $this->current = $this->createSport();
     }
 
+    #[\Override]
     public function rewind(): void
     {
         $this->rewindNrOfHomePlaces();
         $this->current = $this->createSport();
     }
 
+    #[\Override]
     public function valid(): bool
     {
         return $this->current !== null;

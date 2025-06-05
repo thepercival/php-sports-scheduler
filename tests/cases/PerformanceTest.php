@@ -15,7 +15,7 @@ use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Planning\PlanningValidator as PlanningValidator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class PerformanceTest extends TestCase
+final class PerformanceTest extends TestCase
 {
     use PlanningCreator;
 

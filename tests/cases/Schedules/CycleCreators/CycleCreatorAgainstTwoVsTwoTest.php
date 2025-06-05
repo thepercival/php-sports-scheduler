@@ -13,7 +13,7 @@ use SportsScheduler\Schedules\CycleCreators\CycleCreatorAgainstTwoVsTwo;
 use SportsScheduler\TestHelper\PlanningCreator;
 use SportsScheduler\TestHelper\ScheduleHelper;
 
-class CycleCreatorAgainstTwoVsTwoTest extends TestCase
+final class CycleCreatorAgainstTwoVsTwoTest extends TestCase
 {
     use PlanningCreator;
     use ScheduleHelper;
@@ -50,21 +50,21 @@ class CycleCreatorAgainstTwoVsTwoTest extends TestCase
 
     public function test4NPlus2NrOfGames(): void
     {
-        $this->hasValidNrOfGames(6, 1, (int)((6+1) * floor(6 / 4)));
-        $this->hasValidNrOfGames(10, 1, (int)((10+1) * floor(10 / 4)));
-        $this->hasValidNrOfGames(14, 1, (int)((14+1) * floor(14 / 4)));
-        $this->hasValidNrOfGames(18, 1, (int)((18+1) * floor(18 / 4)));
-        $this->hasValidNrOfGames(22, 1, (int)((22+1) * floor(22 / 4)));
-        $this->hasValidNrOfGames(26, 1, (int)((26+1) * floor(26 / 4)));
+        $this->hasValidNrOfGames(6, 1, (int)((6+1) * (int)floor(6 / 4)));
+        $this->hasValidNrOfGames(10, 1, (int)((10+1) * (int)floor(10 / 4)));
+        $this->hasValidNrOfGames(14, 1, (int)((14+1) * (int)floor(14 / 4)));
+        $this->hasValidNrOfGames(18, 1, (int)((18+1) * (int)floor(18 / 4)));
+        $this->hasValidNrOfGames(22, 1, (int)((22+1) * (int)floor(22 / 4)));
+        $this->hasValidNrOfGames(26, 1, (int)((26+1) * (int)floor(26 / 4)));
     }
 
     public function test4NPlus3NrOfGames(): void
     {
-        $this->hasValidNrOfGames(7, 1, (int)((7) * floor(7 / 4)));
-        $this->hasValidNrOfGames(11, 1, (int)((11) * floor(11 / 4)));
-        $this->hasValidNrOfGames(15, 1, (int)((15) * floor(15 / 4)));
-        $this->hasValidNrOfGames(19, 1, (int)((19) * floor(19 / 4)));
-        $this->hasValidNrOfGames(23, 1, (int)((23) * floor(23 / 4)));
+        $this->hasValidNrOfGames(7, 1, (int)((7) * (int)floor(7 / 4)));
+        $this->hasValidNrOfGames(11, 1, (int)((11) * (int)floor(11 / 4)));
+        $this->hasValidNrOfGames(15, 1, (int)((15) * (int)floor(15 / 4)));
+        $this->hasValidNrOfGames(19, 1, (int)((19) * (int)floor(19 / 4)));
+        $this->hasValidNrOfGames(23, 1, (int)((23) * (int)floor(23 / 4)));
     }
 
     public function hasValidNrOfGames(int $nrOfPlaces, int $nrOfCycles, int $expectedNrOfGames): void

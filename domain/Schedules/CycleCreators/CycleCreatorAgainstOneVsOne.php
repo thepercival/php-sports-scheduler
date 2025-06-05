@@ -14,7 +14,7 @@ use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstOneVsTwo;
 use SportsPlanning\Schedules\Games\ScheduleGameAgainstOneVsOne;
 use SportsPlanning\Schedules\Sports\ScheduleAgainstOneVsOne;
 
-class CycleCreatorAgainstOneVsOne extends CycleCreatorAgainstAbstract
+final class CycleCreatorAgainstOneVsOne extends CycleCreatorAgainstAbstract
 {
     public function __construct(LoggerInterface $logger)
     {
@@ -74,7 +74,12 @@ class CycleCreatorAgainstOneVsOne extends CycleCreatorAgainstAbstract
         {
             $seatsNrs = (new SportRange(0, $nrOfPlaces - 1))->toArray();
             while (count($seatsNrs) > 1 ) {
-                $homeAways[] = new OneVsOneHomeAway( array_shift($seatsNrs), array_pop($seatsNrs));
+                $homeSeatNr = array_shift($seatsNrs);
+                $awaySeatNr = array_pop($seatsNrs);
+                if( $awaySeatNr === null ) {
+                    throw new \Exception('unknown awayseatnr');
+                }
+                $homeAways[] = new OneVsOneHomeAway($homeSeatNr, $awaySeatNr);
             }
         }
 
@@ -86,6 +91,9 @@ class CycleCreatorAgainstOneVsOne extends CycleCreatorAgainstAbstract
             foreach( $homeAways as $homeAway ) {
                 $homePlaceNr = $placeNrs[$homeAway->getHome()];
                 $awayPlaceNr = $placeNrs[$homeAway->getAway()];
+                if($homePlaceNr === null || $awayPlaceNr === null) {
+                    throw new \Exception('unknown eatnr');
+                }
                 if( $this->shouldSwap($homePlaceNr,$awayPlaceNr)) {
                     $homeAway = new OneVsOneHomeAway( $awayPlaceNr, $homePlaceNr);
                 } else {
@@ -145,7 +153,12 @@ class CycleCreatorAgainstOneVsOne extends CycleCreatorAgainstAbstract
         $homeAwaySeats = [];
         {
             while (count($seatsNrs) > 1 ) {
-                $homeAwaySeats[] = new OneVsOneHomeAway( array_shift($seatsNrs), array_pop($seatsNrs));
+                $homeSeatNr = array_shift($seatsNrs);
+                $awaySeatNr = array_pop($seatsNrs);
+                if($awaySeatNr === null) {
+                    throw new \Exception('unknown awayseatnr');
+                }
+                $homeAwaySeats[] = new OneVsOneHomeAway($homeSeatNr, $awaySeatNr);
             }
         }
 
@@ -158,6 +171,9 @@ class CycleCreatorAgainstOneVsOne extends CycleCreatorAgainstAbstract
             foreach( $homeAwaySeats as $homeAwaySeat ) {
                 $homePlaceNr = $placeNrs[$homeAwaySeat->getHome()];
                 $awayPlaceNr = $placeNrs[$homeAwaySeat->getAway()];
+                if($homePlaceNr === null || $awayPlaceNr === null) {
+                    throw new \Exception('unknown placeNr');
+                }
                 if( $this->shouldSwap($homePlaceNr,$awayPlaceNr)) {
                     $homeAway = new OneVsOneHomeAway( $awayPlaceNr, $homePlaceNr);
                 } else {

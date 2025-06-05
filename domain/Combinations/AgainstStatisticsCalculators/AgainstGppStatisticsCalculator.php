@@ -15,7 +15,7 @@ use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
 use SportsHelpers\Sport\Variant\WithNrOfPlaces\Against\GamesPerPlace as AgainstGppWithNrOfPlaces;
 
-class AgainstGppStatisticsCalculator extends StatisticsCalculatorAbstract
+final class AgainstGppStatisticsCalculator extends StatisticsCalculatorAbstract
 {
 //    protected bool $checkOnWith;
 //

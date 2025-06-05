@@ -22,7 +22,7 @@ use SportsPlanning\Planning;
 use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentsValidator;
 use SportsPlanning\Poule;
 
-class PlanningValidator
+final class PlanningValidator
 {
     public function __construct()
     {

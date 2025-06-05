@@ -17,7 +17,7 @@ use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Resource\RefereePlace\Predicter;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class PredicterTest extends TestCase
+final class PredicterTest extends TestCase
 {
     use PlanningCreator;
 //    use PlanningReplacer;

@@ -12,7 +12,7 @@ use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
 use SportsPlanning\Planning;
 
-class TogetherValidator extends ValidatorAbstract
+final class TogetherValidator extends ValidatorAbstract
 {
     protected WithNrCounterMap $withNrCounterMap;
 

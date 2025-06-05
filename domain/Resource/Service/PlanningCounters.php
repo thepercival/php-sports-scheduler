@@ -14,7 +14,7 @@ use SportsPlanning\Sports\SportsWithNrAndFields\AgainstTwoVsTwoWithNrAndFields;
 use SportsPlanning\Sports\SportsWithNrAndFields\TogetherSportWithNrAndFields;
 use SportsPlanning\Sports\SportWithNrOfFields;
 
-class PlanningCounters
+final class PlanningCounters
 {
     protected int $nrOfGames = 0;
     /**

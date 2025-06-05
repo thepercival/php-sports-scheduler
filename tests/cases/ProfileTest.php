@@ -19,7 +19,7 @@ use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator as GppH
 use SportsScheduler\TestHelper\PlanningCreator;
 
 // cachegrind output default to /tmp
-class ProfileTest extends TestCase
+final class ProfileTest extends TestCase
 {
     use PlanningCreator;
 

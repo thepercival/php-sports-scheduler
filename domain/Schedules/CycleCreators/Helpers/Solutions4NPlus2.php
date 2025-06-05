@@ -6,7 +6,7 @@ use SportsHelpers\Against\AgainstSide;
 use SportsPlanning\Combinations\DuoPlaceNr;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
 
-class Solutions4NPlus2
+final class Solutions4NPlus2
 {
     /**
      * @var array<int, array<int, list<array<string, list<int>>>>> $map

@@ -6,7 +6,7 @@ namespace SportsScheduler;
 
 use SportsHelpers\PlaceRanges as PlaceRangesBase;
 
-readonly class PlaceRanges extends PlaceRangesBase
+final readonly class PlaceRanges extends PlaceRangesBase
 {
     public const int MaxNrOfPlacesPerPouleSmall = 20;
     public const int MaxNrOfPlacesPerPouleLarge = 12;

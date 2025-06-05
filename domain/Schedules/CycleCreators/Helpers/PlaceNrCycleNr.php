@@ -2,7 +2,7 @@
 
 namespace SportsScheduler\Schedules\CycleCreators\Helpers;
 
-class PlaceNrCycleNr
+final class PlaceNrCycleNr
 {
     public function __construct(
         public int $placeNr,

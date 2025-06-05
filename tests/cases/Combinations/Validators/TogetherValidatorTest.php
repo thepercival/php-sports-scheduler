@@ -18,7 +18,7 @@ use SportsScheduler\Schedules\CycleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class TogetherValidatorTest extends TestCase
+final class TogetherValidatorTest extends TestCase
 {
     use PlanningCreator;
 

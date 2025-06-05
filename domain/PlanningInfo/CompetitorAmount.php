@@ -6,7 +6,7 @@ namespace SportsScheduler\PlanningInfo;
 
 use SportsHelpers\SportRange;
 
-class CompetitorAmount
+final class CompetitorAmount
 {
     private SportRange $nrOfGames;
     private SportRange $nrOfMinutes;

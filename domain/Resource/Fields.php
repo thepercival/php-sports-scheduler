@@ -15,7 +15,7 @@ use SportsPlanning\Sports\SportsWithNrAndFields\AgainstOneVsTwoWithNrAndFields;
 use SportsPlanning\Sports\SportsWithNrAndFields\AgainstTwoVsTwoWithNrAndFields;
 use SportsPlanning\Sports\SportsWithNrAndFields\TogetherSportWithNrAndFields;
 
-class Fields
+final class Fields
 {
     /**
      * @var list<Field>

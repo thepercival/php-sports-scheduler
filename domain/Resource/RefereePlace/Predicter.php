@@ -10,7 +10,7 @@ use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Counters\GamePlacesCounterForPoule;
 use SportsPlanning\Poule;
 
-class Predicter
+final class Predicter
 {
     private const int SAME_POULE_MAX_DELTA = 1;
 
@@ -140,13 +140,12 @@ class Predicter
             /** @var int|null $minNrOfForcedRefereePlaces */
             $minNrOfForcedRefereePlaces = null;
 
-            $avgNrOfGamesForRefereePlace = 0;
+            $avgNrOfGamesForRefereePlace = 0.0;
             if (array_key_exists($poule->pouleNr, $totalPouleCounters)) {
-                $avgNrOfGamesForRefereePlace = $totalPouleCounters[$poule->pouleNr]->getNrOfGames(
-                    ) / count($poule->places);
+                $avgNrOfGamesForRefereePlace = (float)($totalPouleCounters[$poule->pouleNr]->getNrOfGames() / count($poule->places));
             }
 
-            $pouleMax = $avgNrOfGamesForRefereePlace + self::SAME_POULE_MAX_DELTA;
+            $pouleMax = $avgNrOfGamesForRefereePlace + (float)self::SAME_POULE_MAX_DELTA;
             // $pouleMin = $avgNrOfGamesForRefereePlace - self::SAME_POULE_MAX_DELTA;
 
             // naast de forced referee assignments heb je ook dat places niet beschikbaar zijn, omdat ze zelf moeten

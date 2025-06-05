@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SportsPlanning\Referee;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class RefereeTest extends TestCase
+final class RefereeTest extends TestCase
 {
     use PlanningCreator;
 

@@ -19,7 +19,7 @@ use SportsPlanning\Schedules\Cycles\ScheduleCycleAgainstTwoVsTwo;
 use SportsPlanning\Schedules\Cycles\ScheduleCycleTogether;
 use SportsPlanning\Schedules\Games\ScheduleGameAgainstOneVsOne;
 
-class PlannableGameCreator
+final class PlannableGameCreator
 {
     public function __construct(protected LoggerInterface $logger)
     {

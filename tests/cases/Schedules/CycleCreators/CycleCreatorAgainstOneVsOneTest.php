@@ -13,7 +13,7 @@ use SportsScheduler\Schedules\CycleCreators\CycleCreatorAgainstOneVsOne;
 use SportsScheduler\TestHelper\PlanningCreator;
 use SportsScheduler\TestHelper\ScheduleHelper;
 
-class CycleCreatorAgainstOneVsOneTest extends TestCase
+final class CycleCreatorAgainstOneVsOneTest extends TestCase
 {
     use PlanningCreator;
     use ScheduleHelper;

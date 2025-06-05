@@ -18,7 +18,7 @@ use SportsPlanning\Planning;
 use SportsPlanning\PlanningPouleStructure;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 
-class ResourceServiceHelper
+final class ResourceServiceHelper
 {
     protected int $totalNrOfGames;
     public readonly PlanningPouleStructure $planningPouleStructure;

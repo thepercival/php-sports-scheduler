@@ -14,7 +14,7 @@ use SportsPlanning\HomeAways\OneVsTwoHomeAway;
 use SportsPlanning\HomeAways\TwoVsTwoHomeAway;
 use SportsPlanning\Output\Combinations\HomeAwayOutput;
 
-class HomeAwayBalancer
+final class HomeAwayBalancer
 {
     public function __construct(private LoggerInterface $logger)
     {

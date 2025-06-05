@@ -15,7 +15,7 @@ use SportsPlanning\Game\TogetherGamePlace;
 use SportsPlanning\Planning;
 use SportsScheduler\Resource\Service\SportWithNrOfPlacesCreator;
 
-class PreAssignSorter
+final class PreAssignSorter
 {
     /**
      * @var array<int, array<int, int|float>>
@@ -151,7 +151,7 @@ class PreAssignSorter
             return $priority;
         }
         $multiplier = $this->muliplierMap[$game->getField()->sportNr][$game->poule->pouleNr];
-        return (int)($multiplier * $priority);
+        return (int)((int)$multiplier * $priority);
     }
 
     protected function getDefaultPriority(TogetherGame|AgainstGame $game): int

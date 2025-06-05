@@ -17,7 +17,7 @@ use SportsScheduler\Schedules\CycleCreators\Helpers\Solutions4N;
 use SportsScheduler\Schedules\CycleCreators\Helpers\Solutions4NPlus2;
 use SportsScheduler\Schedules\CycleCreators\Helpers\Solutions4NPlus3;
 
-class CycleCreatorAgainstTwoVsTwo extends CycleCreatorAgainstAbstract
+final class CycleCreatorAgainstTwoVsTwo extends CycleCreatorAgainstAbstract
 {
 //    protected int $highestGameRoundNumberCompleted = 0;
 //    protected int $nrOfGamesPerGameRound = 0;

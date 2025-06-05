@@ -26,7 +26,7 @@ use SportsScheduler\Resource\RefereePlace\Service as RefereePlaceService;
 use SportsScheduler\TestHelper\PlanningCreator;
 use SportsScheduler\TestHelper\PlanningReplacer;
 
-class PlanningValidatorTest extends TestCase
+final class PlanningValidatorTest extends TestCase
 {
     use PlanningCreator;
     use PlanningReplacer;

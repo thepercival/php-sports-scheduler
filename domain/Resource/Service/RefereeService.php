@@ -7,7 +7,7 @@ namespace SportsScheduler\Resource\Service;
 use SportsPlanning\Batches\Batch;
 use SportsPlanning\Referee;
 
-class RefereeService
+final class RefereeService
 {
     /**
      * @param list<Referee> $referees

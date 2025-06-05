@@ -10,7 +10,7 @@ use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 /**
  * @implements \Iterator<string, SportWithNrOfFieldsAndNrOfCycles|null>
  */
-class SportIterator implements \Iterator
+final class SportIterator implements \Iterator
 {
     protected AgainstSportIterator|null $againstSportIterator;
     protected TogetherSportIterator $togetherSportIterator;
@@ -40,16 +40,19 @@ class SportIterator implements \Iterator
         );
     }
 
+    #[\Override]
     public function current(): SportWithNrOfFieldsAndNrOfCycles|null
     {
         return $this->current;
     }
 
+    #[\Override]
     public function key(): string
     {
         throw new \Exception('Not implemented');
     }
 
+    #[\Override]
     public function next(): void
     {
         if ($this->current === null) {
@@ -66,12 +69,14 @@ class SportIterator implements \Iterator
         }
     }
 
+    #[\Override]
     public function rewind(): void
     {
         $this->rewindAgainst();
         $this->current = $this->togetherSportIterator->current();
     }
 
+    #[\Override]
     public function valid(): bool
     {
         return $this->current !== null;

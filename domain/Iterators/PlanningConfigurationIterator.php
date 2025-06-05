@@ -25,7 +25,7 @@ use SportsScheduler\Iterators\SportsIterators\TogetherSportIterator;
  * @template TValue
  * @implements \Iterator<TKey, TValue>
  */
-class PlanningConfigurationIterator implements \Iterator
+final class PlanningConfigurationIterator implements \Iterator
 {
     protected BalancedPouleStructureIterator $structureIterator;
     protected SportIterator $sportIterator;
@@ -79,20 +79,23 @@ class PlanningConfigurationIterator implements \Iterator
         $this->selfReferee = SelfReferee::Disabled;
     }
 
+    #[\Override]
     public function current(): ?PlanningConfiguration
     {
         return $this->current;
     }
 
+    #[\Override]
     public function key(): string
     {
         $planningInputOutput = new PlanningOutput();
         if ($this->current === null) {
             return 'no current value';
         }
-        return $planningInputOutput->getInputConfigurationAsString($this->current);
+        return $planningInputOutput->getConfigurationAsString($this->current);
     }
 
+    #[\Override]
     public function next(): void
     {
         if ($this->current === null) {
@@ -139,6 +142,7 @@ class PlanningConfigurationIterator implements \Iterator
 //        }
     }
 
+    #[\Override]
     public function rewind(): void
     {
         $this->rewindStructure();
@@ -151,6 +155,7 @@ class PlanningConfigurationIterator implements \Iterator
         $this->current = $this->createPlanningConfiguration($pouleStructure, $sportWithNrOfFieldsAndNrOfCycles);
     }
 
+    #[\Override]
     public function valid(): bool
     {
         return $this->current !== null;

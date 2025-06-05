@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SportsHelpers\SportRange;
 use SportsScheduler\Combinations\DuoPlaceNrIterator;
 
-class DuoPlaceNrIteratorTest extends TestCase
+final class DuoPlaceNrIteratorTest extends TestCase
 {
     public function testNrOfPlacesIs2(): void
     {

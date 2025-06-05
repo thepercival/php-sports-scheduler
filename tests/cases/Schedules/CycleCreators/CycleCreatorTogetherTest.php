@@ -20,7 +20,7 @@ use SportsScheduler\TestHelper\LoggerCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 use SportsScheduler\TestHelper\ScheduleHelper;
 
-class CycleCreatorTogetherTest extends TestCase
+final class CycleCreatorTogetherTest extends TestCase
 {
     use LoggerCreator;
     use PlanningCreator;

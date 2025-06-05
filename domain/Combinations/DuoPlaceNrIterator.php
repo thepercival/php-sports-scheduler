@@ -13,7 +13,7 @@ use SportsPlanning\Poule;
 /**
  * @implements Iterator<string, DuoPlaceNr|null>
  */
-class DuoPlaceNrIterator implements Iterator
+final class DuoPlaceNrIterator implements Iterator
 {
     protected PlaceNrIterator $currentHomePlaceNrIterator;
     protected PlaceNrIterator $currentAwayPlaceNrIterator;
@@ -38,6 +38,7 @@ class DuoPlaceNrIterator implements Iterator
         $this->rewind();
     }
 
+    #[\Override]
     public function current(): DuoPlaceNr|null
     {
         $homePlaceNr = $this->currentHomePlaceNrIterator->current();
@@ -52,6 +53,7 @@ class DuoPlaceNrIterator implements Iterator
         return new DuoPlaceNr($homePlaceNr, $awayPlaceNr);
     }
 
+    #[\Override]
     public function next(): void
     {
         $homePlaceNr = $this->currentHomePlaceNrIterator->current();
@@ -81,17 +83,20 @@ class DuoPlaceNrIterator implements Iterator
         }
     }
 
+    #[\Override]
     public function key(): string
     {
         $current = $this->current();
         return $current !== null ? (string)$current : '';
     }
 
+    #[\Override]
     public function valid(): bool
     {
         return $this->current() !== null;
     }
 
+    #[\Override]
     public function rewind(): void
     {
         $this->currentHomePlaceNrIterator->rewind();

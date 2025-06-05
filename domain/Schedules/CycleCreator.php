@@ -24,7 +24,7 @@ use SportsScheduler\Schedules\CycleCreators\CycleCreatorTogether;
 
 // use SportsPlanning\Counters\AssignedCounter;
 
-class CycleCreator
+final class CycleCreator
 {
     public const int MaxNrOfSports = 12;
     public const int MaxNrOfGames = 496;

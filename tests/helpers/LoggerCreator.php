@@ -4,6 +4,7 @@ namespace SportsScheduler\TestHelper;
 
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
+use Monolog\Level;
 use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use Psr\Log\LoggerInterface;
@@ -21,7 +22,7 @@ trait LoggerCreator
         $formatter = new LineFormatter($output);
 
         // Set the formatter to the handler
-        $stream = new StreamHandler('php://stdout', Logger::INFO);
+        $stream = new StreamHandler('php://stdout', Level::Info);
         $stream->setFormatter($formatter);
 
         $logger->pushHandler($stream);

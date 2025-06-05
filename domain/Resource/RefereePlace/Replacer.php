@@ -15,7 +15,7 @@ use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentValidato
 use SportsPlanning\Resource\GameCounter;
 use SportsScheduler\Resource\GameCounter\Unequal as UnequalResource;
 
-class Replacer
+final class Replacer
 {
     protected DateTimeImmutable|null $timeoutDateTime = null;
     /**

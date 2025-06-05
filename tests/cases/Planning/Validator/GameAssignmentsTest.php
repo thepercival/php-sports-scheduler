@@ -24,7 +24,7 @@ use SportsPlanning\Resource\ResourceCounter;
 use SportsScheduler\TestHelper\PlanningCreator;
 use SportsScheduler\TestHelper\PlanningReplacer;
 
-class GameAssignmentsTest extends TestCase
+final class GameAssignmentsTest extends TestCase
 {
     use PlanningCreator;
     use PlanningReplacer;

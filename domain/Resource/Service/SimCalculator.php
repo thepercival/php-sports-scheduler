@@ -12,7 +12,7 @@ use SportsPlanning\Sports\SportWithNrOfPlaces\AgainstTwoVsTwoWithNrOfPlaces;
 use SportsPlanning\Sports\SportWithNrOfPlaces\TogetherSportWithNrOfPlaces;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 
-class SimCalculator
+final class SimCalculator
 {
 //    private PlanningRefereeInfo $refereeInfo;
     //private PouleStructure $pouleStructure;

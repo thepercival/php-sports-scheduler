@@ -9,7 +9,6 @@ use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsPlanning\Game\AgainstGame;
-use SportsPlanning\Input;
 use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
@@ -17,7 +16,7 @@ use SportsScheduler\Resource\Fields;
 use SportsScheduler\TestHelper\PlanningCreator;
 // use SportsScheduler\TestHelper\PlanningReplacer;
 
-class FieldsTest extends TestCase
+final class FieldsTest extends TestCase
 {
     use PlanningCreator;
     // use PlanningReplacer;

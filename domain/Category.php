@@ -2,7 +2,7 @@
 
 use Doctrine\Common\Collections\Collection;
 use SportsHelpers\Identifiable;
-use SportsPlanning\Input;
+use SportsPlanning\PlanningOrchestration;
 use SportsPlanning\Poule;
 
 /*class Category extends Identifiable

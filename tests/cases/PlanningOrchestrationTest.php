@@ -16,7 +16,7 @@ use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class PlanningOrchestrationTest extends TestCase
+final class PlanningOrchestrationTest extends TestCase
 {
     use PlanningCreator;
 

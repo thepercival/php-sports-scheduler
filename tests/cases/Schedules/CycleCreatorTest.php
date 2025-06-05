@@ -14,7 +14,7 @@ use SportsPlanning\Sports\SportWithNrOfCycles;
 use SportsScheduler\Schedules\CycleCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class CycleCreatorTest extends TestCase
+final class CycleCreatorTest extends TestCase
 {
     use PlanningCreator;
 
