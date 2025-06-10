@@ -6,13 +6,13 @@ namespace SportsScheduler\Tests\Resource\RefereePlace;
 
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\PouleStructures\PouleStructure;
+use SportsHelpers\RefereeInfo;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\PlanningConfiguration;
-use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Resource\RefereePlace\Predicter;
 use SportsScheduler\TestHelper\PlanningCreator;
@@ -24,11 +24,11 @@ final class PredicterTest extends TestCase
 
     public function testSamePouleEnoughRefereePlaces(): void
     {
-        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
         $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
         $planning = $this->createPlanning(
             new PlanningConfiguration(
-                new PouleStructure(3),
+                new PouleStructure([3]),
                 $sportWithNrOfFieldsAndNrOfCycles,
                 $refereeInfo,
                 false
@@ -46,12 +46,12 @@ final class PredicterTest extends TestCase
 
     public function testSamePouleNotEnoughRefereePlaces(): void
     {
-        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
         self::expectException(\Exception::class);
         $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
         $this->createPlanning(
             new PlanningConfiguration(
-                new PouleStructure(2),
+                new PouleStructure([2]),
                 $sportWithNrOfFieldsAndNrOfCycles,
                 $refereeInfo,
                 false
@@ -61,11 +61,11 @@ final class PredicterTest extends TestCase
 
     public function testOtherPoulesEnoughRefereePlaces(): void
     {
-        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules));
+        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules));
         $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
         $planning = $this->createPlanning(
             new PlanningConfiguration(
-                new PouleStructure(3, 3),
+                new PouleStructure([3, 3]),
                 $sportWithNrOfFieldsAndNrOfCycles,
                 $refereeInfo,
                 false
@@ -84,11 +84,11 @@ final class PredicterTest extends TestCase
 
     public function testOtherPoulesEnoughRefereePlacesWithMultipleSimRefs(): void
     {
-        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules, 2));
+        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules, 2));
         $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
         $planning = $this->createPlanning(
             new PlanningConfiguration(
-                new PouleStructure(5, 4),
+                new PouleStructure([5, 4]),
                 $sportWithNrOfFieldsAndNrOfCycles,
                 $refereeInfo,
                 false

@@ -4,19 +4,18 @@ namespace SportsScheduler\Resource\Service;
 
 use Psr\Log\LoggerInterface;
 use SportsHelpers\PouleStructures\PouleStructure;
+use SportsHelpers\RefereeInfo;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsPlanning\Batches\Batch;
 use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
-use SportsPlanning\Exceptions\NoBestPlanningException;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Place;
 use SportsPlanning\Planning\BatchGamesType;
 use SportsPlanning\Planning;
 use SportsPlanning\PlanningPouleStructure;
-use SportsPlanning\Referee\PlanningRefereeInfo;
 
 final class ResourceServiceHelper
 {
@@ -170,7 +169,7 @@ final class ResourceServiceHelper
                 $nrOfPlaces = count($uniquePlacesCounter->getPoule()->places);
 
                 $maxNrOfBatchGames = (new SimCalculator())->calculateMaxSimNrOfSportGames(
-                    new PouleStructure($nrOfPlaces),
+                    new PouleStructure([$nrOfPlaces]),
                     $countersForSport->sportWithNrOfFields,
                     $this->planningPouleStructure->refereeInfo);
 
@@ -179,11 +178,10 @@ final class ResourceServiceHelper
                     return true;
                 }
 
-                $selfRefereeInfo = new SelfRefereeInfo(SelfReferee::Disabled);
                 $maxNrOfBatchGames = (new SimCalculator())->calculateMaxSimNrOfSportGames(
-                    new PouleStructure($uniquePlacesCounter->getNrOfDistinctPlacesAssigned()),
+                    new PouleStructure([$uniquePlacesCounter->getNrOfDistinctPlacesAssigned()]),
                     $countersForSport->sportWithNrOfFields,
-                    new PlanningRefereeInfo($selfRefereeInfo)
+                    null
                 );
                 $nrOfBatchesNeeded = (int)ceil($uniquePlacesCounter->getNrOfGames() / $maxNrOfBatchGames);
                 if ($nrOfBatchesNeeded > $maxNrOfBatchesToGo) {

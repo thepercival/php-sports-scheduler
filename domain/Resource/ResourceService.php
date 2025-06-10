@@ -10,7 +10,6 @@ use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
-use SportsPlanning\Input;
 use SportsPlanning\Output\BatchOutput;
 use SportsPlanning\Output\GameOutput;
 use SportsPlanning\Output\PlanningOutput;
@@ -71,7 +70,7 @@ final class ResourceService
         $timeoutSeconds = $this->timeoutConfig->getTimeoutSeconds($configuration, $nextTimeoutState);
         $this->timeoutDateTime = $oCurrentDateTime->add(new \DateInterval('PT' . $timeoutSeconds . 'S'));
         $batch = new Batch();
-        $selfReferee = $configuration->refereeInfo->selfRefereeInfo->selfReferee;
+        $selfReferee = $configuration->refereeInfo?->selfRefereeInfo?->selfReferee;
 
         if ($selfReferee === SelfReferee::SamePoule) {
             $batch = new SelfRefereeBatchSamePoule($batch);
@@ -531,7 +530,7 @@ final class ResourceService
 
         if ($batch instanceof SelfRefereeBatchSamePoule
             || $batch instanceof SelfRefereeBatchOtherPoules) {
-            $selfReferee = $this->planning->getConfiguration()->refereeInfo->selfRefereeInfo->selfReferee;
+            $selfReferee = $this->planning->getConfiguration()->refereeInfo?->selfRefereeInfo->selfReferee;
             return $this->refereePlacePredicter->canStillAssign($batch, $selfReferee);
         }
         return true;

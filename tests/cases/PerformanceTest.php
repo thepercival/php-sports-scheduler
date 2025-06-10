@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace SportsScheduler\Tests;
 
 use PHPUnit\Framework\TestCase;
+use SportsHelpers\PouleStructures\PouleStructure;
+use SportsHelpers\RefereeInfo;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsPlanning\Planning\PlanningValidity;
+use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Planning\PlanningValidator as PlanningValidator;
@@ -24,15 +27,17 @@ final class PerformanceTest extends TestCase
     {
         $time_start = microtime(true);
         $nrOfGamesPerBatchRange = new SportRange(4, 4);
+
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
-        $config = $this->createConfiguration(
-            [5, 4, 4, 4, 4, 4],
+        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([5, 4, 4, 4, 4, 4]),
             $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
-        );
-        $planning = $this->createPlanning($config,$nrOfGamesPerBatchRange);
+            $refereeInfo,
+            false);
+        $planning = $this->createPlanning($configuration,$nrOfGamesPerBatchRange);
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -50,15 +55,17 @@ final class PerformanceTest extends TestCase
     {
         // $time_start = microtime(true);
         $nrOfGamesPerBatchRange = new SportRange(7, 7);
+
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 9, 1)
         ];
-        $config = $this->createConfiguration(
-            [7, 7, 7, 7],
+        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([7, 7, 7, 7]),
             $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
-        );
-        $planning = $this->createPlanning($config,$nrOfGamesPerBatchRange);
+            $refereeInfo,
+            false);
+        $planning = $this->createPlanning($configuration,$nrOfGamesPerBatchRange);
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -81,15 +88,17 @@ final class PerformanceTest extends TestCase
     {
         $time_start = microtime(true);
         $nrOfGamesPerBatchRange = new SportRange(8, 8);
+
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 9, 1)
         ];
-        $config = $this->createConfiguration(
-            [7, 7, 7, 7],
+        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([7, 7, 7, 7]),
             $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
-        );
-        $planning = $this->createPlanning($config,$nrOfGamesPerBatchRange,4);
+            $refereeInfo,
+            false);
+        $planning = $this->createPlanning($configuration,$nrOfGamesPerBatchRange,4);
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -113,15 +122,17 @@ final class PerformanceTest extends TestCase
         // $time_start = microtime(true);
 
         $nrOfGamesPerBatchRange = new SportRange(4, 4);
+
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 4, 1)
         ];
-        $config = $this->createConfiguration(
-            [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]),
             $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo()
-        );
-        $planning = $this->createPlanning($config,$nrOfGamesPerBatchRange);
+            null,
+            false);
+        $planning = $this->createPlanning($configuration,$nrOfGamesPerBatchRange);
 //        self::assertEquals(
 //            '[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] - [against(1vs1) h2h:gpp=>1:0 f(4)] - ref=>0:',
 //            $input->createConfiguration()->getName()

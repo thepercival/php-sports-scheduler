@@ -49,7 +49,7 @@ final class PlanningValidator
         if ($onlyUnassigned) {
             return $validity;
         }
-        $validity = $this->validateResourcesCorrectlyAssigned($planning);
+        $validity = $this->validateRefereesCorrectlyAssigned($planning);
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
@@ -141,7 +141,7 @@ final class PlanningValidator
     protected function validateRefereesWithSelf(Planning $planning): int
     {
         $refereeInfo = $planning->getConfiguration()->refereeInfo;
-        if ($refereeInfo->selfRefereeInfo->selfReferee !== SelfReferee::Disabled && count($planning->referees) > 0) {
+        if ($refereeInfo?->selfRefereeInfo !== null && count($planning->referees) > 0) {
             return PlanningValidity::INVALID_REFEREESELF_AND_REFEREES;
         }
         return PlanningValidity::VALID;
@@ -228,10 +228,10 @@ final class PlanningValidator
         return PlanningValidity::VALID;
     }
 
-    protected function validateResourcesCorrectlyAssigned(Planning $planning): int
+    protected function validateRefereesCorrectlyAssigned(Planning $planning): int
     {
         foreach ($planning->poules as $poule) {
-            $validity = $this->validateResourcesCorrectlyAssignedHelper($planning, $poule);
+            $validity = $this->validateRefereesCorrectlyAssignedHelper($planning, $poule);
             if ($validity !== PlanningValidity::VALID) {
                 return $validity;
             }
@@ -239,11 +239,15 @@ final class PlanningValidator
         return PlanningValidity::VALID;
     }
 
-    protected function validateResourcesCorrectlyAssignedHelper(Planning $planning, Poule $poule): int
+    protected function validateRefereesCorrectlyAssignedHelper(Planning $planning, Poule $poule): int
     {
-        $selfRefereeInfo = $planning->getConfiguration()->refereeInfo->selfRefereeInfo;
+        $refereeInfo = $planning->getConfiguration()->refereeInfo;
+        if( $refereeInfo === null) {
+            return PlanningValidity::VALID;
+        }
+        $selfRefereeInfo = $refereeInfo->selfRefereeInfo;
         foreach ($poule->getGames() as $game) {
-            if ($selfRefereeInfo->selfReferee !== SelfReferee::Disabled) {
+            if ($selfRefereeInfo !== null) {
                 $refereePlaceUniqueIndex = $game->getRefereePlaceUniqueIndex();
                 if ($refereePlaceUniqueIndex === null) {
                     return PlanningValidity::EMPTY_REFEREEPLACE;

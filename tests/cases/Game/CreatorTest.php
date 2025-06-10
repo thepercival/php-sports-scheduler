@@ -6,6 +6,9 @@ namespace SportsScheduler\Tests\Game;
 
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\PouleStructures\PouleStructure;
+use SportsHelpers\RefereeInfo;
+use SportsHelpers\SelfReferee;
+use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
@@ -13,7 +16,6 @@ use SportsHelpers\Sports\TogetherSport;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\PlanningOrchestration;
-use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Planning;
@@ -27,17 +29,20 @@ final class CreatorTest extends TestCase
 
     public function testGameInstanceAgainst(): void
     {
-        $config = new PlanningConfiguration(
-            new PouleStructure(2),
-            [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 2)],
-            new PlanningRefereeInfo(),
-            false
-        );
+        $sportsWithNrOfFieldsAndNrOfCycles = [
+            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 2)
+        ];
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([2]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false);
+
         $nrOfBatchGamesRange = new SportRange(1,1);
-        $planning = new Planning(new PlanningOrchestration($config), $nrOfBatchGamesRange, 0);
+        $planning = new Planning(new PlanningOrchestration($configuration), $nrOfBatchGamesRange, 0);
 
         $cycleCreator = new CycleCreator($this->createLogger());
-        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($config);
+        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($configuration);
         $gameCreator = new PlannableGameCreator($this->createLogger());
         $gameCreator->createGamesFromCycles($planning, $sportRootCyclesMap);
 
@@ -47,19 +52,21 @@ final class CreatorTest extends TestCase
 
     public function testGameInstanceTogether(): void
     {
-        $config = new PlanningConfiguration(
-            new PouleStructure(2),
-            [
-                new SportWithNrOfFieldsAndNrOfCycles(new TogetherSport(1), 2, 2)
-            ],
-            new PlanningRefereeInfo(),
-            false
-        );
+        $sportsWithNrOfFieldsAndNrOfCycles = [
+            new SportWithNrOfFieldsAndNrOfCycles(new TogetherSport(1), 2, 2)
+        ];
+        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([2]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false);
+
         $nrOfBatchGamesRange = new SportRange(1,1);
-        $planning = new Planning(new PlanningOrchestration($config), $nrOfBatchGamesRange, 0);
+        $planning = new Planning(new PlanningOrchestration($configuration), $nrOfBatchGamesRange, 0);
 
         $cycleCreator = new CycleCreator($this->createLogger());
-        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($config);
+        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($configuration);
         $gameCreator = new PlannableGameCreator($this->createLogger());
         $gameCreator->createGamesFromCycles($planning, $sportRootCyclesMap);
 
@@ -69,20 +76,21 @@ final class CreatorTest extends TestCase
 
     public function testMixedGameModes(): void
     {
-        $config = new PlanningConfiguration(
-            new PouleStructure(4),
-            [
-                new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), 2, 1),
-                new SportWithNrOfFieldsAndNrOfCycles(new TogetherSport(2), 2, 4)
-            ],
-            new PlanningRefereeInfo(),
-            false
-        );
+        $sportsWithNrOfFieldsAndNrOfCycles = [
+            new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), 2, 1),
+            new SportWithNrOfFieldsAndNrOfCycles(new TogetherSport(2), 2, 4)
+        ];
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([4]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false);
+
         $nrOfBatchGamesRange = new SportRange(1,1);
-        $planning = new Planning(new PlanningOrchestration($config), $nrOfBatchGamesRange, 0);
+        $planning = new Planning(new PlanningOrchestration($configuration), $nrOfBatchGamesRange, 0);
 
         $cycleCreator = new CycleCreator($this->createLogger());
-        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($config);
+        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($configuration);
 
         $gameCreator = new PlannableGameCreator($this->createLogger());
         $gameCreator->createGamesFromCycles($planning, $sportRootCyclesMap);

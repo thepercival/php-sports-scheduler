@@ -22,13 +22,12 @@ final class UnequalTest extends TestCase
 
     public function testCalculations(): void
     {
-        $refereeInfo = new PlanningRefereeInfo();
         $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
         $planning = $this->createPlanning(
             new PlanningConfiguration(
-                new PouleStructure(3),
+                new PouleStructure([3]),
                 $sportWithNrOfFieldsAndNrOfCycles,
-                $refereeInfo,
+                null,
                 false)
         );
 

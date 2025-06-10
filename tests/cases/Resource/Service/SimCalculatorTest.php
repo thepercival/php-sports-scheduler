@@ -6,10 +6,10 @@ namespace SportsScheduler\Tests\Resource\Service;
 
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\PouleStructures\PouleStructure;
+use SportsHelpers\RefereeInfo;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\Sports\AgainstOneVsOne;
-use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFields;
 use SportsScheduler\Resource\Service\SimCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
@@ -28,9 +28,9 @@ final class SimCalculatorTest extends TestCase
 
         $calculator = new SimCalculator();
         $maxNrOfSimultaneousGames = $calculator->calculateMaxSimNrOfGames(
-            new PouleStructure(10),
+            new PouleStructure([10]),
             $sportsWithNrOfFields,
-            new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::Disabled))
+            null
         );
 
 //        (new PlanningOutput())->outputWithGames($planning, true);

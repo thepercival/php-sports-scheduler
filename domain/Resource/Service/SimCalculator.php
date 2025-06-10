@@ -3,6 +3,7 @@
 namespace SportsScheduler\Resource\Service;
 
 use SportsHelpers\PouleStructures\PouleStructure;
+use SportsHelpers\RefereeInfo;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFields;
@@ -10,7 +11,6 @@ use SportsPlanning\Sports\SportWithNrOfPlaces\AgainstOneVsOneWithNrOfPlaces;
 use SportsPlanning\Sports\SportWithNrOfPlaces\AgainstOneVsTwoWithNrOfPlaces;
 use SportsPlanning\Sports\SportWithNrOfPlaces\AgainstTwoVsTwoWithNrOfPlaces;
 use SportsPlanning\Sports\SportWithNrOfPlaces\TogetherSportWithNrOfPlaces;
-use SportsPlanning\Referee\PlanningRefereeInfo;
 
 final class SimCalculator
 {
@@ -48,14 +48,14 @@ final class SimCalculator
     /**
      * @param PouleStructure $pouleStructure
      * @param list<SportWithNrOfFields> $sportsWithNrOfFields
-     * @param PlanningRefereeInfo $refereeInfo
+     * @param RefereeInfo|null $refereeInfo
      * @return int
      * @throws \Exception
      */
     public function calculateMaxSimNrOfGames(
         PouleStructure $pouleStructure,
         array $sportsWithNrOfFields,
-        PlanningRefereeInfo $refereeInfo): int {
+        RefereeInfo|null $refereeInfo): int {
         return array_sum(
             array_map( function( SportWithNrOfFields $sportWithNrOfFields ) use ($pouleStructure, $refereeInfo): int {
                 return $this->calculateMaxSimNrOfSportGames(
@@ -68,8 +68,8 @@ final class SimCalculator
     public function calculateMaxSimNrOfSportGames(
         PouleStructure $pouleStructure,
         SportWithNrOfFields $sportWithNrOfFields,
-        PlanningRefereeInfo $refereeInfo): int {
-        $selfRefereeInfo = $refereeInfo->selfRefereeInfo;
+        RefereeInfo|null $refereeInfo): int {
+        $selfRefereeInfo = $refereeInfo?->selfRefereeInfo;
         $minNrOfGamesPerBatch = array_sum(
             array_map( function( int $nrOfPlaces ) use ($sportWithNrOfFields, $selfRefereeInfo): int {
                 $sport = $sportWithNrOfFields->sport;
@@ -81,7 +81,7 @@ final class SimCalculator
         if ($sportWithNrOfFields->nrOfFields < $minNrOfGamesPerBatch) {
             $minNrOfGamesPerBatch = $sportWithNrOfFields->nrOfFields;
         }
-        if ($selfRefereeInfo->selfReferee === SelfReferee::Disabled
+        if ($refereeInfo && $selfRefereeInfo === null
             && $refereeInfo->nrOfReferees > 0
             && $refereeInfo->nrOfReferees < $minNrOfGamesPerBatch) {
             $minNrOfGamesPerBatch = $refereeInfo->nrOfReferees;
@@ -200,7 +200,7 @@ final class SimCalculator
     public function getMaxNrOfGamesSimultaneously(
         TogetherSportWithNrOfPlaces|
         AgainstOneVsOneWithNrOfPlaces|AgainstOneVsTwoWithNrOfPlaces|AgainstTwoVsTwoWithNrOfPlaces $sportWithNrOfPlaces,
-        SelfRefereeInfo $selfRefereeInfo): int {
+        SelfRefereeInfo|null $selfRefereeInfo): int {
 
         $nrOfPlaces = $sportWithNrOfPlaces->nrOfPlaces;
 
@@ -213,9 +213,9 @@ final class SimCalculator
         if( $nrOfGamePlaces === null) {
             throw new \Exception('nrOfGamePlaces cannot be 0');
         }
-        if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrIfSimSelfRefs === 1) {
+        if ($selfRefereeInfo && $selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrOfSimSelfRefs === 1) {
             $nrOfSimGames = (int)floor($nrOfPlaces / ($nrOfGamePlaces + 1));
-        } else if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrIfSimSelfRefs > 1) {
+        } else if ($selfRefereeInfo && $selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrOfSimSelfRefs > 1) {
             $nrOfSimGames = (int)floor(($nrOfPlaces - 1) / $nrOfGamePlaces);
         } else {
             $nrOfSimGames = (int)floor($nrOfPlaces / $nrOfGamePlaces);

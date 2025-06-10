@@ -5,17 +5,13 @@ declare(strict_types=1);
 namespace SportsScheduler\Tests\Combinations\Validators;
 
 use PHPUnit\Framework\TestCase;
+use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
-use SportsPlanning\Input;
-use SportsPlanning\Referee\PlanningRefereeInfo;
+use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Combinations\Validators\TogetherValidator;
-use SportsScheduler\Game\PlannableGameCreator as GameCreator;
-use SportsPlanning\Planning;
-use SportsScheduler\Schedules\CycleCreator;
-use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 final class TogetherValidatorTest extends TestCase
@@ -28,12 +24,12 @@ final class TogetherValidatorTest extends TestCase
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1)
         ];
         $nrOfPlaces = 2;
-        $config = $this->createConfiguration(
-            [$nrOfPlaces],
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([$nrOfPlaces]),
             $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo()
-        );
-        $planning = $this->createPlanning($config, new SportRange(1, 1));
+            null,
+            false);
+        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
         $counter->addGames($planning);
@@ -48,12 +44,12 @@ final class TogetherValidatorTest extends TestCase
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1)
         ];
         $nrOfPlaces = 4;
-        $config = $this->createConfiguration(
-            [$nrOfPlaces],
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([$nrOfPlaces]),
             $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo()
-        );
-        $planning = $this->createPlanning($config, new SportRange(1, 1));
+            null,
+            false);
+        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
         $counter->addGames($planning);
@@ -68,12 +64,12 @@ final class TogetherValidatorTest extends TestCase
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1)
         ];
         $nrOfPlaces = 5;
-        $config = $this->createConfiguration(
-            [$nrOfPlaces],
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([$nrOfPlaces]),
             $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo()
-        );
-        $planning = $this->createPlanning($config, new SportRange(1, 1));
+            null,
+            false);
+        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
         $counter->addGames($planning);
@@ -88,12 +84,12 @@ final class TogetherValidatorTest extends TestCase
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1)
         ];
         $nrOfPlaces = 6;
-        $config = $this->createConfiguration(
-            [$nrOfPlaces],
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([$nrOfPlaces]),
             $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo()
-        );
-        $planning = $this->createPlanning($config, new SportRange(1, 1));
+            null,
+            false);
+        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
         $counter->addGames($planning);
@@ -108,12 +104,12 @@ final class TogetherValidatorTest extends TestCase
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), 1, 1)
         ];
         $nrOfPlaces = 5;
-        $config = $this->createConfiguration(
-            [$nrOfPlaces],
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([$nrOfPlaces]),
             $sportsWithNrOfFieldsAndNrOfCycles,
-            new PlanningRefereeInfo()
-        );
-        $planning = $this->createPlanning($config, new SportRange(1, 1));
+            null,
+            false);
+        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
         $counter->addGames($planning);

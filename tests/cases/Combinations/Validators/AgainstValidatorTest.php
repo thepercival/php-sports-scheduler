@@ -5,19 +5,13 @@ declare(strict_types=1);
 namespace SportsScheduler\Tests\Combinations\Validators;
 
 use PHPUnit\Framework\TestCase;
+use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
-use SportsHelpers\Sports\TogetherSport;
-use SportsPlanning\Output\PlanningOutput;
-use SportsPlanning\Output\PlanningOutput\Extra;
-use SportsPlanning\Referee\PlanningRefereeInfo;
-use SportsPlanning\Sports\SportWithNrOfCycles;
+use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Combinations\Validators\AgainstValidator;
-use SportsScheduler\Game\PlannableGameCreator as GameCreator;
-use SportsPlanning\Planning;
-use SportsScheduler\Schedules\CycleCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 final class AgainstValidatorTest extends TestCase
@@ -29,13 +23,13 @@ final class AgainstValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1)
         ];
-
         $nrOfPlaces = 2;
-        $config = $this->createConfiguration(
-            [$nrOfPlaces],
-            $sportsWithNrOfFieldsAndNrOfCycles
-        );
-        $planning = $this->createPlanning($config, new SportRange(1, 1));
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([$nrOfPlaces]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false);
+        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -49,13 +43,13 @@ final class AgainstValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1)
         ];
-
         $nrOfPlaces = 4;
-        $config = $this->createConfiguration(
-            [$nrOfPlaces],
-            $sportsWithNrOfFieldsAndNrOfCycles
-        );
-        $planning = $this->createPlanning($config, new SportRange(1, 1));
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([$nrOfPlaces]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false);
+        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -69,13 +63,13 @@ final class AgainstValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1)
         ];
-
         $nrOfPlaces = 5;
-        $config = $this->createConfiguration(
-            [$nrOfPlaces],
-            $sportsWithNrOfFieldsAndNrOfCycles
-        );
-        $planning = $this->createPlanning($config, new SportRange(1, 1));
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([$nrOfPlaces]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false);
+        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -91,13 +85,13 @@ final class AgainstValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 1)
         ];
-
         $nrOfPlaces = 6;
-        $config = $this->createConfiguration(
-            [$nrOfPlaces],
-            $sportsWithNrOfFieldsAndNrOfCycles
-        );
-        $planning = $this->createPlanning($config, new SportRange(1, 1));
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([$nrOfPlaces]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false);
+        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -111,13 +105,13 @@ final class AgainstValidatorTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), 1, 1)
         ];
-
         $nrOfPlaces = 5;
-        $config = $this->createConfiguration(
-            [$nrOfPlaces],
-            $sportsWithNrOfFieldsAndNrOfCycles
-        );
-        $planning = $this->createPlanning($config, new SportRange(1, 1));
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([$nrOfPlaces]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false);
+        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
 
         $validator = new AgainstValidator($nrOfPlaces);
         $validator->addGames($planning);

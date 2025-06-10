@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace SportsScheduler\Tests;
 
 use PHPUnit\Framework\TestCase;
-use SportsHelpers\SelfReferee;
-use SportsHelpers\SelfRefereeInfo;
+use SportsHelpers\PouleStructures\PouleStructure;
+use SportsHelpers\RefereeInfo;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\PlanningState;
+use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\PlanningOrchestration;
-use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\TestHelper\PlanningCreator;
 
@@ -26,10 +26,11 @@ final class PlanningOrchestrationTest extends TestCase
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
         $orchestration = new PlanningOrchestration(
-            $this->createConfiguration(
-                [5],
+            new PlanningConfiguration(
+                new PouleStructure([5]),
                 $sportsWithNrOfFieldsAndNrOfCycles,
-                new PlanningRefereeInfo()
+                null,
+                false
             )
         );
         $batchGamesRange = new SportRange(2, 2);
@@ -50,10 +51,11 @@ final class PlanningOrchestrationTest extends TestCase
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
         $orchestration = new PlanningOrchestration(
-            $this->createConfiguration(
-                [5],
+            new PlanningConfiguration(
+                new PouleStructure([5]),
                 $sportsWithNrOfFieldsAndNrOfCycles,
-                new PlanningRefereeInfo()
+                null,
+                false
             )
         );
         $batchGamesRange = new SportRange(2, 2);
@@ -74,10 +76,11 @@ final class PlanningOrchestrationTest extends TestCase
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
         $orchestration = new PlanningOrchestration(
-            $this->createConfiguration(
-                [5],
+            new PlanningConfiguration(
+                new PouleStructure([5]),
                 $sportsWithNrOfFieldsAndNrOfCycles,
-                new PlanningRefereeInfo()
+                RefereeInfo::fromNrOfReferees(2),
+                false
             )
         );
 
@@ -99,10 +102,11 @@ final class PlanningOrchestrationTest extends TestCase
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
         $orchestration = new PlanningOrchestration(
-            $this->createConfiguration(
-                [5],
+            new PlanningConfiguration(
+                new PouleStructure([5]),
                 $sportsWithNrOfFieldsAndNrOfCycles,
-                new PlanningRefereeInfo()
+                RefereeInfo::fromNrOfReferees(2),
+                false
             )
         );
         $batchGamesRange = new SportRange(2, 2);

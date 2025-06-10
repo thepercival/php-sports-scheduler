@@ -6,6 +6,7 @@ namespace SportsScheduler\TestHelper;
 
 use Exception;
 use SportsHelpers\PouleStructures\PouleStructure;
+use SportsHelpers\RefereeInfo;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsPlanning\Exceptions\NoBestPlanningException;
@@ -20,7 +21,6 @@ use SportsPlanning\Planning\PlanningType;
 use SportsPlanning\Planning\TimeoutState;
 use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\PlanningOrchestration;
-use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Game\GameAssigner;
 use SportsScheduler\Game\PlannableGameCreator;
@@ -76,35 +76,6 @@ trait PlanningCreator
 //    {
 //        return 2;
 //    }
-
-    /**
-     * @param list<int> $pouleStructureAsArray
-     * @param list<SportWithNrOfFieldsAndNrOfCycles>|null $sportWithNrOfFieldsAndNrOfCycles
-     * @param PlanningRefereeInfo|null $refereeInfo
-     * @param bool $perPoule
-     * @return PlanningConfiguration
-     * @throws Exception
-     */
-    protected function createConfiguration(
-        array $pouleStructureAsArray,
-        array|null $sportWithNrOfFieldsAndNrOfCycles = null,
-        PlanningRefereeInfo|null $refereeInfo = null,
-        bool $perPoule = false
-    ): PlanningConfiguration
-    {
-        if ($sportWithNrOfFieldsAndNrOfCycles === null) {
-            $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
-        }
-        if ($refereeInfo === null) {
-            $refereeInfo = new PlanningRefereeInfo(2);
-        }
-        return new PlanningConfiguration(
-            new PouleStructure(...$pouleStructureAsArray),
-            $sportWithNrOfFieldsAndNrOfCycles,
-            $refereeInfo,
-            $perPoule
-        );
-    }
 
     protected function createPlanning(
         PlanningConfiguration $configuration,

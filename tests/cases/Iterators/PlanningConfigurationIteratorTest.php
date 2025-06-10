@@ -32,8 +32,8 @@ final class PlanningConfigurationIteratorTest extends TestCase
         self::assertNotNull($planningConfig);
         // self::assertGreaterThan(30, $inputIterator->key());
         self::assertEquals([2], $planningConfig->pouleStructure->toArray());
-        self::assertSame(0, $planningConfig->refereeInfo->nrOfReferees);
-        self::assertEquals(SelfReferee::Disabled, $planningConfig->refereeInfo->selfRefereeInfo->selfReferee);
+        self::assertSame(0, $planningConfig->refereeInfo?->nrOfReferees);
+        self::assertNull($planningConfig->refereeInfo?->selfRefereeInfo);
     }
 
 //    public function testLast()

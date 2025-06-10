@@ -28,12 +28,11 @@ final class ProductionErrorsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 2)
         ];
-        $refereeInfo = new PlanningRefereeInfo();
         $planning = $this->createPlanning(
             new PlanningConfiguration(
-                new PouleStructure(10, 2, 2),
+                new PouleStructure([10, 2, 2]),
                 $sportsWithNrOfFieldsAndNrOfCycles,
-                $refereeInfo,
+                null,
                 false
             ),
             $nrOfGamesPerBatchRange
@@ -53,15 +52,14 @@ final class ProductionErrorsTest extends TestCase
     public function test18(): void
     {
         $nrOfGamesPerBatchRange = new SportRange(1, 1);
-        $refereeInfo = new PlanningRefereeInfo();
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 2)
         ];
         $planning = $this->createPlanning(
             new PlanningConfiguration(
-                new PouleStructure(18),
+                new PouleStructure([18]),
                 $sportsWithNrOfFieldsAndNrOfCycles,
-                $refereeInfo,
+                null,
                 false
             ),
             $nrOfGamesPerBatchRange
@@ -140,12 +138,11 @@ final class ProductionErrorsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 14, 1)
         ];
-        $refereeInfo = new PlanningRefereeInfo();
         $planning = $this->createPlanning(
             new PlanningConfiguration(
-                new PouleStructure(5, 5, 5, 5, 5, 5, 5, 5),
+                new PouleStructure([5, 5, 5, 5, 5, 5, 5, 5]),
                 $sportsWithNrOfFieldsAndNrOfCycles,
-                $refereeInfo,
+                null,
                 false
             ),
             $nrOfGamesPerBatchRange,
@@ -211,12 +208,11 @@ final class ProductionErrorsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 9, 1)
         ];
-        $refereeInfo = new PlanningRefereeInfo();
         $planning = $this->createPlanning(
             new PlanningConfiguration(
-                new PouleStructure(5, 5, 4, 4),
+                new PouleStructure([5, 5, 4, 4]),
                 $sportsWithNrOfFieldsAndNrOfCycles,
-                $refereeInfo,
+                null,
                 false
             ),
             $nrOfGamesPerBatchRange,
@@ -242,12 +238,11 @@ final class ProductionErrorsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
-        $refereeInfo = new PlanningRefereeInfo();
         $planning = $this->createPlanning(
             new PlanningConfiguration(
-                new PouleStructure(7, 6),
+                new PouleStructure([7, 6]),
                 $sportsWithNrOfFieldsAndNrOfCycles,
-                $refereeInfo,
+                null,
                 false
             ),
             $nrOfGamesPerBatchRange
@@ -270,12 +265,11 @@ final class ProductionErrorsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 8, 1)
         ];
-        $refereeInfo = new PlanningRefereeInfo();
         $planning = $this->createPlanning(
             new PlanningConfiguration(
-                new PouleStructure(7, 7, 6, 6),
+                new PouleStructure([7, 7, 6, 6]),
                 $sportsWithNrOfFieldsAndNrOfCycles,
-                $refereeInfo,
+                null,
                 false
             ),
             $nrOfGamesPerBatchRange
@@ -297,12 +291,11 @@ final class ProductionErrorsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), 1, 1)
         ];
-        $refereeInfo = new PlanningRefereeInfo();
         $planning = $this->createPlanning(
             new PlanningConfiguration(
-                new PouleStructure(5),
+                new PouleStructure([5]),
                 $sportsWithNrOfFieldsAndNrOfCycles,
-                $refereeInfo,
+                null,
                 false
             ),
             $nrOfGamesPerBatchRange

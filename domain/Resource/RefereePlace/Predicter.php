@@ -22,9 +22,9 @@ final class Predicter
     }
 
     public function canStillAssign(
-        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch, SelfReferee $selfReferee): bool
+        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch, SelfReferee|null $selfReferee): bool
     {
-        if ($selfReferee === SelfReferee::Disabled) {
+        if ($selfReferee === null) {
             return true;
         }
         if ($selfReferee === SelfReferee::SamePoule) {

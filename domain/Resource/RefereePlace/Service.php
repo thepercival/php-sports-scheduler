@@ -9,10 +9,8 @@ use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Planning\PlanningState;
 use SportsPlanning\Resource\GameCounter\GameCounterForPlace;
 use SportsScheduler\Exceptions\TimeoutException;
-use SportsPlanning\Game;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
-use SportsPlanning\Input;
 use SportsPlanning\Place;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\TimeoutConfig;
@@ -26,7 +24,7 @@ final class Service
     public function __construct(private Planning $planning)
     {
         $this->nrOfPlaces = $this->planning->getNrOfPlaces();
-        $selfReferee = $planning->getConfiguration()->refereeInfo->selfRefereeInfo->selfReferee;
+        $selfReferee = $planning->getConfiguration()->refereeInfo?->selfRefereeInfo->selfReferee;
         $this->replacer = new Replacer($selfReferee === SelfReferee::SamePoule);
         $this->throwOnTimeout = true;
     }
@@ -125,7 +123,7 @@ final class Service
         if ($batch->getBase()->isParticipating($refereePlace) || $batch->isParticipatingAsReferee($refereePlace)) {
             return false;
         }
-        if ($this->planning->getConfiguration()->refereeInfo->selfRefereeInfo->selfReferee === SelfReferee::SamePoule) {
+        if ($this->planning->getConfiguration()->refereeInfo?->selfRefereeInfo->selfReferee === SelfReferee::SamePoule) {
             return $refereePlace->pouleNr === $game->poule->pouleNr;
         }
 //        if (array_key_exists($batch->getNumber(), $this->canBeSamePoule)

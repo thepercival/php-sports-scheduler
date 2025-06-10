@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SportsScheduler\Iterators;
 
 use SportsHelpers\PouleStructures\BalancedPouleStructure;
+use SportsHelpers\RefereeInfo;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\SportRange;
@@ -13,7 +14,6 @@ use SportsPlanning\Exceptions\SelfRefereeIncompatibleWithPouleStructureException
 use SportsPlanning\Exceptions\SportsIncompatibleWithPouleStructureException;
 use SportsPlanning\Output\PlanningOutput;
 use SportsPlanning\PlanningConfiguration;
-use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Referee\SelfRefereeValidator;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Iterators\SportsIterators\AgainstSportIterator;
@@ -32,7 +32,7 @@ final class PlanningConfigurationIterator implements \Iterator
     protected SportRange $rangeNrOfReferees;
     protected SelfRefereeValidator $selfRefereeValidator;
     protected int $nrOfReferees;
-    protected SelfReferee $selfReferee;
+    protected SelfReferee|null $selfReferee;
     protected PlanningConfiguration|null $current = null;
 
     public function __construct(
@@ -76,7 +76,7 @@ final class PlanningConfigurationIterator implements \Iterator
 
     protected function rewindSelfReferee(): void
     {
-        $this->selfReferee = SelfReferee::Disabled;
+        $this->selfReferee = null;
     }
 
     #[\Override]
@@ -168,7 +168,7 @@ final class PlanningConfigurationIterator implements \Iterator
         return new PlanningConfiguration(
             $pouleStructure,
             [$sportWithNrOfFieldsAndNrOfCycles],
-            new PlanningRefereeInfo($this->selfReferee === SelfReferee::Disabled ? $this->nrOfReferees : new SelfRefereeInfo($this->selfReferee)),
+            $this->selfReferee === null ? RefereeInfo::fromNrOfReferees($this->nrOfReferees) : RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo($this->selfReferee)),
             false
         );
     }
@@ -193,7 +193,7 @@ final class PlanningConfigurationIterator implements \Iterator
         if ($selfRefereeIsAvailable === false) {
             return $this->incrementNrOfReferees();
         }
-        if ($this->selfReferee === SelfReferee::Disabled) {
+        if ($this->selfReferee === null) {
             if ($this->selfRefereeValidator->canSelfRefereeOtherPoulesBeAvailable($pouleStructure)) {
                 $this->selfReferee = SelfReferee::OtherPoules;
             } else {

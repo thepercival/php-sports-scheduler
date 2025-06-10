@@ -5,17 +5,6 @@ declare(strict_types=1);
 namespace SportsScheduler\Tests;
 
 use PHPUnit\Framework\TestCase;
-use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsPlanning\Combinations\HomeAway;
-use SportsPlanning\Combinations\Mapper;
-use SportsPlanning\Counters\AssignedCounter;
-use SportsPlanning\Counters\Maps\PlaceCounterMap;
-use SportsPlanning\Counters\Maps\RangedPlaceCombinationCounterMap;
-use SportsPlanning\Input;
-use SportsPlanning\Poule;
-use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
-use SportsScheduler\Combinations\AgainstStatisticsCalculators\Against\GamesPerPlace as GppStatisticsCalculator;
-use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator as GppHomeAwayCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 // cachegrind output default to /tmp

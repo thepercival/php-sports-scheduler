@@ -6,11 +6,11 @@ namespace SportsScheduler\Tests\Resource;
 
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\PouleStructures\PouleStructure;
+use SportsHelpers\RefereeInfo;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\PlanningConfiguration;
-use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Resource\Fields;
 use SportsScheduler\TestHelper\PlanningCreator;
@@ -23,14 +23,13 @@ final class FieldsTest extends TestCase
 
     public function testOnePouleTwoFields(): void
     {
-        $refereeInfo = new PlanningRefereeInfo();
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
         ];
         $config = new PlanningConfiguration(
-            new PouleStructure(2),
+            new PouleStructure([2]),
             $sportsWithNrOfFieldsAndNrOfCycles,
-            $refereeInfo,
+            null,
             false
         );
         $planning = $this->createPlanning($config);
@@ -54,15 +53,14 @@ final class FieldsTest extends TestCase
 
     public function testMultipleSports(): void
     {
-        $refereeInfo = new PlanningRefereeInfo();
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1),
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
         ];
         $config = new PlanningConfiguration(
-            new PouleStructure(4),
+            new PouleStructure([4]),
             $sportsWithNrOfFieldsAndNrOfCycles,
-            $refereeInfo,
+            null,
             false
         );
         $planning = $this->createPlanning($config);
@@ -74,7 +72,15 @@ final class FieldsTest extends TestCase
     public function testSixPoulesTwoFields(): void
     {
         $nrOfGamesPerBatchRange = new SportRange(2, 2);
-        $configuration = $this->createConfiguration([2,2,2,2,2,2]);
+
+        $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
+        $refereeInfo = RefereeInfo::fromNrOfReferees(2);
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([2,2,2,2,2,2]),
+            $sportWithNrOfFieldsAndNrOfCycles,
+            $refereeInfo,
+            false
+        );
         $planning = $this->createPlanning($configuration,$nrOfGamesPerBatchRange);
 
         // (new PlanningOutput())->outputWithGames($planning, true);

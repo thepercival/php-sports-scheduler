@@ -59,10 +59,11 @@ final class GameAssignments
 
     protected function shouldValidatePerPoule(): bool
     {
-        $selfRefereeInfo = $this->planning->getConfiguration()->refereeInfo->selfRefereeInfo;
+        $refereeInfo = $this->planning->getConfiguration()->refereeInfo;
+        $selfRefereeInfo = $refereeInfo?->selfRefereeInfo;
 
         $nrOfPoules = count($this->planning->poules);
-        if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule) {
+        if ($selfRefereeInfo?->selfReferee === SelfReferee::SamePoule) {
             return true;
         }
         if (($this->planning->getNrOfPlaces() % $nrOfPoules) === 0) {
@@ -72,7 +73,7 @@ final class GameAssignments
             return true;
         }
 
-        if ($nrOfPoules > 2 && $selfRefereeInfo->selfReferee !== SelfReferee::Disabled) {
+        if ($nrOfPoules > 2 && $selfRefereeInfo !== null) {
             return true;
         }
         return false;
