@@ -14,11 +14,12 @@ use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
 use SportsHelpers\Sports\TogetherSport;
 use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Output\PlanningOutput;
+use SportsPlanning\Output\PlanningOutput\Extra;
 use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\PlanningOrchestration;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsPlanning\Game\TogetherGame;
-use SportsPlanning\Planning;
 use SportsScheduler\Game\PlannableGameCreator;
 use SportsScheduler\Schedules\CycleCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
@@ -39,14 +40,15 @@ final class CreatorTest extends TestCase
             false);
 
         $nrOfBatchGamesRange = new SportRange(1,1);
-        $planning = new Planning(new PlanningOrchestration($configuration), $nrOfBatchGamesRange, 0);
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfBatchGamesRange, 0);
 
         $cycleCreator = new CycleCreator($this->createLogger());
         $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($configuration);
         $gameCreator = new PlannableGameCreator($this->createLogger());
-        $gameCreator->createGamesFromCycles($planning, $sportRootCyclesMap);
+        $gameCreator->createGamesFromCycles($planningWithMeta->planning, $sportRootCyclesMap);
 
-        $games = $planning->getGames();
+        $games = $planningWithMeta->planning->getGames();
         self::assertInstanceOf(AgainstGame::class, reset($games));
     }
 
@@ -60,22 +62,24 @@ final class CreatorTest extends TestCase
             new PouleStructure([2]),
             $sportsWithNrOfFieldsAndNrOfCycles,
             null,
-            false);
-
+            false
+        );
         $nrOfBatchGamesRange = new SportRange(1,1);
-        $planning = new Planning(new PlanningOrchestration($configuration), $nrOfBatchGamesRange, 0);
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfBatchGamesRange, 0);
 
         $cycleCreator = new CycleCreator($this->createLogger());
         $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($configuration);
         $gameCreator = new PlannableGameCreator($this->createLogger());
-        $gameCreator->createGamesFromCycles($planning, $sportRootCyclesMap);
+        $gameCreator->createGamesFromCycles($planningWithMeta->planning, $sportRootCyclesMap);
 
-        $games = $planning->getGames();
+        $games = $planningWithMeta->planning->getGames();
         self::assertInstanceOf(TogetherGame::class, reset($games));
     }
 
     public function testMixedGameModes(): void
     {
+        $nrOfBatchGamesRange = new SportRange(1,1);
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), 2, 1),
             new SportWithNrOfFieldsAndNrOfCycles(new TogetherSport(2), 2, 4)
@@ -84,20 +88,14 @@ final class CreatorTest extends TestCase
             new PouleStructure([4]),
             $sportsWithNrOfFieldsAndNrOfCycles,
             null,
-            false);
+            false
+        );
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfBatchGamesRange, 0);
 
-        $nrOfBatchGamesRange = new SportRange(1,1);
-        $planning = new Planning(new PlanningOrchestration($configuration), $nrOfBatchGamesRange, 0);
-
-        $cycleCreator = new CycleCreator($this->createLogger());
-        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($configuration);
-
-        $gameCreator = new PlannableGameCreator($this->createLogger());
-        $gameCreator->createGamesFromCycles($planning, $sportRootCyclesMap);
-
-//        (new PlanningOutput())->outputWithGames($planning, true);
-        self::assertCount(3, $this->getAgainstGames($planning));
-        self::assertCount(8, $this->getTogetherGames($planning));
+        // (new PlanningOutput())->output($planningWithMeta, Extra::Games->value);
+        self::assertCount(3, $this->getAgainstGames($planningWithMeta->planning));
+        self::assertCount(8, $this->getTogetherGames($planningWithMeta->planning));
     }
 
 

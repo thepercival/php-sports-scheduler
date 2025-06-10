@@ -10,6 +10,7 @@ use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
 use SportsPlanning\PlanningConfiguration;
+use SportsPlanning\PlanningOrchestration;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Combinations\Validators\TogetherValidator;
 use SportsScheduler\TestHelper\PlanningCreator;
@@ -29,10 +30,11 @@ final class TogetherValidatorTest extends TestCase
             $sportsWithNrOfFieldsAndNrOfCycles,
             null,
             false);
-        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
-        $counter->addGames($planning);
+        $counter->addGames($planningWithMeta->planning);
         //echo $counter;
 
         self::assertTrue($counter->balanced());
@@ -49,10 +51,11 @@ final class TogetherValidatorTest extends TestCase
             $sportsWithNrOfFieldsAndNrOfCycles,
             null,
             false);
-        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
-        $counter->addGames($planning);
+        $counter->addGames($planningWithMeta->planning);
         //echo $counter;
 
         self::assertTrue($counter->balanced());
@@ -69,10 +72,11 @@ final class TogetherValidatorTest extends TestCase
             $sportsWithNrOfFieldsAndNrOfCycles,
             null,
             false);
-        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
-        $counter->addGames($planning);
+        $counter->addGames($planningWithMeta->planning);
         //echo $counter;
 
         self::assertTrue($counter->balanced());
@@ -89,10 +93,11 @@ final class TogetherValidatorTest extends TestCase
             $sportsWithNrOfFieldsAndNrOfCycles,
             null,
             false);
-        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
-        $counter->addGames($planning);
+        $counter->addGames($planningWithMeta->planning);
         //echo $counter;
 
         self::assertTrue($counter->balanced());
@@ -108,12 +113,13 @@ final class TogetherValidatorTest extends TestCase
             new PouleStructure([$nrOfPlaces]),
             $sportsWithNrOfFieldsAndNrOfCycles,
             null,
-            false);
-        $planning = $this->createPlanning($configuration, new SportRange(1, 1));
+            false
+        );
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
-        $counter->addGames($planning);
-        //echo $counter;
+        $counter->addGames($planningWithMeta->planning);
 
         self::assertTrue($counter->balanced());
     }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Resource\RefereePlace;
+namespace SportsScheduler\Resource\RefereePlaces;
 
 use SportsHelpers\SelfReferee;
 use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
@@ -10,7 +10,7 @@ use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Counters\GamePlacesCounterForPoule;
 use SportsPlanning\Poule;
 
-final class Predicter
+final class RefereePlacePredicter
 {
     private const int SAME_POULE_MAX_DELTA = 1;
 
@@ -71,7 +71,7 @@ final class Predicter
         SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch): void
     {
         foreach ($batch->getBase()->getGames() as $game) {
-            $pouleCounterMap[$game->poule->pouleNr]->add(count($game->getGamePlaces()));
+            $pouleCounterMap[$game->pouleNr]->add(count($game->getGamePlaces()));
         }
     }
 

@@ -11,7 +11,8 @@ use SportsPlanning\Planning;
 use SportsPlanning\Planning\PlanningState;
 use SportsPlanning\Planning\PlanningValidity;
 use SportsPlanning\Planning\TimeoutConfig;
-use SportsScheduler\Resource\RefereePlace\Service as RefereePlaceService;
+use SportsPlanning\PlanningWithMeta;
+use SportsScheduler\Resource\RefereePlaces\RefereePlaceService;
 use SportsScheduler\Resource\ResourceService;
 
 final class GameAssigner
@@ -24,12 +25,13 @@ final class GameAssigner
         $this->throwOnTimeout = true;
     }
 
-    public function assignGames(Planning $planning, int $maxNrOfBatches): PlanningState
+    public function assignGames(PlanningWithMeta $planningWithMeta, int $maxNrOfBatches): PlanningState
     {
-        $games = (new PreAssignSorter())->getGames($planning);
+        $planning = $planningWithMeta->planning;
+        $games = (new PreAssignSorter())->getGames($planning, $planningWithMeta->getConfiguration());
 //        (new GameOutput($this->logger))->outputGames($games);
 
-        $resourceService = new ResourceService($planning, $this->logger);
+        $resourceService = new ResourceService($planningWithMeta, $this->logger);
         if (!$this->throwOnTimeout) {
             $resourceService->disableThrowOnTimeout();
         }
@@ -40,41 +42,41 @@ final class GameAssigner
         $state = $resourceService->assign($games, $maxNrOfBatches);
         if ($state === PlanningState::Failed || $state === PlanningState::TimedOut) {
             $planning->removeGames();
-            $planning->setState($state);
-            $planning->setNrOfBatches(0);
+            $planningWithMeta->setState($state);
+            $planningWithMeta->setNrOfBatches(0);
             if ($state === PlanningState::TimedOut) {
-                $planning->setTimeoutState((new TimeoutConfig())->nextTimeoutState($planning));
+                $planningWithMeta->setTimeoutState((new TimeoutConfig())->nextTimeoutState($planningWithMeta));
             } else {
-                $planning->setTimeoutState(null);
+                $planningWithMeta->setTimeoutState(null);
             }
             return $state;
         }
 
-        $firstBatch = $planning->createFirstBatch();
+        $firstBatch = $planningWithMeta->createFirstBatch();
 //        (new BatchOutput())->output($firstBatch );
         if ($firstBatch instanceof SelfRefereeBatchOtherPoules || $firstBatch instanceof SelfRefereeBatchSamePoule) {
-            $refereePlaceService = new RefereePlaceService($planning);
+            $refereePlaceService = new RefereePlaceService($planningWithMeta);
             if (!$this->throwOnTimeout) {
                 $refereePlaceService->disableThrowOnTimeout();
             }
             $state = $refereePlaceService->assign($firstBatch);
             if ($state === PlanningState::Failed || $state === PlanningState::TimedOut) {
                 $planning->removeGames();
-                $planning->setState($state);
-                $planning->setNrOfBatches(0);
+                $planningWithMeta->setState($state);
+                $planningWithMeta->setNrOfBatches(0);
                 if ($state === PlanningState::TimedOut) {
-                    $planning->setTimeoutState((new TimeoutConfig())->nextTimeoutState($planning));
+                    $planningWithMeta->setTimeoutState((new TimeoutConfig())->nextTimeoutState($planningWithMeta));
                 } else {
-                    $planning->setTimeoutState(null);
+                    $planningWithMeta->setTimeoutState(null);
                 }
-                $this->logger->error('   could not assign refereeplaces (plId:' . ($planning->id ?? '') . ')');
+                $this->logger->error('   could not assign refereeplaces (plId:' . (string)$planningWithMeta->id . ')');
                 return $state;
             }
         }
-        $planning->setState(PlanningState::Succeeded);
-        $planning->setNrOfBatches($firstBatch->getLeaf()->getNumber());
-        $planning->setValidity(PlanningValidity::NOT_VALIDATED);
-        $planning->setTimeoutState(null);
+        $planningWithMeta->setState(PlanningState::Succeeded);
+        $planningWithMeta->setNrOfBatches($firstBatch->getLeaf()->getNumber());
+        $planningWithMeta->setValidity(PlanningValidity::NOT_VALIDATED);
+        $planningWithMeta->setTimeoutState(null);
         return PlanningState::Succeeded;
     }
 

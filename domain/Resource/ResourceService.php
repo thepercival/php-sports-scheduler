@@ -14,12 +14,12 @@ use SportsPlanning\Output\BatchOutput;
 use SportsPlanning\Output\GameOutput;
 use SportsPlanning\Output\PlanningOutput;
 use SportsPlanning\Place;
-use SportsPlanning\Planning;
 use SportsPlanning\Planning\PlanningState;
 use SportsPlanning\Planning\TimeoutConfig;
+use SportsPlanning\PlanningWithMeta;
 use SportsScheduler\Exceptions\TimeoutException;
 use SportsScheduler\Resource\Fields as FieldResources;
-use SportsScheduler\Resource\RefereePlace\Predicter;
+use SportsScheduler\Resource\RefereePlaces\RefereePlacePredicter;
 use SportsScheduler\Resource\Service\ResourceServiceHelper;
 use SportsScheduler\Resource\Service\PlanningCounters;
 use SportsScheduler\Resource\Service\RefereeService;
@@ -27,7 +27,7 @@ use SportsScheduler\Resource\Service\RefereeService;
 final class ResourceService
 {
     private DateTimeImmutable|null $timeoutDateTime = null;
-    private Predicter $refereePlacePredicter;
+    private RefereePlacePredicter $refereePlacePredicter;
     protected BatchOutput $batchOutput;
     protected PlanningOutput $planningOutput;
     protected GameOutput $gameOutput;
@@ -43,18 +43,18 @@ final class ResourceService
 //    protected array $sportVariantMap;
     protected ResourceServiceHelper $helper;
 
-    public function __construct(protected Planning $planning, protected LoggerInterface $logger)
+    public function __construct(protected PlanningWithMeta $planningWithMeta, protected LoggerInterface $logger)
     {
-        $this->helper = new ResourceServiceHelper($planning, $logger);
-        $poules = $planning->poules;
-        $this->refereePlacePredicter = new Predicter($poules);
+        $this->helper = new ResourceServiceHelper($planningWithMeta, $logger);
+        $poules = $planningWithMeta->planning->poules;
+        $this->refereePlacePredicter = new RefereePlacePredicter($poules);
         $this->batchOutput = new BatchOutput($logger);
         $this->planningOutput = new PlanningOutput($logger);
         $this->gameOutput = new GameOutput($logger);
 //        $this->initSportVariantMap($planning->getInput());
         $this->throwOnTimeout = true;
         $this->timeoutConfig = new TimeoutConfig();
-        $nextTimeoutState = $this->timeoutConfig->nextTimeoutState($planning);
+        $nextTimeoutState = $this->timeoutConfig->nextTimeoutState($planningWithMeta);
         $this->sortWhenReachedHighestCompletedBatchNr = $this->timeoutConfig->useSort($nextTimeoutState);
     }
 
@@ -65,28 +65,28 @@ final class ResourceService
     public function assign(array $games, int $maxNrOfBatches): PlanningState
     {
         $oCurrentDateTime = new DateTimeImmutable();
-        $configuration = $this->planning->getConfiguration();
-        $nextTimeoutState = $this->timeoutConfig->nextTimeoutState($this->planning);
+        $configuration = $this->planningWithMeta->getConfiguration();
+        $nextTimeoutState = $this->timeoutConfig->nextTimeoutState($this->planningWithMeta);
         $timeoutSeconds = $this->timeoutConfig->getTimeoutSeconds($configuration, $nextTimeoutState);
         $this->timeoutDateTime = $oCurrentDateTime->add(new \DateInterval('PT' . $timeoutSeconds . 'S'));
-        $batch = new Batch();
+        $batch = new Batch($this->planningWithMeta->planning->createPouleMap());
         $selfReferee = $configuration->refereeInfo?->selfRefereeInfo?->selfReferee;
 
         if ($selfReferee === SelfReferee::SamePoule) {
             $batch = new SelfRefereeBatchSamePoule($batch);
         } else if ($selfReferee === SelfReferee::OtherPoules) {
-            $batch = new SelfRefereeBatchOtherPoules($this->planning->poules, $batch);
+            $batch = new SelfRefereeBatchOtherPoules($batch);
         }
 
 
         try {
-            $fieldResources = new FieldResources($this->planning);
+            $fieldResources = new FieldResources($configuration, $this->planningWithMeta->planning);
             $assignedBatch = $this->assignBatch($games, $maxNrOfBatches, $fieldResources, $batch);
             if ($assignedBatch === null) {
                 return PlanningState::Failed;
             }
             if ($assignedBatch instanceof Batch) {
-                $refereeService = new RefereeService($this->planning->referees);
+                $refereeService = new RefereeService($this->planningWithMeta->planning->referees);
                 $refereeService->assign($assignedBatch->getFirst());
             }
 
@@ -118,7 +118,7 @@ final class ResourceService
             $fieldResources,
             $batch,
             [],
-            $this->planning->maxNrOfBatchGames,
+            $this->planningWithMeta->maxNrOfBatchGames,
             $maxNrOfBatches
         )) {
             return $this->getActiveLeaf($batch->getLeaf());
@@ -132,7 +132,7 @@ final class ResourceService
         if ($previousBatch === null) {
             return $batch;
         }
-        if (count($previousBatch->getGames()) === $this->planning->maxNrOfBatchGames) {
+        if (count($previousBatch->getGames()) === $this->planningWithMeta->maxNrOfBatchGames) {
             return $batch;
         }
         return $this->getActiveLeaf($previousBatch);
@@ -225,7 +225,7 @@ final class ResourceService
 //            }
 //             ------------- END: OUTPUT --------------- //
 
-            $unassignedPlanningCounters = new PlanningCounters($this->planning->sports, $games);
+            $unassignedPlanningCounters = new PlanningCounters($this->planningWithMeta->planning->createPouleMap(), $this->planningWithMeta->planning->sports, $games);
             if (!$this->helper->canGamesBeAssigned($batch->getNumber(), $maxNrOfBatches, $unassignedPlanningCounters)) {
 //                $this->batchOutput->output($batch, ' batch completed nr ' . $batch->getNumber());
 //                $this->logger->info(' batch completed nr ' . $batch->getNumber());
@@ -289,7 +289,7 @@ final class ResourceService
 //                $er = 12;
 //            }
 
-            $maxNrOfBatchGames = $this->planning->maxNrOfBatchGames;
+            $maxNrOfBatchGames = $this->planningWithMeta->maxNrOfBatchGames;
             return $this->assignBatchHelper(
                 $games,
                 $gamesList,
@@ -301,12 +301,12 @@ final class ResourceService
             );
         }
         if ($this->throwOnTimeout && (new DateTimeImmutable()) > $this->timeoutDateTime) {
-            $nextTimeoutState = $this->timeoutConfig->nextTimeoutState($this->planning);
-            $configuration = $this->planning->getConfiguration();
+            $nextTimeoutState = $this->timeoutConfig->nextTimeoutState($this->planningWithMeta);
+            $configuration = $this->planningWithMeta->getConfiguration();
             $timeoutSeconds = $this->timeoutConfig->getTimeoutSeconds($configuration, $nextTimeoutState);
             throw new TimeoutException('exceeded maximum duration of ' . $timeoutSeconds . ' seconds', E_ERROR);
         }
-        $minNrOfBatchGames = $this->planning->minNrOfBatchGames;
+        $minNrOfBatchGames = $this->planningWithMeta->minNrOfBatchGames;
         if (count($games) >= $minNrOfBatchGames
             && (count($gamesForBatch) + count($batch->getGames())) < $minNrOfBatchGames) {
             return false;
@@ -368,7 +368,7 @@ final class ResourceService
         )) {
             return true;
         }
-        if ($this->planning->isNrOfBatchGamesUnequal() && $maxNrOfBatchGames > $this->planning->minNrOfBatchGames) {
+        if ($this->planningWithMeta->isNrOfBatchGamesUnequal() && $maxNrOfBatchGames > $this->planningWithMeta->minNrOfBatchGames) {
             $gamesForBatch[] = $game;
             if ($this->assignBatchHelper(
                 $games,
@@ -401,7 +401,8 @@ final class ResourceService
         $fieldResources->assignToGame($game);
         $batch->add($game);
         $game->setBatchNr($batch->getNumber());
-        foreach ($game->poule->places as $place) {
+        $poule = $batch->getPoule($game->pouleNr);
+        foreach ($poule->places as $place) {
             $idx = array_search($place, $requiredPlaces, true);
             if ($idx !== false) {
                 array_splice($requiredPlaces, $idx, 1);
@@ -440,7 +441,7 @@ final class ResourceService
         TogetherGame|AgainstGame $game,
         Fields $fieldResources
     ): bool {
-        if (!$fieldResources->isSomeFieldAssignable($game->getField()->sportNr, $game->poule)) {
+        if (!$fieldResources->isSomeFieldAssignable($game->getField()->sportNr, $game->pouleNr)) {
             return false;
         }
         if (!$this->areAllPlacesAssignable($batch, $game)) {
@@ -459,8 +460,9 @@ final class ResourceService
         Batch|SelfRefereeBatchSamePoule|SelfRefereeBatchOtherPoules $batch,
         TogetherGame|AgainstGame $game
     ): bool {
-        $maxNrOfGamesInARow = $this->planning->maxNrOfGamesInARow;
-        foreach ($game->getPlaces() as $place) {
+        $maxNrOfGamesInARow = $this->planningWithMeta->maxNrOfGamesInARow;
+        $poule = $batch->getPoule($game->pouleNr);
+        foreach ($poule->getPlaces($game) as $place) {
             if ($batch->isParticipating($place)) {
                 return false;
             }
@@ -496,16 +498,17 @@ final class ResourceService
         Batch|SelfRefereeBatchSamePoule|SelfRefereeBatchOtherPoules $batch,
         TogetherGame|AgainstGame $game
     ): bool {
-        if ($this->planning->maxNrOfGamesInARow === 0) {
+        if ($this->planningWithMeta->maxNrOfGamesInARow === 0) {
             return true;
         }
-        foreach ($game->getPlaces() as $place) {
+        $poule = $batch->getPoule($game->pouleNr);
+        foreach ($poule->getPlaces($game) as $place) {
             $previousBatch = $batch->getPrevious();
             if ($previousBatch === null) {
                 continue;
             }
             $nrOfGamesInARow = $previousBatch->getGamesInARow($place) + 1;
-            if ($nrOfGamesInARow > $this->planning->maxNrOfGamesInARow) {
+            if ($nrOfGamesInARow > $this->planningWithMeta->maxNrOfGamesInARow) {
                 return false;
             }
         }
@@ -516,11 +519,11 @@ final class ResourceService
         SelfRefereeBatchSamePoule $batch,
         TogetherGame|AgainstGame $game
     ): bool {
-        $poule = $game->poule;
+        $poule = $batch->getPoule($game->pouleNr);
         $nrOfRefereePlacesPerGame = 1;
         $nrOfPlacesAlreadyParticipatingInBatch = $batch->getNrOfPlacesParticipating($poule, $nrOfRefereePlacesPerGame);
         $nrAvailable = count($poule->places) - $nrOfPlacesAlreadyParticipatingInBatch;
-        return $nrAvailable >= (count($game->getPlaces()) + $nrOfRefereePlacesPerGame);
+        return $nrAvailable >= (count($game->getPlaceNrs()) + $nrOfRefereePlacesPerGame);
     }
 
     protected function refereePlacesCanBeAssigned(
@@ -530,7 +533,7 @@ final class ResourceService
 
         if ($batch instanceof SelfRefereeBatchSamePoule
             || $batch instanceof SelfRefereeBatchOtherPoules) {
-            $selfReferee = $this->planning->getConfiguration()->refereeInfo?->selfRefereeInfo->selfReferee;
+            $selfReferee = $this->planningWithMeta->getConfiguration()->refereeInfo?->selfRefereeInfo?->selfReferee;
             return $this->refereePlacePredicter->canStillAssign($batch, $selfReferee);
         }
         return true;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SportsScheduler\Planning\Validator;
 
 use SportsHelpers\SelfReferee;
+use SportsPlanning\PlanningWithMeta;
 use SportsPlanning\Resource\GameCounter\GameCounterForPlace;
 use SportsPlanning\Resource\ResourceType;
 use SportsScheduler\Exceptions\UnequalAssignedFieldsException;
@@ -21,9 +22,9 @@ final class GameAssignments
 {
     private ResourceCounterManager $counterManager;
 
-    public function __construct(protected Planning $planning)
+    public function __construct(protected PlanningWithMeta $planningWithMeta)
     {
-        $this->counterManager = new ResourceCounterManager($planning);
+        $this->counterManager = new ResourceCounterManager($planningWithMeta);
     }
 
 
@@ -31,7 +32,7 @@ final class GameAssignments
 
     public function validate(): void
     {
-        if (count($this->planning->sports) === 1) {
+        if (count($this->planningWithMeta->planning->sports) === 1) {
             $fieldMap = $this->counterManager->getCounter(ResourceType::Fields);
             $unequalFields = $this->getMaxUnequal($fieldMap);
             if ($unequalFields !== null) {
@@ -59,14 +60,14 @@ final class GameAssignments
 
     protected function shouldValidatePerPoule(): bool
     {
-        $refereeInfo = $this->planning->getConfiguration()->refereeInfo;
+        $refereeInfo = $this->planningWithMeta->getConfiguration()->refereeInfo;
         $selfRefereeInfo = $refereeInfo?->selfRefereeInfo;
 
-        $nrOfPoules = count($this->planning->poules);
+        $nrOfPoules = count($this->planningWithMeta->planning->poules);
         if ($selfRefereeInfo?->selfReferee === SelfReferee::SamePoule) {
             return true;
         }
-        if (($this->planning->getNrOfPlaces() % $nrOfPoules) === 0) {
+        if (($this->planningWithMeta->getNrOfPlaces() % $nrOfPoules) === 0) {
             return false;
         }
         if ($nrOfPoules === 2) {
@@ -94,7 +95,7 @@ final class GameAssignments
                     $unequals[] = $unequal;
                 }
             }
-        } elseif ($this->planning->getConfiguration()->pouleStructure->isAlmostBalanced()) {
+        } elseif ($this->planningWithMeta->getConfiguration()->pouleStructure->isAlmostBalanced()) {
             $refereePlaceMap = $this->counterManager->getCounter(ResourceType::RefereePlaces);
             $unequal = $this->getMaxUnequal($refereePlaceMap);
             if ($unequal !== null) {

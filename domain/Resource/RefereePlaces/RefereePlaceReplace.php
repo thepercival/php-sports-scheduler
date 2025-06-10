@@ -1,6 +1,6 @@
 <?php
 
-namespace SportsScheduler\Resource\RefereePlace;
+namespace SportsScheduler\Resource\RefereePlaces;
 
 use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
@@ -8,7 +8,7 @@ use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Place;
 
-final class Replace
+final class RefereePlaceReplace
 {
     public function __construct(
         protected SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch,

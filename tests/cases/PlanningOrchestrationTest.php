@@ -13,6 +13,7 @@ use SportsPlanning\Planning;
 use SportsPlanning\Planning\PlanningState;
 use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\PlanningOrchestration;
+use SportsPlanning\PlanningWithMeta;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\TestHelper\PlanningCreator;
 
@@ -25,24 +26,25 @@ final class PlanningOrchestrationTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
-        $orchestration = new PlanningOrchestration(
-            new PlanningConfiguration(
-                new PouleStructure([5]),
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                null,
-                false
-            )
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([5]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false
         );
+        $orchestration = new PlanningOrchestration($configuration);
+        $planning = Planning::fromConfiguration($configuration);
         $batchGamesRange = new SportRange(2, 2);
-        $planningA = new Planning($orchestration, $batchGamesRange, 0);
-        $planningA->setState(PlanningState::Succeeded);
-        $planningA->setNrOfBatches(5);
 
-        $planningB = new Planning($orchestration, $batchGamesRange, 0);
-        $planningB->setState(PlanningState::Succeeded);
-        $planningB->setNrOfBatches(4);
+        $planningAWithMeta = new PlanningWithMeta($orchestration, $batchGamesRange, 0, $planning);
+        $planningAWithMeta->setState(PlanningState::Succeeded);
+        $planningAWithMeta->setNrOfBatches(5);
 
-        self::assertSame($planningB, $orchestration->getBestPlanning(null));
+        $planningBWithMeta = new PlanningWithMeta($orchestration, $batchGamesRange, 0, $planning);
+        $planningBWithMeta->setState(PlanningState::Succeeded);
+        $planningBWithMeta->setNrOfBatches(4);
+
+        self::assertSame($planningBWithMeta, $orchestration->getBestPlanning(null));
     }
 
     public function testBestPlanning(): void
@@ -50,24 +52,25 @@ final class PlanningOrchestrationTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
-        $orchestration = new PlanningOrchestration(
-            new PlanningConfiguration(
-                new PouleStructure([5]),
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                null,
-                false
-            )
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([5]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false
         );
+        $orchestration = new PlanningOrchestration($configuration);
+        $planning = Planning::fromConfiguration($configuration);
         $batchGamesRange = new SportRange(2, 2);
-        $planningA = new Planning($orchestration, $batchGamesRange, 0);
-        $planningA->setState(PlanningState::Succeeded);
-        $planningA->setNrOfBatches(5);
 
-        $planningB = new Planning($orchestration, $batchGamesRange, 1);
-        $planningB->setState(PlanningState::Failed);
-        $planningB->setNrOfBatches(5);
+        $planningAWithMeta = new PlanningWithMeta($orchestration, $batchGamesRange, 0, $planning);
+        $planningAWithMeta->setState(PlanningState::Succeeded);
+        $planningAWithMeta->setNrOfBatches(5);
 
-        self::assertSame($planningA, $orchestration->getBestPlanning(null));
+        $planningBWithMeta = new PlanningWithMeta($orchestration, $batchGamesRange, 1, $planning);
+        $planningBWithMeta->setState(PlanningState::Failed);
+        $planningBWithMeta->setNrOfBatches(5);
+
+        self::assertSame($planningAWithMeta, $orchestration->getBestPlanning(null));
     }
 
     public function testBestPlanningOnBatchGamesVersusGamesInARow(): void
@@ -75,25 +78,25 @@ final class PlanningOrchestrationTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
-        $orchestration = new PlanningOrchestration(
-            new PlanningConfiguration(
-                new PouleStructure([5]),
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                RefereeInfo::fromNrOfReferees(2),
-                false
-            )
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([5]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            RefereeInfo::fromNrOfReferees(2),
+            false
         );
-
+        $orchestration = new PlanningOrchestration($configuration);
+        $planning = Planning::fromConfiguration($configuration);
         $batchGamesRange = new SportRange(2, 2);
-        $planningA = new Planning($orchestration, $batchGamesRange, 0);
-        $planningA->setState(PlanningState::Succeeded);
-        $planningA->setNrOfBatches(5);
 
-        $planningB = new Planning($orchestration, $batchGamesRange, 1);
-        $planningB->setState(PlanningState::Succeeded);
-        $planningB->setNrOfBatches(5);
+        $planningAWithMeta = new PlanningWithMeta($orchestration, $batchGamesRange, 0, $planning);
+        $planningAWithMeta->setState(PlanningState::Succeeded);
+        $planningAWithMeta->setNrOfBatches(5);
 
-        self::assertSame($planningB, $orchestration->getBestPlanning(null));
+        $planningBWithMeta = new PlanningWithMeta($orchestration, $batchGamesRange, 1, $planning);
+        $planningBWithMeta->setState(PlanningState::Succeeded);
+        $planningBWithMeta->setNrOfBatches(5);
+
+        self::assertSame($planningBWithMeta, $orchestration->getBestPlanning(null));
     }
 
     public function testBestPlanningOnGamesInARow(): void
@@ -101,23 +104,24 @@ final class PlanningOrchestrationTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
-        $orchestration = new PlanningOrchestration(
-            new PlanningConfiguration(
-                new PouleStructure([5]),
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                RefereeInfo::fromNrOfReferees(2),
-                false
-            )
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([5]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            RefereeInfo::fromNrOfReferees(2),
+            false
         );
+        $orchestration = new PlanningOrchestration($configuration);
+        $planning = Planning::fromConfiguration($configuration);
         $batchGamesRange = new SportRange(2, 2);
-        $planningA = new Planning($orchestration, $batchGamesRange, 1);
-        $planningA->setState(PlanningState::Succeeded);
-        $planningA->setNrOfBatches(5);
 
-        $planningB = new Planning($orchestration, $batchGamesRange, 2);
-        $planningB->setState(PlanningState::Succeeded);
-        $planningB->setNrOfBatches(5);
+        $planningAWithMeta = new PlanningWithMeta($orchestration, $batchGamesRange, 1, $planning);
+        $planningAWithMeta->setState(PlanningState::Succeeded);
+        $planningAWithMeta->setNrOfBatches(5);
 
-        self::assertSame($planningA, $orchestration->getBestPlanning(null));
+        $planningBWithMeta = new PlanningWithMeta($orchestration, $batchGamesRange, 2, $planning);
+        $planningBWithMeta->setState(PlanningState::Succeeded);
+        $planningBWithMeta->setNrOfBatches(5);
+
+        self::assertSame($planningAWithMeta, $orchestration->getBestPlanning(null));
     }
 }

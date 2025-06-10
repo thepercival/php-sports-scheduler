@@ -10,7 +10,9 @@ use SportsHelpers\RefereeInfo;
 use SportsHelpers\SportRange;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsPlanning\Game\AgainstGame;
+use SportsPlanning\Planning;
 use SportsPlanning\PlanningConfiguration;
+use SportsPlanning\PlanningOrchestration;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Resource\Fields;
 use SportsScheduler\TestHelper\PlanningCreator;
@@ -26,14 +28,14 @@ final class FieldsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
         ];
-        $config = new PlanningConfiguration(
+        $configuration = new PlanningConfiguration(
             new PouleStructure([2]),
             $sportsWithNrOfFieldsAndNrOfCycles,
             null,
             false
         );
-        $planning = $this->createPlanning($config);
-        $fields = new Fields($planning);
+        $planning = Planning::fromConfiguration($configuration);
+        $fields = new Fields($configuration, $planning);
 
         $sport = $planning->getSport(1);
         self::assertCount(2, $fields->getAssignableFields($sport));
@@ -57,14 +59,14 @@ final class FieldsTest extends TestCase
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1),
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
         ];
-        $config = new PlanningConfiguration(
+        $configuration = new PlanningConfiguration(
             new PouleStructure([4]),
             $sportsWithNrOfFieldsAndNrOfCycles,
             null,
             false
         );
-        $planning = $this->createPlanning($config);
-        $fields = new Fields($planning);
+        $planning = Planning::fromConfiguration($configuration);
+        $fields = new Fields($configuration, $planning);
         self::assertCount(2, $fields->getAssignableFields($planning->getSport(2)));
         self::assertCount(2, $fields->getAssignableFields($planning->getSport(1)));
     }
@@ -81,17 +83,16 @@ final class FieldsTest extends TestCase
             $refereeInfo,
             false
         );
-        $planning = $this->createPlanning($configuration,$nrOfGamesPerBatchRange);
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfGamesPerBatchRange);
 
-        // (new PlanningOutput())->outputWithGames($planning, true);
-
-        $fields = new Fields($planning);
-        $games = $planning->getGames();
+        $fields = new Fields($configuration, $planningWithMeta->planning);
+        $games = $planningWithMeta->planning->getGames();
         $nrOfGames = count($games);
         $lastGame = $games[$nrOfGames > 0 ? $nrOfGames - 1 : 0];
         self::assertInstanceOf(AgainstGame::class, $lastGame);
         $fields->assignToGame($lastGame);
 
-        self::assertFalse($fields->isSomeFieldAssignable(1, $planning->getPoule(6)));
+        self::assertFalse($fields->isSomeFieldAssignable(1, 6));
     }
 }

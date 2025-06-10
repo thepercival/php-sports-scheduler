@@ -6,10 +6,9 @@ use SportsPlanning\Batches\Batch;
 use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Place as PlanningPlace;
-use SportsPlanning\Game as PlanningGame;
 use SportsPlanning\Field as PlanningField;
 use SportsPlanning\Referee as PlanningReferee;
-use SportsScheduler\Resource\RefereePlace\Replacer as RefereePlaceReplacer;
+use SportsScheduler\Resource\RefereePlaces\RefereePlaceReplacer as RefereePlaceReplacer;
 
 trait PlanningReplacer
 {

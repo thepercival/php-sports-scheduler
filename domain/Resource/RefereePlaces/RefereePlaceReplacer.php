@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Resource\RefereePlace;
+namespace SportsScheduler\Resource\RefereePlaces;
 
 use DateTimeImmutable;
 use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
+use SportsPlanning\PlanningWithMeta;
 use SportsPlanning\Resource\GameCounter\GameCounterForPlace;
 use SportsScheduler\Exceptions\TimeoutException;
 use SportsPlanning\Place;
@@ -15,11 +16,11 @@ use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentValidato
 use SportsPlanning\Resource\GameCounter;
 use SportsScheduler\Resource\GameCounter\Unequal as UnequalResource;
 
-final class Replacer
+final class RefereePlaceReplacer
 {
     protected DateTimeImmutable|null $timeoutDateTime = null;
     /**
-     * @var list<Replace>
+     * @var list<RefereePlaceReplace>
      */
     protected array $revertableReplaces;
     private bool $throwOnTimeout;
@@ -36,14 +37,14 @@ final class Replacer
     }
 
     /**
-     * @param Planning $planning
+     * @param PlanningWithMeta $planningWithMeta
      * @param SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $firstBatch
      * @return bool
      */
-    public function replaceUnequals(Planning $planning,
+    public function replaceUnequals(PlanningWithMeta $planningWithMeta,
         SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $firstBatch): bool
     {
-        $gameAssignmentValidator = new GameAssignmentValidator($planning);
+        $gameAssignmentValidator = new GameAssignmentValidator($planningWithMeta);
         $unequals = $gameAssignmentValidator->getRefereePlaceUnequals();
         if (count($unequals) === 0) {
             return true;
@@ -54,7 +55,7 @@ final class Replacer
                 return false;
             }
         }
-        return $this->replaceUnequals($planning, $firstBatch);
+        return $this->replaceUnequals($planningWithMeta, $firstBatch);
     }
 
     protected function replaceUnequal(
@@ -121,11 +122,11 @@ final class Replacer
                 if ($refereePlaceUniqueIndex === null || $refereePlaceUniqueIndex !== $replaced->getUniqueIndex()) {
                     continue;
                 }
-                if (($game->poule->pouleNr === $replacement->pouleNr && !$this->samePoule)
-                    || ($game->poule->pouleNr !== $replacement->pouleNr && $this->samePoule)) {
+                if (($game->pouleNr === $replacement->pouleNr && !$this->samePoule)
+                    || ($game->pouleNr !== $replacement->pouleNr && $this->samePoule)) {
                     continue;
                 }
-                $replace = new Replace($batch, $game, $replacement->getUniqueIndex(), $refereePlaceUniqueIndex);
+                $replace = new RefereePlaceReplace($batch, $game, $replacement->getUniqueIndex(), $refereePlaceUniqueIndex);
                 if ($this->isAlreadyReplaced($replace)) {
                     return false;
                 }
@@ -145,7 +146,7 @@ final class Replacer
         return false;
     }
 
-    protected function isAlreadyReplaced(Replace $replace): bool
+    protected function isAlreadyReplaced(RefereePlaceReplace $replace): bool
     {
         foreach ($this->revertableReplaces as $revertableReplace) {
             if ($revertableReplace->getGame() === $replace->getGame()

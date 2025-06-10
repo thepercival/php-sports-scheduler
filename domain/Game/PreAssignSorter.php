@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SportsScheduler\Game;
 
 
+use Doctrine\ORM\Configuration;
 use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstOneVsTwo;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
@@ -13,6 +14,7 @@ use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Game\TogetherGamePlace;
 use SportsPlanning\Planning;
+use SportsPlanning\PlanningConfiguration;
 use SportsScheduler\Resource\Service\SportWithNrOfPlacesCreator;
 
 final class PreAssignSorter
@@ -24,9 +26,10 @@ final class PreAssignSorter
 
     /**
      * @param Planning $planning
+     * @param PlanningConfiguration $configuration
      * @return list<AgainstGame|TogetherGame>
      */
-    public function getGames(Planning $planning): array
+    public function getGames(Planning $planning, PlanningConfiguration $configuration): array
     {
         $sportMap = [];
         foreach( $planning->sports as $sportWithNrAndFields ) {
@@ -34,53 +37,52 @@ final class PreAssignSorter
         }
 
         $games = $planning->getGames();
-        if( $planning->getConfiguration()->perPoule ) {
-            uasort($games, function (AgainstGame|TogetherGame $g1, AgainstGame|TogetherGame $g2) use ($sportMap): int {
+        if( $configuration->perPoule ) {
+            uasort($games, function (AgainstGame|TogetherGame $g1, AgainstGame|TogetherGame $g2) use ($planning, $sportMap): int {
                 $sport1 = $sportMap[$g1->getField()->sportNr];
-                $g1Priority = $this->getPriority($g1, $sport1);
+                $g1Priority = $this->getPriority($planning, $g1, $sport1);
                 $sport2 = $sportMap[$g2->getField()->sportNr];
-                $g2Priority = $this->getPriority($g2, $sport2);
+                $g2Priority = $this->getPriority($planning, $g2, $sport2);
                 if ($g1Priority !== $g2Priority) {
                     return $g1Priority - $g2Priority;
                 }
-                $pouleNr1 = $g1->poule->pouleNr;
-                $pouleNr2 = $g2->poule->pouleNr;
-                if ($pouleNr1 !== $pouleNr2) {
-                    return $pouleNr1 - $pouleNr2;
+                if ($g1->pouleNr !== $g2->pouleNr) {
+                    return $g1->pouleNr - $g2->pouleNr;
                 }
                 return 0;
             });
             return array_values($games);
         }
-        $this->initMultiplierMap($planning);
+        $this->initMultiplierMap($planning, $configuration);
 
-        uasort($games, function (AgainstGame|TogetherGame $g1, AgainstGame|TogetherGame $g2): int {
+        uasort($games, function (AgainstGame|TogetherGame $g1, AgainstGame|TogetherGame $g2) use($planning): int {
             $priority1 = $this->getWeightedPriority($g1);
             $priority2 = $this->getWeightedPriority($g2);
             if ($priority1 !== $priority2) {
                 return $priority1 - $priority2;
             }
-            $nrOfPoulePlaces1 = count($g1->poule->places);
-            $nrOfPoulePlaces2 = count($g2->poule->places);
+            $nrOfPoulePlaces1 = count($planning->getPoule($g1->pouleNr)->places);
+            $nrOfPoulePlaces2 = count($planning->getPoule($g2->pouleNr)->places);
             if ($nrOfPoulePlaces1 !== $nrOfPoulePlaces2) {
                 return $nrOfPoulePlaces2 - $nrOfPoulePlaces1;
             }
-            $sumPlaceNrs1 = $this->getSumPlaceNrs($g1);
-            $sumPlaceNrs2 = $this->getSumPlaceNrs($g2);
+            $sumPlaceNrs1 = $this->getSumPlaceNrs($planning, $g1);
+            $sumPlaceNrs2 = $this->getSumPlaceNrs($planning, $g2);
             if ($sumPlaceNrs1 !== $sumPlaceNrs2) {
                 return $sumPlaceNrs1 - $sumPlaceNrs2;
             }
-            return $g1->poule->pouleNr - $g2->poule->pouleNr;
+            return $g1->pouleNr - $g2->pouleNr;
         });
         return array_values($games);
     }
 
     protected function getPriority(
+        Planning $planning,
         AgainstGame|TogetherGame $game,
         TogetherSport|AgainstOneVsOne|AgainstOneVsTwo|AgainstTwoVsTwo $sport): int
     {
         if ($game instanceof AgainstGame) {
-            $nrOfPlaces = count($game->getPlaces());
+            $nrOfPlaces = count($planning->getPoule($game->pouleNr)->places);
             $sportWithNrOfPlaces = (new SportWithNrOfPlacesCreator())->create($nrOfPlaces, $sport);
             $nrOfGamesPerPlaceForSingleCycle = $sportWithNrOfPlaces->calculateNrOfGamesPerPlace(1);
             return $game->cyclePartNr + ( ($game->cycleNr - 1) * $nrOfGamesPerPlaceForSingleCycle );
@@ -94,11 +96,12 @@ final class PreAssignSorter
         return max($cycleNrs);
     }
 
-    protected function getSumPlaceNrs(AgainstGame|TogetherGame $game): int
+    protected function getSumPlaceNrs(Planning $planning, AgainstGame|TogetherGame $game): int
     {
         $total = 0;
-        foreach ($game->getPlaces() as $gamePlace) {
-            $total += $gamePlace->placeNr;
+        $poule = $planning->getPoule($game->pouleNr);
+        foreach ($poule->getPlaces($game) as $place) {
+            $total += $place->placeNr;
         }
         return $total;
     }
@@ -124,9 +127,9 @@ final class PreAssignSorter
 //        4 1.5 vs 1.3
 //        5 1.1 vs 1.4
 //        5 1.2 vs 1.5
-    protected function initMultiplierMap(Planning $planning): int
+    protected function initMultiplierMap(Planning $planning, PlanningConfiguration $configuration): int
     {
-        $maxNrOfPlaces = $planning->getConfiguration()->pouleStructure->getBiggestPoule();
+        $maxNrOfPlaces = $configuration->pouleStructure->getBiggestPoule();
         $this->muliplierMap = [];
         foreach ($planning->sports as $sportWithNrAndFields) {
             $sportNr = $sportWithNrAndFields->sportNr;
@@ -147,10 +150,10 @@ final class PreAssignSorter
     protected function getWeightedPriority(AgainstGame|TogetherGame $game): int
     {
         $priority = $this->getDefaultPriority($game);
-        if (!isset($this->muliplierMap[$game->getField()->sportNr][$game->poule->pouleNr])) {
+        if (!isset($this->muliplierMap[$game->getField()->sportNr][$game->pouleNr])) {
             return $priority;
         }
-        $multiplier = $this->muliplierMap[$game->getField()->sportNr][$game->poule->pouleNr];
+        $multiplier = $this->muliplierMap[$game->getField()->sportNr][$game->pouleNr];
         return (int)((int)$multiplier * $priority);
     }
 

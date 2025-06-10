@@ -7,8 +7,8 @@ namespace SportsScheduler\Tests\Resource\GameCounter;
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\Sports\AgainstOneVsOne;
+use SportsPlanning\Planning;
 use SportsPlanning\PlanningConfiguration;
-use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsPlanning\Resource\GameCounter\GameCounterForPlace;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Resource\GameCounter\Unequal;
@@ -23,13 +23,13 @@ final class UnequalTest extends TestCase
     public function testCalculations(): void
     {
         $sportWithNrOfFieldsAndNrOfCycles = [new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)];
-        $planning = $this->createPlanning(
-            new PlanningConfiguration(
-                new PouleStructure([3]),
-                $sportWithNrOfFieldsAndNrOfCycles,
-                null,
-                false)
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([3]),
+            $sportWithNrOfFieldsAndNrOfCycles,
+            null,
+            false
         );
+        $planning = Planning::fromConfiguration($configuration);
 
         $placeOne = $planning->getPoule(1)->getPlace(1);
         $placeTwo = $planning->getPoule(1)->getPlace(2);

@@ -1,12 +1,13 @@
 <?php
 
-namespace SportsScheduler\Resource\RefereePlace;
+namespace SportsScheduler\Resource\RefereePlaces;
 
 use DateTimeImmutable;
 use SportsHelpers\SelfReferee;
 use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
 use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
 use SportsPlanning\Planning\PlanningState;
+use SportsPlanning\PlanningWithMeta;
 use SportsPlanning\Resource\GameCounter\GameCounterForPlace;
 use SportsScheduler\Exceptions\TimeoutException;
 use SportsPlanning\Game\AgainstGame;
@@ -15,17 +16,17 @@ use SportsPlanning\Place;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\TimeoutConfig;
 
-final class Service
+final class RefereePlaceService
 {
     protected int $nrOfPlaces;
-    private Replacer $replacer;
+    private RefereePlaceReplacer $replacer;
     private bool $throwOnTimeout;
 
-    public function __construct(private Planning $planning)
+    public function __construct(private PlanningWithMeta $planningWithMeta)
     {
-        $this->nrOfPlaces = $this->planning->getNrOfPlaces();
-        $selfReferee = $planning->getConfiguration()->refereeInfo?->selfRefereeInfo->selfReferee;
-        $this->replacer = new Replacer($selfReferee === SelfReferee::SamePoule);
+        $this->nrOfPlaces = $planningWithMeta->getNrOfPlaces();
+        $selfReferee = $planningWithMeta->getConfiguration()->refereeInfo?->selfRefereeInfo?->selfReferee;
+        $this->replacer = new RefereePlaceReplacer($selfReferee === SelfReferee::SamePoule);
         $this->throwOnTimeout = true;
     }
 
@@ -37,8 +38,8 @@ final class Service
     public function assignHelper(SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch): PlanningState
     {
         $timeoutConfig = new TimeoutConfig();
-        $nextTimeoutState = $timeoutConfig->nextTimeoutState($this->planning);
-        $timeoutSeconds = $timeoutConfig->getTimeoutSeconds($this->planning->getConfiguration(), $nextTimeoutState);
+        $nextTimeoutState = $timeoutConfig->nextTimeoutState($this->planningWithMeta);
+        $timeoutSeconds = $timeoutConfig->getTimeoutSeconds($this->planningWithMeta->getConfiguration(), $nextTimeoutState);
         $timeoutDateTime = (new DateTimeImmutable())->add(new \DateInterval('PT' . $timeoutSeconds . 'S'));
         $this->replacer->setTimeoutDateTime($timeoutDateTime);
         $refereePlaceMap = $this->getRefereePlaceMap();
@@ -58,7 +59,7 @@ final class Service
     protected function getRefereePlaceMap(): array
     {
         $refereePlaces = [];
-        foreach ($this->planning->getPlaces() as $place) {
+        foreach ($this->planningWithMeta->planning->getPlaces() as $place) {
             $gameCounter = new GameCounterForPlace($place);
             $refereePlaces[$gameCounter->getIndex()] = $gameCounter;
         }
@@ -112,7 +113,7 @@ final class Service
 
     protected function equallyAssign(SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch): bool
     {
-        return $this->replacer->replaceUnequals($this->planning, $batch->getFirst());
+        return $this->replacer->replaceUnequals($this->planningWithMeta, $batch->getFirst());
     }
 
     private function isRefereePlaceAssignable(
@@ -123,14 +124,14 @@ final class Service
         if ($batch->getBase()->isParticipating($refereePlace) || $batch->isParticipatingAsReferee($refereePlace)) {
             return false;
         }
-        if ($this->planning->getConfiguration()->refereeInfo?->selfRefereeInfo->selfReferee === SelfReferee::SamePoule) {
-            return $refereePlace->pouleNr === $game->poule->pouleNr;
+        if ($this->planningWithMeta->getConfiguration()->refereeInfo?->selfRefereeInfo->selfReferee === SelfReferee::SamePoule) {
+            return $refereePlace->pouleNr === $game->pouleNr;
         }
 //        if (array_key_exists($batch->getNumber(), $this->canBeSamePoule)
 //            && $this->canBeSamePoule[$batch->getNumber()] === $refereePlace->getPoule()) {
 //            return true;
 //        }
-        return $refereePlace->pouleNr !== $game->poule->pouleNr;
+        return $refereePlace->pouleNr !== $game->pouleNr;
     }
 
     /**

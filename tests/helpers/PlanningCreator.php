@@ -21,6 +21,7 @@ use SportsPlanning\Planning\PlanningType;
 use SportsPlanning\Planning\TimeoutState;
 use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\PlanningOrchestration;
+use SportsPlanning\PlanningWithMeta;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Game\GameAssigner;
 use SportsScheduler\Game\PlannableGameCreator;
@@ -77,25 +78,25 @@ trait PlanningCreator
 //        return 2;
 //    }
 
-    protected function createPlanning(
-        PlanningConfiguration $configuration,
+    protected function createPlanningWithMeta(
+        PlanningOrchestration $orchestration,
         SportRange $nrOfBatchGamesRange = null,
         int $maxNrOfGamesInARow = 0,
         bool $disableThrowOnTimeout = false,
         bool $showHighestCompletedBatchNr = false,
         TimeoutState|null $timeoutState = null
-    ): Planning {
+    ): PlanningWithMeta {
         if ($nrOfBatchGamesRange === null) {
             $nrOfBatchGamesRange = new SportRange(1, 1);
         }
-        $orchestration = new PlanningOrchestration($configuration);
-        $planning = new Planning($orchestration, $nrOfBatchGamesRange, $maxNrOfGamesInARow);
+        $planning = Planning::fromConfiguration($orchestration->configuration);
+        $planningWithMeta = new PlanningWithMeta($orchestration, $nrOfBatchGamesRange, $maxNrOfGamesInARow, $planning);
         if ($timeoutState !== null) {
-            $planning->setTimeoutState($timeoutState);
+            $planningWithMeta->setTimeoutState($timeoutState);
         }
 
         $cycleCreator = new CycleCreator($this->createLogger());
-        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($configuration);
+        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($orchestration->configuration);
 
 //        foreach( $sportRootCyclesMap as $placeNr => $sportRootCycles) {
 //            foreach( $sportRootCycles as $sportRootCycle) {
@@ -113,17 +114,17 @@ trait PlanningCreator
         if ($showHighestCompletedBatchNr) {
             $gameAssigner->showHighestCompletedBatchNr();
         }
-        $betterNrOfBatches = $this->determineBetterNrOfBatches($orchestration, $planning->getType(), $nrOfBatchGamesRange);
+        $betterNrOfBatches = $this->determineBetterNrOfBatches($orchestration, $planningWithMeta->getType(), $nrOfBatchGamesRange);
         if( $betterNrOfBatches === null ) {
-            $betterNrOfBatches = $this->calculateMaxNrOfBatches($planning);
+            $betterNrOfBatches = $this->calculateMaxNrOfBatches($planningWithMeta);
         }
-        if( $gameAssigner->assignGames($planning, $betterNrOfBatches) !== PlanningState::Succeeded ) {
+        if( $gameAssigner->assignGames($planningWithMeta, $betterNrOfBatches) !== PlanningState::Succeeded ) {
             throw new Exception("planning could not be created", E_ERROR);
         }
-        return $planning;
+        return $planningWithMeta;
     }
 
-    private function calculateMaxNrOfBatches(Planning $planning): int
+    private function calculateMaxNrOfBatches(PlanningWithMeta $planning): int
     {
         $totalNrOfGames = $planning->getConfiguration()->createPlanningPouleStructure()->calculateNrOfGames();
         return (int)ceil($totalNrOfGames / $planning->minNrOfBatchGames);
@@ -138,7 +139,7 @@ trait PlanningCreator
                 return $orchestration->getBestPlanning(null)->getNrOfBatches() - 1;
             } else {
                 $planningFilter = new PlanningFilter( null, null, $batchGamesRange, 0);
-                $batchGamePlanning = $orchestration->getPlanning($planningFilter);
+                $batchGamePlanning = $orchestration->getPlanningWithMeta($planningFilter);
                 if ($batchGamePlanning !== null) {
                     return $batchGamePlanning->getNrOfBatches();
                 }

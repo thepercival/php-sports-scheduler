@@ -12,8 +12,8 @@ use SportsHelpers\Sports\AgainstTwoVsTwo;
 use SportsPlanning\Planning\PlanningValidity;
 use SportsPlanning\Planning\TimeoutConfig;
 use SportsPlanning\PlanningConfiguration;
+use SportsPlanning\PlanningOrchestration;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
-use SportsPlanning\Referee\PlanningRefereeInfo;
 use SportsScheduler\Planning\PlanningValidator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
@@ -28,20 +28,19 @@ final class ProductionErrorsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 2)
         ];
-        $planning = $this->createPlanning(
-            new PlanningConfiguration(
-                new PouleStructure([10, 2, 2]),
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                null,
-                false
-            ),
-            $nrOfGamesPerBatchRange
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([10, 2, 2]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false
         );
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfGamesPerBatchRange);
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
         $planningValidator = new PlanningValidator();
-        $validity = $planningValidator->validate($planning);
+        $validity = $planningValidator->validate($planningWithMeta);
         self::assertSame(PlanningValidity::VALID, $validity);
 
         //(new PlanningOutput())->outputWithGames($planning, true);
@@ -55,20 +54,19 @@ final class ProductionErrorsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 2)
         ];
-        $planning = $this->createPlanning(
-            new PlanningConfiguration(
-                new PouleStructure([18]),
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                null,
-                false
-            ),
-            $nrOfGamesPerBatchRange
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([18]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false
         );
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfGamesPerBatchRange);
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
         $planningValidator = new PlanningValidator();
-        $validity = $planningValidator->validate($planning);
+        $validity = $planningValidator->validate($planningWithMeta);
         self::assertSame(PlanningValidity::VALID, $validity);
     }
 
@@ -138,13 +136,15 @@ final class ProductionErrorsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 14, 1)
         ];
-        $planning = $this->createPlanning(
-            new PlanningConfiguration(
-                new PouleStructure([5, 5, 5, 5, 5, 5, 5, 5]),
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                null,
-                false
-            ),
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([5, 5, 5, 5, 5, 5, 5, 5]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false
+        );
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta(
+            $orchestration,
             $nrOfGamesPerBatchRange,
             0,
             false,
@@ -156,7 +156,7 @@ final class ProductionErrorsTest extends TestCase
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
         $planningValidator = new PlanningValidator();
-        $validity = $planningValidator->validate($planning);
+        $validity = $planningValidator->validate($planningWithMeta);
         self::assertSame(PlanningValidity::VALID, $validity);
     }
 
@@ -208,24 +208,26 @@ final class ProductionErrorsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 9, 1)
         ];
-        $planning = $this->createPlanning(
-            new PlanningConfiguration(
-                new PouleStructure([5, 5, 4, 4]),
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                null,
-                false
-            ),
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([5, 5, 4, 4]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false
+        );
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta(
+            $orchestration,
             $nrOfGamesPerBatchRange,
-0,
+            0,
             true
         );
 
-        self::assertLessThan(6, $planning->getNrOfBatches());
+        self::assertLessThan(6, $planningWithMeta->getNrOfBatches());
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
         $planningValidator = new PlanningValidator();
-        $validity = $planningValidator->validate($planning);
+        $validity = $planningValidator->validate($planningWithMeta);
         self::assertSame(PlanningValidity::VALID, $validity);
     }
 
@@ -238,15 +240,14 @@ final class ProductionErrorsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
         ];
-        $planning = $this->createPlanning(
-            new PlanningConfiguration(
-                new PouleStructure([7, 6]),
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                null,
-                false
-            ),
-            $nrOfGamesPerBatchRange
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([7, 6]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false
         );
+        $orchestration = new PlanningOrchestration($configuration);
+        $planning = $this->createPlanningWithMeta($orchestration, $nrOfGamesPerBatchRange );
 
         self::assertLessThan(8, $planning->getNrOfBatches());
 
@@ -265,22 +266,21 @@ final class ProductionErrorsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 8, 1)
         ];
-        $planning = $this->createPlanning(
-            new PlanningConfiguration(
-                new PouleStructure([7, 7, 6, 6]),
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                null,
-                false
-            ),
-            $nrOfGamesPerBatchRange
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([7, 7, 6, 6]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false
         );
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfGamesPerBatchRange );
 
-        self::assertEquals(9, $planning->getNrOfBatches());
+        self::assertEquals(9, $planningWithMeta->getNrOfBatches());
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
         $planningValidator = new PlanningValidator();
-        $validity = $planningValidator->validate($planning);
+        $validity = $planningValidator->validate($planningWithMeta);
         self::assertSame(PlanningValidity::VALID, $validity);
     }
 
@@ -291,22 +291,21 @@ final class ProductionErrorsTest extends TestCase
         $sportsWithNrOfFieldsAndNrOfCycles = [
             new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), 1, 1)
         ];
-        $planning = $this->createPlanning(
-            new PlanningConfiguration(
-                new PouleStructure([5]),
-                $sportsWithNrOfFieldsAndNrOfCycles,
-                null,
-                false
-            ),
-            $nrOfGamesPerBatchRange
+        $configuration = new PlanningConfiguration(
+            new PouleStructure([5]),
+            $sportsWithNrOfFieldsAndNrOfCycles,
+            null,
+            false
         );
+        $orchestration = new PlanningOrchestration($configuration);
+        $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfGamesPerBatchRange );
 
-        self::assertEquals(5, $planning->getNrOfBatches());
+        self::assertEquals(5, $planningWithMeta->getNrOfBatches());
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
         $planningValidator = new PlanningValidator();
-        $validity = $planningValidator->validate($planning);
+        $validity = $planningValidator->validate($planningWithMeta);
         self::assertSame(PlanningValidity::VALID, $validity);
     }
 

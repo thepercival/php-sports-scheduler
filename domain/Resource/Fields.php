@@ -9,6 +9,7 @@ use SportsPlanning\Field;
 use SportsPlanning\Game\AgainstGame;
 use SportsPlanning\Game\TogetherGame;
 use SportsPlanning\Planning;
+use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\Poule;
 use SportsPlanning\Sports\SportsWithNrAndFields\AgainstOneVsOneWithNrAndFields;
 use SportsPlanning\Sports\SportsWithNrAndFields\AgainstOneVsTwoWithNrAndFields;
@@ -30,15 +31,14 @@ final class Fields
      */
     private array|null $fieldPouleMap = null;
 
-    public function __construct(Planning $planning)
+    public function __construct(PlanningConfiguration $configuration, Planning $planning)
     {
         $this->unassignedFields = $planning->getFields();
-        $this->initFieldPouleMap($planning);
+        $this->initFieldPouleMap($configuration, $planning);
     }
 
-    private function initFieldPouleMap(Planning $planning): void
+    private function initFieldPouleMap(PlanningConfiguration $configuration, Planning $planning): void
     {
-        $configuration = $planning->getConfiguration();
         if (count($planning->sports) > 1
             || !$configuration->pouleStructure->isBalanced()
             || $configuration->perPoule) {
@@ -57,7 +57,7 @@ final class Fields
                 $addToCeil = $rest === 0 ? 0 : ($nrOfFieldsPerPoule - $rest);
                 $pouleNr = (int) (($field->fieldNr + $addToCeil)  / $nrOfFieldsPerPoule);
                 $poule = $planning->getPoule($pouleNr);
-                $index = $this->getFieldPouleMapIndex($field, $poule);
+                $index = $this->getFieldPouleMapIndex($field->fieldNr, $poule->pouleNr);
                 $this->fieldPouleMap[$index] = true;
             }
         } elseif ($nrOfFields < $nrOfPoules && ($nrOfPoules % $nrOfFields) === 0) {
@@ -70,7 +70,7 @@ final class Fields
                 $addToCeil = $rest === 0 ? 0 : ($nrOfPoulesPerField - $rest);
                 $fieldNr = (int) (($poule->pouleNr + $addToCeil)  / $nrOfPoulesPerField);
                 $field = $sport->getField($fieldNr);
-                $index = $this->getFieldPouleMapIndex($field, $poule);
+                $index = $this->getFieldPouleMapIndex($field->fieldNr, $poule->pouleNr);
                 $this->fieldPouleMap[$index] = true;
             }
         }
@@ -89,10 +89,10 @@ final class Fields
         }));
     }
 
-    public function isSomeFieldAssignable(int $sportNr, Poule $poule): bool
+    public function isSomeFieldAssignable(int $sportNr, int $pouleNr): bool
     {
         foreach ($this->unassignedFields as $unassignedField) {
-            if ($this->isFieldAssignable($unassignedField, $sportNr, $poule)) {
+            if ($this->isFieldAssignable($unassignedField, $sportNr, $pouleNr)) {
                 return true;
             }
         }
@@ -102,7 +102,7 @@ final class Fields
     public function assignToGame(TogetherGame|AgainstGame $game): void
     {
         foreach ($this->unassignedFields as $unassignedField) {
-            if (!$this->isFieldAssignable($unassignedField, $game->getField()->sportNr, $game->poule)) {
+            if (!$this->isFieldAssignable($unassignedField, $game->getField()->sportNr, $game->pouleNr)) {
                 continue;
             }
             $this->assign($unassignedField);
@@ -153,17 +153,17 @@ final class Fields
         array_push($this->unassignedFields, $field);
     }*/
 
-    protected function isFieldAssignable(Field $field, int $sportNr, Poule $poule): bool
+    protected function isFieldAssignable(Field $field, int $sportNr, int $pouleNr): bool
     {
         if ($field->sportNr !== $sportNr) {
             return false;
         }
-        return $this->fieldPouleMap === null|| isset($this->fieldPouleMap[$this->getFieldPouleMapIndex($field, $poule)]);
+        return $this->fieldPouleMap === null|| isset($this->fieldPouleMap[$this->getFieldPouleMapIndex($field->fieldNr, $pouleNr)]);
     }
 
-    protected function getFieldPouleMapIndex(Field $field, Poule $poule): string
+    protected function getFieldPouleMapIndex(int $fieldNr, int $pouleNr): string
     {
-        return 'P' . $poule->pouleNr . '-F' . $field->fieldNr;
+        return 'P' . $pouleNr . '-F' . $fieldNr;
     }
 
 //    public function copy(Planning $planning): Fields
