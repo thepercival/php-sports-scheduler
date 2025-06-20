@@ -42,6 +42,7 @@ final class GameAssigner
         $state = $resourceService->assign($games, $maxNrOfBatches);
         if ($state === PlanningState::Failed || $state === PlanningState::TimedOut) {
             $planning->removeGames();
+            $planningWithMeta->setPlanning($planning);
             $planningWithMeta->setState($state);
             $planningWithMeta->setNrOfBatches(0);
             if ($state === PlanningState::TimedOut) {
@@ -62,6 +63,7 @@ final class GameAssigner
             $state = $refereePlaceService->assign($firstBatch);
             if ($state === PlanningState::Failed || $state === PlanningState::TimedOut) {
                 $planning->removeGames();
+                $planningWithMeta->setPlanning($planning);
                 $planningWithMeta->setState($state);
                 $planningWithMeta->setNrOfBatches(0);
                 if ($state === PlanningState::TimedOut) {
@@ -73,6 +75,7 @@ final class GameAssigner
                 return $state;
             }
         }
+        $planningWithMeta->setPlanning($planning);
         $planningWithMeta->setState(PlanningState::Succeeded);
         $planningWithMeta->setNrOfBatches($firstBatch->getLeaf()->getNumber());
         $planningWithMeta->setValidity(PlanningValidity::NOT_VALIDATED);
