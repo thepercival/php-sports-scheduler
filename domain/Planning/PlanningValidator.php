@@ -39,7 +39,7 @@ final class PlanningValidator
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
-        $validity = $this->validateHasGamesAndAssignedGamePlaces($planningWithMeta->planning);
+        $validity = $this->validateHasGamesAndAssignedGamePlaces($planningWithMeta->getPlanning());
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
@@ -54,7 +54,7 @@ final class PlanningValidator
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
-        $validity = $this->validateResourcesPerBatch($planningWithMeta->planning);
+        $validity = $this->validateResourcesPerBatch($planningWithMeta->getPlanning());
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
@@ -142,7 +142,7 @@ final class PlanningValidator
     protected function validateRefereesWithSelf(PlanningWithMeta $planningWithMeta): int
     {
         $refereeInfo = $planningWithMeta->getConfiguration()->refereeInfo;
-        if ($refereeInfo?->selfRefereeInfo !== null && count($planningWithMeta->planning->referees) > 0) {
+        if ($refereeInfo?->selfRefereeInfo !== null && count($planningWithMeta->getPlanning()->referees) > 0) {
             return PlanningValidity::INVALID_REFEREESELF_AND_REFEREES;
         }
         return PlanningValidity::VALID;
@@ -165,7 +165,7 @@ final class PlanningValidator
 
     protected function validateNrOfBatches(PlanningWithMeta $planningWithMeta): int
     {
-        $games = $planningWithMeta->planning->getGames();
+        $games = $planningWithMeta->getPlanning()->getGames();
         if (count($games) === 0) {
             return 0 === $planningWithMeta->getNrOfBatches() ? PlanningValidity::VALID : PlanningValidity::INVALID_NROFBATCHES;
         }
@@ -231,7 +231,7 @@ final class PlanningValidator
 
     protected function validateRefereesCorrectlyAssigned(PlanningWithMeta $planningWithMeta): int
     {
-        foreach ($planningWithMeta->planning->poules as $poule) {
+        foreach ($planningWithMeta->getPlanning()->poules as $poule) {
             $validity = $this->validateRefereesCorrectlyAssignedHelper($planningWithMeta, $poule);
             if ($validity !== PlanningValidity::VALID) {
                 return $validity;
@@ -253,7 +253,7 @@ final class PlanningValidator
                 if ($refereePlaceUniqueIndex === null) {
                     return PlanningValidity::EMPTY_REFEREEPLACE;
                 }
-                $refereePlace = $planningWithMeta->planning->getPlace($refereePlaceUniqueIndex);
+                $refereePlace = $planningWithMeta->getPlanning()->getPlace($refereePlaceUniqueIndex);
                 if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule
                     && $refereePlace->pouleNr !== $game->pouleNr) {
                     return PlanningValidity::INVALID_ASSIGNED_REFEREEPLACE;
@@ -263,7 +263,7 @@ final class PlanningValidator
                     return PlanningValidity::INVALID_ASSIGNED_REFEREEPLACE;
                 }
             } else {
-                if (count($planningWithMeta->planning->referees) > 0) {
+                if (count($planningWithMeta->getPlanning()->referees) > 0) {
                     if ($game->getRefereeNr() === null) {
                         return PlanningValidity::EMPTY_REFEREE;
                     }
@@ -278,7 +278,7 @@ final class PlanningValidator
         if ($planningWithMeta->maxNrOfGamesInARow === 0) {
             return PlanningValidity::VALID;
         }
-        foreach ($planningWithMeta->planning->poules as $poule) {
+        foreach ($planningWithMeta->getPlanning()->poules as $poule) {
             foreach ($poule->places as $place) {
                 if ($this->checkGamesInARowForPlace($planningWithMeta, $place) === false) {
                     return PlanningValidity::TOO_MANY_GAMES_IN_A_ROW;
@@ -295,7 +295,7 @@ final class PlanningValidator
          * @return array<int,bool>
          */
         $getBatchParticipations = function (Place $place) use ($planningWithMeta): array {
-            $games = $planningWithMeta->planning->getGames(PlanningWithMeta::ORDER_GAMES_BY_BATCH);
+            $games = $planningWithMeta->getPlanning()->getGames(PlanningWithMeta::ORDER_GAMES_BY_BATCH);
             $batchMap = [];
             foreach ($games as $game) {
                 if (array_key_exists($game->getBatchNr(), $batchMap) === false) {

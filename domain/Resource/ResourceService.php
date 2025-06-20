@@ -46,7 +46,7 @@ final class ResourceService
     public function __construct(protected PlanningWithMeta $planningWithMeta, protected LoggerInterface $logger)
     {
         $this->helper = new ResourceServiceHelper($planningWithMeta, $logger);
-        $poules = $planningWithMeta->planning->poules;
+        $poules = $planningWithMeta->getPlanning()->poules;
         $this->refereePlacePredicter = new RefereePlacePredicter($poules);
         $this->batchOutput = new BatchOutput($logger);
         $this->planningOutput = new PlanningOutput($logger);
@@ -69,7 +69,7 @@ final class ResourceService
         $nextTimeoutState = $this->timeoutConfig->nextTimeoutState($this->planningWithMeta);
         $timeoutSeconds = $this->timeoutConfig->getTimeoutSeconds($configuration, $nextTimeoutState);
         $this->timeoutDateTime = $oCurrentDateTime->add(new \DateInterval('PT' . $timeoutSeconds . 'S'));
-        $batch = new Batch($this->planningWithMeta->planning->createPouleMap());
+        $batch = new Batch($this->planningWithMeta->getPlanning()->createPouleMap());
         $selfReferee = $configuration->refereeInfo?->selfRefereeInfo?->selfReferee;
 
         if ($selfReferee === SelfReferee::SamePoule) {
@@ -80,13 +80,13 @@ final class ResourceService
 
 
         try {
-            $fieldResources = new FieldResources($configuration, $this->planningWithMeta->planning);
+            $fieldResources = new FieldResources($configuration, $this->planningWithMeta->getPlanning());
             $assignedBatch = $this->assignBatch($games, $maxNrOfBatches, $fieldResources, $batch);
             if ($assignedBatch === null) {
                 return PlanningState::Failed;
             }
             if ($assignedBatch instanceof Batch) {
-                $refereeService = new RefereeService($this->planningWithMeta->planning->referees);
+                $refereeService = new RefereeService($this->planningWithMeta->getPlanning()->referees);
                 $refereeService->assign($assignedBatch->getFirst());
             }
 
@@ -225,7 +225,7 @@ final class ResourceService
 //            }
 //             ------------- END: OUTPUT --------------- //
 
-            $unassignedPlanningCounters = new PlanningCounters($this->planningWithMeta->planning->createPouleMap(), $this->planningWithMeta->planning->sports, $games);
+            $unassignedPlanningCounters = new PlanningCounters($this->planningWithMeta->getPlanning()->createPouleMap(), $this->planningWithMeta->getPlanning()->sports, $games);
             if (!$this->helper->canGamesBeAssigned($batch->getNumber(), $maxNrOfBatches, $unassignedPlanningCounters)) {
 //                $this->batchOutput->output($batch, ' batch completed nr ' . $batch->getNumber());
 //                $this->logger->info(' batch completed nr ' . $batch->getNumber());

@@ -55,13 +55,13 @@ final class ResourceServiceHelper
                 if ($sumToAssignB !== $sumToAssignA) {
                     return $sumToAssignB - $sumToAssignA;
                 }
-                $pouleA = $this->planningWithMeta->planning->getPoule($gameA->pouleNr);
+                $pouleA = $this->planningWithMeta->getPlanning()->getPoule($gameA->pouleNr);
                 $amountA = count(
                     array_filter($pouleA->getPlaces($gameA), function (Place $place) use ($previousBatch): bool {
                         return !$previousBatch->isParticipating($place);
                     })
                 );
-                $pouleB = $this->planningWithMeta->planning->getPoule($gameB->pouleNr);
+                $pouleB = $this->planningWithMeta->getPlanning()->getPoule($gameB->pouleNr);
                 $amountB = count(
                     array_filter($pouleB->getPlaces($gameB), function (Place $place) use ($previousBatch): bool {
                         return !$previousBatch->isParticipating($place);
@@ -74,7 +74,7 @@ final class ResourceServiceHelper
 
     protected function getMostToAssign(AgainstGame|TogetherGame $game, PlanningCounters $assignedInfo): int
     {
-        $poule = $this->planningWithMeta->planning->getPoule($game->pouleNr);
+        $poule = $this->planningWithMeta->getPlanning()->getPoule($game->pouleNr);
         $mosts = array_map( function (Place $place) use ($assignedInfo): int {
             return $assignedInfo->getNrOfGames($place);
         }, $poule->getPlaces($game) );
@@ -83,7 +83,7 @@ final class ResourceServiceHelper
 
     protected function getSumToAssign(AgainstGame|TogetherGame $game, PlanningCounters $assignedInfo): int
     {
-        $poule = $this->planningWithMeta->planning->getPoule($game->pouleNr);
+        $poule = $this->planningWithMeta->getPlanning()->getPoule($game->pouleNr);
         return array_sum(
             array_map( function (Place $place) use ($assignedInfo): int {
                 return $assignedInfo->getNrOfGames($place);

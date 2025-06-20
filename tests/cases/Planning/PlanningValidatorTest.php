@@ -76,7 +76,7 @@ final class PlanningValidatorTest extends TestCase
             false);
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
@@ -115,7 +115,7 @@ final class PlanningValidatorTest extends TestCase
             false);
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
         /** @var AgainstGame $planningGame */
         $planningGame = $planning->getGames()[0];
@@ -212,7 +212,7 @@ final class PlanningValidatorTest extends TestCase
             false);
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(2, 2));
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
         $planningGame = $planning->getGames()[0];
         self::assertInstanceOf(AgainstGame::class, $planningGame);
@@ -245,7 +245,7 @@ final class PlanningValidatorTest extends TestCase
             false);
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(2, 2));
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
         $planningGame = $planning->getGames()[0];
         self::assertInstanceOf(AgainstGame::class, $planningGame);
@@ -296,7 +296,7 @@ final class PlanningValidatorTest extends TestCase
             false);
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
         $planningGame = $planning->getGames()[0];
         self::assertInstanceOf(AgainstGame::class, $planningGame);
@@ -342,7 +342,7 @@ final class PlanningValidatorTest extends TestCase
             false);
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->output($planning, true);
@@ -408,7 +408,7 @@ final class PlanningValidatorTest extends TestCase
             false);
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
         $firstBatch = $planningWithMeta->createFirstBatch();
         self::assertTrue($firstBatch instanceof SelfRefereeBatchSamePoule
@@ -453,7 +453,7 @@ final class PlanningValidatorTest extends TestCase
             false);
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
         $firstBatch = $planningWithMeta->createFirstBatch();
         self::assertTrue(
@@ -508,7 +508,7 @@ final class PlanningValidatorTest extends TestCase
             false);
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
         $refereePlaceService = new RefereePlaceService($planningWithMeta);
         $firstBatch = $planningWithMeta->createFirstBatch();
@@ -534,7 +534,7 @@ final class PlanningValidatorTest extends TestCase
             false);
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
         $planningValidator = new PlanningValidator();
         $planningValidator->validate($planningWithMeta);
@@ -609,7 +609,7 @@ final class PlanningValidatorTest extends TestCase
         );
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(2, 2), 2);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 

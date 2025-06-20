@@ -34,7 +34,7 @@ final class TogetherValidatorTest extends TestCase
         $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
-        $counter->addGames($planningWithMeta->planning);
+        $counter->addGames($planningWithMeta->getPlanning());
         //echo $counter;
 
         self::assertTrue($counter->balanced());
@@ -55,7 +55,7 @@ final class TogetherValidatorTest extends TestCase
         $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
-        $counter->addGames($planningWithMeta->planning);
+        $counter->addGames($planningWithMeta->getPlanning());
         //echo $counter;
 
         self::assertTrue($counter->balanced());
@@ -76,7 +76,7 @@ final class TogetherValidatorTest extends TestCase
         $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
-        $counter->addGames($planningWithMeta->planning);
+        $counter->addGames($planningWithMeta->getPlanning());
         //echo $counter;
 
         self::assertTrue($counter->balanced());
@@ -97,7 +97,7 @@ final class TogetherValidatorTest extends TestCase
         $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
-        $counter->addGames($planningWithMeta->planning);
+        $counter->addGames($planningWithMeta->getPlanning());
         //echo $counter;
 
         self::assertTrue($counter->balanced());
@@ -119,7 +119,7 @@ final class TogetherValidatorTest extends TestCase
         $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(1, 1));
 
         $counter = new TogetherValidator($nrOfPlaces);
-        $counter->addGames($planningWithMeta->planning);
+        $counter->addGames($planningWithMeta->getPlanning());
 
         self::assertTrue($counter->balanced());
     }

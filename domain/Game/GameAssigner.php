@@ -27,7 +27,7 @@ final class GameAssigner
 
     public function assignGames(PlanningWithMeta $planningWithMeta, int $maxNrOfBatches): PlanningState
     {
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
         $games = (new PreAssignSorter())->getGames($planning, $planningWithMeta->getConfiguration());
 //        (new GameOutput($this->logger))->outputGames($games);
 

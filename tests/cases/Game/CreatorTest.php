@@ -14,8 +14,6 @@ use SportsHelpers\Sports\AgainstOneVsOne;
 use SportsHelpers\Sports\AgainstTwoVsTwo;
 use SportsHelpers\Sports\TogetherSport;
 use SportsPlanning\Game\AgainstGame;
-use SportsPlanning\Output\PlanningOutput;
-use SportsPlanning\Output\PlanningOutput\Extra;
 use SportsPlanning\PlanningConfiguration;
 use SportsPlanning\PlanningOrchestration;
 use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
@@ -46,9 +44,9 @@ final class CreatorTest extends TestCase
         $cycleCreator = new CycleCreator($this->createLogger());
         $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($configuration);
         $gameCreator = new PlannableGameCreator($this->createLogger());
-        $gameCreator->createGamesFromCycles($planningWithMeta->planning, $sportRootCyclesMap);
+        $gameCreator->createGamesFromCycles($planningWithMeta->getPlanning(), $sportRootCyclesMap);
 
-        $games = $planningWithMeta->planning->getGames();
+        $games = $planningWithMeta->getPlanning()->getGames();
         self::assertInstanceOf(AgainstGame::class, reset($games));
     }
 
@@ -71,9 +69,9 @@ final class CreatorTest extends TestCase
         $cycleCreator = new CycleCreator($this->createLogger());
         $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($configuration);
         $gameCreator = new PlannableGameCreator($this->createLogger());
-        $gameCreator->createGamesFromCycles($planningWithMeta->planning, $sportRootCyclesMap);
+        $gameCreator->createGamesFromCycles($planningWithMeta->getPlanning(), $sportRootCyclesMap);
 
-        $games = $planningWithMeta->planning->getGames();
+        $games = $planningWithMeta->getPlanning()->getGames();
         self::assertInstanceOf(TogetherGame::class, reset($games));
     }
 
@@ -94,8 +92,8 @@ final class CreatorTest extends TestCase
         $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfBatchGamesRange, 0);
 
         // (new PlanningOutput())->output($planningWithMeta, Extra::Games->value);
-        self::assertCount(3, $this->getAgainstGames($planningWithMeta->planning));
-        self::assertCount(8, $this->getTogetherGames($planningWithMeta->planning));
+        self::assertCount(3, $this->getAgainstGames($planningWithMeta->getPlanning()));
+        self::assertCount(8, $this->getTogetherGames($planningWithMeta->getPlanning()));
     }
 
 

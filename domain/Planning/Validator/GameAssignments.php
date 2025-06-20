@@ -32,7 +32,7 @@ final class GameAssignments
 
     public function validate(): void
     {
-        if (count($this->planningWithMeta->planning->sports) === 1) {
+        if (count($this->planningWithMeta->getPlanning()->sports) === 1) {
             $fieldMap = $this->counterManager->getCounter(ResourceType::Fields);
             $unequalFields = $this->getMaxUnequal($fieldMap);
             if ($unequalFields !== null) {
@@ -63,7 +63,7 @@ final class GameAssignments
         $refereeInfo = $this->planningWithMeta->getConfiguration()->refereeInfo;
         $selfRefereeInfo = $refereeInfo?->selfRefereeInfo;
 
-        $nrOfPoules = count($this->planningWithMeta->planning->poules);
+        $nrOfPoules = count($this->planningWithMeta->getPlanning()->poules);
         if ($selfRefereeInfo?->selfReferee === SelfReferee::SamePoule) {
             return true;
         }

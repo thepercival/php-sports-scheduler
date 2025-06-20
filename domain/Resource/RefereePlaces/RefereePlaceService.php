@@ -59,7 +59,7 @@ final class RefereePlaceService
     protected function getRefereePlaceMap(): array
     {
         $refereePlaces = [];
-        foreach ($this->planningWithMeta->planning->getPlaces() as $place) {
+        foreach ($this->planningWithMeta->getPlanning()->getPlaces() as $place) {
             $gameCounter = new GameCounterForPlace($place);
             $refereePlaces[$gameCounter->getIndex()] = $gameCounter;
         }

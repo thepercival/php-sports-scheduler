@@ -36,7 +36,7 @@ final class AgainstValidatorTest extends TestCase
         // (new PlanningOutput())->outputWithGames($planning, true);
 
         $validator = new AgainstValidator($nrOfPlaces);
-        $validator->addGames($planningWithMeta->planning);
+        $validator->addGames($planningWithMeta->getPlanning());
         self::assertTrue($validator->balanced());
     }
 
@@ -57,7 +57,7 @@ final class AgainstValidatorTest extends TestCase
         // (new PlanningOutput())->outputWithGames($planning, true);
 
         $validator = new AgainstValidator($nrOfPlaces);
-        $validator->addGames($planningWithMeta->planning);
+        $validator->addGames($planningWithMeta->getPlanning());
         self::assertTrue($validator->balanced());
     }
 
@@ -78,8 +78,8 @@ final class AgainstValidatorTest extends TestCase
         // (new PlanningOutput())->outputWithGames($planning, true);
 
         $validator = new AgainstValidator($nrOfPlaces);
-        foreach($this->getAgainstGames($planningWithMeta->planning) as $game) {
-            $validator->addGame($planningWithMeta->planning, $game);
+        foreach($this->getAgainstGames($planningWithMeta->getPlanning()) as $game) {
+            $validator->addGame($planningWithMeta->getPlanning(), $game);
         }
         self::assertTrue($validator->balanced());
     }
@@ -101,7 +101,7 @@ final class AgainstValidatorTest extends TestCase
         // (new PlanningOutput())->outputWithGames($planning, true);
 
         $validator = new AgainstValidator($nrOfPlaces);
-        $validator->addGames($planningWithMeta->planning);
+        $validator->addGames($planningWithMeta->getPlanning());
         self::assertTrue($validator->balanced());
     }
 
@@ -120,7 +120,7 @@ final class AgainstValidatorTest extends TestCase
         $planningWithMeta = $this->createPlanningWithMeta($orchestration, new SportRange(1, 1));
 
         $validator = new AgainstValidator($nrOfPlaces);
-        $validator->addGames($planningWithMeta->planning);
+        $validator->addGames($planningWithMeta->getPlanning());
 
 //        $extras = Extra::Input->value + Extra::Games->value + Extra::Totals->value;
 //        (new PlanningOutput())->output($planning, $extras);

@@ -37,7 +37,7 @@ final class RefereePlacePredicterTest extends TestCase
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
 
-        $predicter = new RefereePlacePredicter($planningWithMeta->planning->poules);
+        $predicter = new RefereePlacePredicter($planningWithMeta->getPlanning()->poules);
         $firstBatch = $planningWithMeta->createFirstBatch();
         self::assertTrue(
             $firstBatch instanceof SelfRefereeBatchSamePoule
@@ -75,7 +75,7 @@ final class RefereePlacePredicterTest extends TestCase
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
 
-        $predicter = new RefereePlacePredicter($planningWithMeta->planning->poules);
+        $predicter = new RefereePlacePredicter($planningWithMeta->getPlanning()->poules);
         $firstBatch = $planningWithMeta->createFirstBatch();
         self::assertTrue(
             $firstBatch instanceof SelfRefereeBatchSamePoule
@@ -97,7 +97,7 @@ final class RefereePlacePredicterTest extends TestCase
         );
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $poules = $planningWithMeta->planning->poules;
+        $poules = $planningWithMeta->getPlanning()->poules;
         $predicter = new RefereePlacePredicter($poules);
         $firstBatch = $planningWithMeta->createFirstBatch();
         self::assertTrue(

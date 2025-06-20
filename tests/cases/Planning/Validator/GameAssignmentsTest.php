@@ -44,7 +44,7 @@ final class GameAssignmentsTest extends TestCase
         );
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
         $resourceCounter = new ResourceCounter($planningWithMeta);
         $gameCounters = $resourceCounter->getCounters(ResourceType::Fields->value);
@@ -69,7 +69,7 @@ final class GameAssignmentsTest extends TestCase
         );
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
@@ -99,7 +99,7 @@ final class GameAssignmentsTest extends TestCase
         );
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
@@ -130,7 +130,7 @@ final class GameAssignmentsTest extends TestCase
         );
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
         $firstPoule = $planning->getPoule(1);
         $replacedPlace = $firstPoule->getPlace(5);
@@ -186,7 +186,7 @@ final class GameAssignmentsTest extends TestCase
         );
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
 
         $secondPoule = $planning->getPoule(2);
@@ -224,7 +224,7 @@ final class GameAssignmentsTest extends TestCase
         );
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->planning;
+        $planning = $planningWithMeta->getPlanning();
 
         // $planningGames = $planning->getPoule(1)->getGames();
         $replacedField = $planning->getSport(1)->getField(2);
@@ -254,8 +254,8 @@ final class GameAssignmentsTest extends TestCase
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
 
         // $planningGames = $planning->getPoule(1)->getGames();
-        $replacedReferee = $planningWithMeta->planning->getReferee(2);
-        $replacedByReferee = $planningWithMeta->planning->getReferee(1);
+        $replacedReferee = $planningWithMeta->getPlanning()->getReferee(2);
+        $replacedByReferee = $planningWithMeta->getPlanning()->getReferee(1);
         $firstBatch = $planningWithMeta->createFirstBatch();
         self::assertInstanceOf(Batch::class, $firstBatch);
         $this->replaceReferee($firstBatch, $replacedReferee, $replacedByReferee);
@@ -284,7 +284,7 @@ final class GameAssignmentsTest extends TestCase
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration);
 
-        $firstPoule = $planningWithMeta->planning->getPoule(1);
+        $firstPoule = $planningWithMeta->getPlanning()->getPoule(1);
         $replacedPlace = $firstPoule->getPlace(5);
         $replacedByPlace = $firstPoule->getPlace(1);
         $firstBatch = $planningWithMeta->createFirstBatch();

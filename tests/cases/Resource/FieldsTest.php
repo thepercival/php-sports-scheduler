@@ -86,8 +86,8 @@ final class FieldsTest extends TestCase
         $orchestration = new PlanningOrchestration($configuration);
         $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfGamesPerBatchRange);
 
-        $fields = new Fields($configuration, $planningWithMeta->planning);
-        $games = $planningWithMeta->planning->getGames();
+        $fields = new Fields($configuration, $planningWithMeta->getPlanning());
+        $games = $planningWithMeta->getPlanning()->getGames();
         $nrOfGames = count($games);
         $lastGame = $games[$nrOfGames > 0 ? $nrOfGames - 1 : 0];
         self::assertInstanceOf(AgainstGame::class, $lastGame);
