@@ -9,7 +9,7 @@ use SportsPlanning\Game\Together as TogetherGame;
 use SportsPlanning\Poule;
 use SportsPlanning\Poule\GameCounter;
 
-class UniquePlacesCounter
+final class UniquePlacesCounter
 {
     protected GameCounter $gameCounter;
     /**

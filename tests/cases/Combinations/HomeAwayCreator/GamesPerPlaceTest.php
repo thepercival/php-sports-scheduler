@@ -9,13 +9,17 @@ use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as HomeAwayCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
 use SportsPlanning\Output\Combinations\HomeAway as HomeAwayOutput;
 
-class GamesPerPlaceTest extends TestCase
+/**
+ * @psalm-suppress InvalidReturnType
+ */
+final class GamesPerPlaceTest extends TestCase
 {
     use PlanningCreator;
 
@@ -126,7 +130,7 @@ class GamesPerPlaceTest extends TestCase
         $processor = new UidProcessor();
         $logger->pushProcessor($processor);
 
-        $handler = new StreamHandler('php://stdout', Logger::INFO);
+        $handler = new StreamHandler('php://stdout', LogLevel::INFO);
         $logger->pushHandler($handler);
         return $logger;
     }

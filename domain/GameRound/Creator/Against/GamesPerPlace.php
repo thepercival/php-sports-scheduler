@@ -24,7 +24,7 @@ use SportsPlanning\PlaceCounter;
 use SportsPlanning\Poule;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
 
-class GamesPerPlace extends AgainstCreator
+final class GamesPerPlace extends AgainstCreator
 {
     protected int $highestGameRoundNumberCompleted = 0;
     protected int $nrOfGamesPerGameRound = 0;
@@ -100,7 +100,7 @@ class GamesPerPlace extends AgainstCreator
             ) === false) {
             throw new NoSolutionException('creation of homeaway can not be false', E_ERROR);
         }
-        $homeAwayBalancer = new HomeAwayBalancer($this->logger);
+        $homeAwayBalancer = new HomeAwayBalancer();
         $swappedHomeAways = $homeAwayBalancer->balance2(
             $assignedHomeMap,
             $assignedCounter->getAssignedAwayMap(),
@@ -137,7 +137,7 @@ class GamesPerPlace extends AgainstCreator
         }
 
         if ($this->timeoutDateTime !== null && (new DateTimeImmutable()) > $this->timeoutDateTime) {
-            throw new TimeoutException('exceeded maximum duration', E_ERROR);
+            throw new TimeoutException('exceeded maximum duration', E_ERROR, null);
         }
 
         if ($this->isGameRoundCompleted($againstWithPoule, $gameRound)) {

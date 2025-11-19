@@ -12,7 +12,7 @@ use SportsHelpers\SportRange;
 /**
  * @implements \Iterator<string, SportVariantWithFields|null>
  */
-class AgainstSportsIterator implements \Iterator
+final class AgainstSportsIterator implements \Iterator
 {
     protected SportRange $sidePlacesRange;
 
@@ -62,16 +62,19 @@ class AgainstSportsIterator implements \Iterator
         $this->nrOfH2H = $this->nrOfH2HRange->getMin();
     }
 
+    #[\Override]
     public function current(): SportVariantWithFields|null
     {
         return $this->current;
     }
 
+    #[\Override]
     public function key(): string
     {
         return (string)$this->current;
     }
 
+    #[\Override]
     public function next(): void
     {
         if ($this->current === null) {
@@ -84,12 +87,14 @@ class AgainstSportsIterator implements \Iterator
         $this->current = $this->createAgainstSportVariantWithFields();
     }
 
+    #[\Override]
     public function rewind(): void
     {
         $this->rewindNrOfFields();
         $this->current = $this->createAgainstSportVariantWithFields();
     }
 
+    #[\Override]
     public function valid(): bool
     {
         return $this->current !== null;

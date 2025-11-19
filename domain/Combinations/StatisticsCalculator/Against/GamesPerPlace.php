@@ -15,7 +15,7 @@ use SportsScheduler\Combinations\StatisticsCalculator\Against\GamesPerPlace as G
 use SportsPlanning\Place;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
 
-class GamesPerPlace extends StatisticsCalculator
+final class GamesPerPlace extends StatisticsCalculator
 {
     protected bool $checkOnWith;
 
@@ -38,6 +38,7 @@ class GamesPerPlace extends StatisticsCalculator
         return $this->againstGppWithPoule->getTotalNrOfGames() - $this->getNrOfHomeAwaysAssigned();
     }
 
+    #[\Override]
     public function addHomeAway(HomeAway $homeAway): self
     {
         // $assignedSportMap = $this->assignedSportMap;
@@ -71,6 +72,7 @@ class GamesPerPlace extends StatisticsCalculator
         );
     }
 
+    #[\Override]
     public function allAssigned(): bool
     {
         if ($this->nrOfHomeAwaysAssigned < $this->againstGppWithPoule->getTotalNrOfGames()) {
@@ -373,7 +375,7 @@ class GamesPerPlace extends StatisticsCalculator
     public function outputAssignedTotals(string $prefix, bool $withDetails): void {
         $header = 'AssignedTotals : ';
         $allowedRange = $this->assignedMap->getAllowedRange();
-        $header .= ' allowedRange : ' . $allowedRange;
+        $header .= ' allowedRange : ' . ((string)$allowedRange);
         $nrOfPossiblities = $this->assignedMap->getMap()->count();
         $header .= ', belowMinimum/max : ' . $this->assignedMap->getNrOfPlacesBelowMinimum();
         $nrOfGamesToGo = $this->getNrOfGamesToGo();
@@ -388,16 +390,16 @@ class GamesPerPlace extends StatisticsCalculator
             $map = $this->assignedMap->getMap()->getAmountMap();
             $mapOutput = $prefix . 'map: ';
             foreach($map as $amount) {
-                $mapOutput .= $amount  . ', ';
+                $mapOutput .= ((string)$amount)  . ', ';
             }
-            $this->logger->info($prefix . $mapOutput . ' => range / difference : '. $mapRange . '/' . $this->assignedMap->getAmountDifference());
+            $this->logger->info($prefix . $mapOutput . ' => range / difference : '. ((string)$mapRange) . '/' . $this->assignedMap->getAmountDifference());
         }
     }
 
     public function outputAgainstTotals(string $prefix, bool $withDetails): void {
         $header = 'AgainstTotals : ';
         $allowedRange = $this->assignedAgainstMap->getAllowedRange();
-        $header .= ' allowedRange : ' . $allowedRange;
+        $header .= ' allowedRange : ' . ((string)$allowedRange);
         $nrOfPossiblities = count( $this->assignedAgainstMap->getMap()->getList() );
         $header .= ', belowMinimum/max : ' . $this->assignedAgainstMap->getNrOfPlaceCombinationsBelowMinimum();
         $nrOfGamesToGo = $this->getNrOfGamesToGo();
@@ -412,9 +414,9 @@ class GamesPerPlace extends StatisticsCalculator
             $map = $this->assignedAgainstMap->getMap()->getAmountMap();
             $mapOutput = $prefix . 'map: ';
             foreach($map as $amount) {
-                $mapOutput .= $amount  . ', ';
+                $mapOutput .= ((string)$amount)  . ', ';
             }
-            $this->logger->info($prefix . $mapOutput . ' => range / difference : '. $mapRange . '/' . $this->assignedAgainstMap->getAmountDifference());
+            $this->logger->info($prefix . $mapOutput . ' => range / difference : '. ((string)$mapRange) . '/' . $this->assignedAgainstMap->getAmountDifference());
         }
 
         if( !$withDetails ) {
@@ -448,7 +450,7 @@ class GamesPerPlace extends StatisticsCalculator
     {
         $header = 'WithTotals : ';
         $allowedRange = $this->assignedWithMap->getAllowedRange();
-        $header .= ' allowedRange : ' . $allowedRange;
+        $header .= ' allowedRange : ' . ((string)$allowedRange);
         $nrOfPossiblities = count( $this->assignedWithMap->getMap()->getList() );
         $header .= ', belowMinimum/max : ' . $this->assignedWithMap->getNrOfPlaceCombinationsBelowMinimum();
         $nrOfGamesToGo = $this->getNrOfGamesToGo();
@@ -462,9 +464,9 @@ class GamesPerPlace extends StatisticsCalculator
             $map = $this->assignedWithMap->getMap()->getAmountMap();
             $mapOutput = $prefix . 'map: ';
             foreach($map as $amount) {
-                $mapOutput .= $amount  . ', ';
+                $mapOutput .= ((string)$amount)  . ', ';
             }
-            $this->logger->info($prefix . $mapOutput . ' => range / difference : '. $mapRange . '/' . $this->assignedWithMap->getAmountDifference());
+            $this->logger->info($prefix . $mapOutput . ' => range / difference : '. ((string)$mapRange) . '/' . $this->assignedWithMap->getAmountDifference());
         }
 
         if( !$withDetails ) {
@@ -473,7 +475,7 @@ class GamesPerPlace extends StatisticsCalculator
         $prefix =  '    ' . $prefix;
         $amountPerLine = 4; $counter = 0; $line = '';
         foreach( $this->assignedWithMap->getMap()->getList() as $counterIt ) {
-            $line .= $counterIt->getPlaceCombination() . ' ' . $counterIt->count() . 'x, ';
+            $line .= ((string)$counterIt->getPlaceCombination()) . ' ' . $counterIt->count() . 'x, ';
             if( ++$counter === $amountPerLine ) {
                 $this->logger->info($prefix . $line);
                 $counter = 0;

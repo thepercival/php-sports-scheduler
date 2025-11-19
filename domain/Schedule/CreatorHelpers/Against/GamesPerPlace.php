@@ -18,7 +18,7 @@ use SportsPlanning\Schedule\Sport as SportSchedule;
 use SportsScheduler\Schedule\CreatorHelpers\Against as AgainstHelper;
 use SportsScheduler\Schedule\SportVariantWithNr;
 
-class GamesPerPlace extends AgainstHelper
+final class GamesPerPlace extends AgainstHelper
 {
     public function __construct(LoggerInterface $logger)
     {

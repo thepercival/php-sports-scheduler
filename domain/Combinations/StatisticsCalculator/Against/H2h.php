@@ -14,7 +14,7 @@ use SportsPlanning\Combinations\PlaceCounterMap;
 use SportsScheduler\Combinations\StatisticsCalculator;
 use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
 
-class H2h extends StatisticsCalculator
+final class H2h extends StatisticsCalculator
 {
     public function __construct(
         protected Againsth2hWithPoule $againstH2hWithPoule,
@@ -27,6 +27,7 @@ class H2h extends StatisticsCalculator
         parent::__construct($assignedHomeMap, $nrOfHomeAwaysAssigned, $logger);
     }
 
+    #[\Override]
     public function allAssigned(): bool
     {
         if ($this->nrOfHomeAwaysAssigned < $this->againstH2hWithPoule->getTotalNrOfGames()) {
@@ -35,6 +36,7 @@ class H2h extends StatisticsCalculator
         return true;
     }
 
+    #[\Override]
     public function addHomeAway(HomeAway $homeAway): self
     {
         $assignedSportMap = $this->assignedSportMap;

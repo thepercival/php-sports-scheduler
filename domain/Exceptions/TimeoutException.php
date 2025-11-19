@@ -4,9 +4,9 @@ namespace SportsScheduler\Exceptions;
 
 use Exception;
 
-class TimeoutException extends Exception
+final class TimeoutException extends Exception
 {
-    public function __construct(string $message, int $code = 0, Exception $previous = null)
+    public function __construct(string $message, int $code, Exception|null $previous)
     {
         parent::__construct($message, $code, $previous);
     }

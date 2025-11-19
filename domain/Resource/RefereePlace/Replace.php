@@ -7,7 +7,7 @@ use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Game\Together as TogetherGame;
 use SportsPlanning\Place;
 
-class Replace
+final class Replace
 {
     public function __construct(
         protected SelfRefereeBatch $batch,

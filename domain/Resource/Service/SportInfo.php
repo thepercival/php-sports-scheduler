@@ -13,7 +13,7 @@ use SportsPlanning\Game\Together as TogetherGame;
 use SportsPlanning\Sport;
 use SportsScheduler\Resource\UniquePlacesCounter;
 
-class SportInfo
+final class SportInfo
 {
     protected int $nrOfGames = 0;
     /**

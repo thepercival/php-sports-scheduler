@@ -18,7 +18,7 @@ use SportsPlanning\Schedule;
 use SportsPlanning\Schedule\Sport as SportSchedule;
 use SportsPlanning\Sport;
 
-class Creator
+final class Creator
 {
     public function __construct(protected LoggerInterface $logger)
     {
@@ -57,7 +57,9 @@ class Creator
                 }
             }
         }
-        throw new \Exception('could not find sport-gameround-schedule for nfOfPlace: ' . $nrOfPlaces . ', and sport: "' . $sport->createVariant() . '"', E_ERROR);
+        throw new \Exception(
+            'could not find sport-gameround-schedule for nfOfPlace: ' . $nrOfPlaces .
+            ', and sport: "' . ((string)$sport->createVariant()) . '"', E_ERROR);
     }
 
     protected function createSportGames(

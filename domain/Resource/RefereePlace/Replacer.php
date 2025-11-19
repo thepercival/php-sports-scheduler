@@ -14,7 +14,7 @@ use SportsPlanning\Resource\GameCounter;
 use SportsPlanning\Resource\GameCounter\Place as PlaceGameCounter;
 use SportsScheduler\Resource\GameCounter\Unequal as UnequalResource;
 
-class Replacer
+final class Replacer
 {
     protected DateTimeImmutable|null $timeoutDateTime = null;
     /**
@@ -79,7 +79,7 @@ class Replacer
                 if ($this->throwOnTimeout && (new DateTimeImmutable()) > $this->timeoutDateTime) {
                     throw new TimeoutException(
                         "exceeded timeout while replacing selfreferee",
-                        E_ERROR
+                        E_ERROR, null
                     );
                 }
                 if (!$this->replace(

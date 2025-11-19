@@ -28,7 +28,7 @@ use SportsPlanning\Output\BatchOutput;
 use SportsPlanning\Output\GameOutput;
 use SportsPlanning\Output\PlanningOutput;
 
-class Service
+final class Service
 {
     private DateTimeImmutable|null $timeoutDateTime = null;
     private Predicter $refereePlacePredicter;
@@ -287,7 +287,7 @@ class Service
         if ($this->throwOnTimeout && (new DateTimeImmutable()) > $this->timeoutDateTime) {
             $nextTimeoutState = $this->timeoutConfig->nextTimeoutState($this->planning);
             $timeoutSeconds = $this->timeoutConfig->getTimeoutSeconds($this->planning->getInput(), $nextTimeoutState);
-            throw new TimeoutException('exceeded maximum duration of ' . $timeoutSeconds . ' seconds', E_ERROR);
+            throw new TimeoutException('exceeded maximum duration of ' . $timeoutSeconds . ' seconds', E_ERROR, null);
         }
         $minNrOfBatchGames = $this->planning->getMinNrOfBatchGames();
         if (count($games) >= $minNrOfBatchGames

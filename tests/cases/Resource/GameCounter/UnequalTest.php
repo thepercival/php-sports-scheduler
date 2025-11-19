@@ -10,7 +10,7 @@ use SportsScheduler\Resource\GameCounter\Unequal;
 use SportsScheduler\TestHelper\PlanningCreator;
 // use SportsPlanning\TestHelper\PlanningReplacer;
 
-class UnequalTest extends TestCase
+final class UnequalTest extends TestCase
 {
     use PlanningCreator;
     // use PlanningReplacer;

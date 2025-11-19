@@ -30,7 +30,7 @@ use SportsHelpers\Sport\Variant\WithPoule\Against\GamesPerPlace as AgainstGppWit
 use SportsHelpers\Sport\Variant\WithPoule\Single as SingleWithPoule;
 use SportsHelpers\Sport\Variant\WithPoule\AllInOneGame as AllInOneGameWithPoule;
 
-class Validator
+final class Validator
 {
     public function __construct()
     {

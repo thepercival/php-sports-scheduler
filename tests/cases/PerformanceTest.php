@@ -17,7 +17,7 @@ use SportsPlanning\Referee\Info as RefereeInfo;
 use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class PerformanceTest extends TestCase
+final class PerformanceTest extends TestCase
 {
     use PlanningCreator;
 

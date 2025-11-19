@@ -12,7 +12,7 @@ use SportsPlanning\Poule;
 /**
  * @implements Iterator<string|int, PlaceCombination>
  */
-class PlaceCombinationIterator implements Iterator
+final class PlaceCombinationIterator implements Iterator
 {
     /**
      * @var list<PlaceIterator>
@@ -30,12 +30,14 @@ class PlaceCombinationIterator implements Iterator
         $this->placeIterators = array_map(fn (Place $place) => new PlaceIterator($poule, $place->getPlaceNr()), $startPlaces);
     }
 
+    #[\Override]
     public function current(): PlaceCombination
     {
         $places = array_map(fn (PlaceIterator $placeIterator) => $placeIterator->current(), $this->placeIterators);
         return new PlaceCombination($places);
     }
 
+    #[\Override]
     public function next(): void
     {
         $this->nrOfIncrements++;
@@ -46,16 +48,19 @@ class PlaceCombinationIterator implements Iterator
         }
     }
 
+    #[\Override]
     public function key(): string
     {
-        return '' . $this->current();
+        return '' . ((string)$this->current());
     }
 
+    #[\Override]
     public function valid(): bool
     {
         return $this->nrOfIncrements <= $this->maxNrOfIncrements;
     }
 
+    #[\Override]
     public function rewind(): void
     {
     }

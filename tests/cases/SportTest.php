@@ -8,7 +8,7 @@ use SportsHelpers\Sport\PersistVariant as PersistSportVariant;
 use SportsPlanning\Sport;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class SportTest extends TestCase
+final class SportTest extends TestCase
 {
     use PlanningCreator;
 

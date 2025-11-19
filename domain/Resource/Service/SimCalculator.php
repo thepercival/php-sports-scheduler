@@ -18,7 +18,7 @@ use SportsHelpers\Sport\Variant\WithPoule\Single as SingleWithPoule;
 use SportsScheduler\Resource\UniquePlacesCounter;
 use SportsPlanning\Referee\Info as RefereeInfo;
 
-class SimCalculator
+final class SimCalculator
 {
     private RefereeInfo $refereeInfo;
     private PouleStructure $pouleStructure;

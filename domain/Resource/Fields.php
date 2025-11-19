@@ -12,7 +12,7 @@ use SportsPlanning\Input;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
 
-class Fields
+final class Fields
 {
     /**
      * @var list<Field>

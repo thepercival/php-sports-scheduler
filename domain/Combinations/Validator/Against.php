@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Combinations\Validator;
 
-use drupol\phpermutations\Iterators\Combinations as CombinationIt;
 use SportsHelpers\Against\Side;
 use SportsPlanning\Combinations\HomeAway;
 use SportsPlanning\Game\Place\Against as AgainstGamePlace;
@@ -16,13 +15,14 @@ use SportsPlanning\Place;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
 
-class Against extends Validator
+final class Against extends Validator
 {
     public function __construct(protected Poule $poule, protected Sport $sport)
     {
         parent::__construct($poule, $sport);
     }
 
+    #[\Override]
     public function addGame(AgainstGame $game): void
     {
         if ($game->getSport() !== $this->sport) {

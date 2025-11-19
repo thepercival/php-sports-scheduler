@@ -13,7 +13,7 @@ use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class AgainstTest extends TestCase
+final class AgainstTest extends TestCase
 {
     use PlanningCreator;
     use GppMarginCalculator;

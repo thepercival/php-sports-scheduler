@@ -7,6 +7,7 @@ use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\SportRange;
@@ -26,7 +27,7 @@ use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWit
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class GamesPerPlaceTest extends TestCase
+final class GamesPerPlaceTest extends TestCase
 {
     use PlanningCreator;
     use GppMarginCalculator;
@@ -113,7 +114,7 @@ class GamesPerPlaceTest extends TestCase
         $processor = new UidProcessor();
         $logger->pushProcessor($processor);
 
-        $handler = new StreamHandler('php://stdout', Logger::INFO);
+        $handler = new StreamHandler('php://stdout', LogLevel::INFO);
         $logger->pushHandler($handler);
         return $logger;
     }

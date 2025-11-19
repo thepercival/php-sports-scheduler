@@ -19,7 +19,7 @@ use SportsPlanning\Poule;
 use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
 use SportsPlanning\Combinations\Amount\Range as AmountRange;
 
-class H2h extends AgainstCreator
+final class H2h extends AgainstCreator
 {
     public function __construct(LoggerInterface $logger)
     {

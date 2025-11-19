@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Combinations\Validator;
 
-use drupol\phpermutations\Iterators\Combinations as CombinationIt;
 use SportsHelpers\Against\Side;
 use SportsPlanning\PlaceCounter;
 use SportsPlanning\Combinations\PlaceCombination;
+use SportsScheduler\Combinations\DrupolCombinationIterator;
 use SportsScheduler\Combinations\Validator;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Place;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
 
-class With extends Validator
+final class With extends Validator
 {
     public function __construct(protected Poule $poule, protected Sport $sport)
     {
@@ -32,7 +32,7 @@ class With extends Validator
         $placesMinPlace = array_values(array_filter($places, function (Place $placeIt) use ($place): bool {
             return $placeIt !== $place;
         }));
-        $combinationIt = new CombinationIt($placesMinPlace, $nrOfPlaces - 1);
+        $combinationIt = new DrupolCombinationIterator($placesMinPlace, $nrOfPlaces - 1);
         /** @var array<int, list<Place>> $allCombinations */
         $allCombinations = $combinationIt->toArray();
         return array_values(array_map(function (array $combinations): PlaceCombination {
@@ -40,6 +40,7 @@ class With extends Validator
         }, $allCombinations));
     }
 
+    #[\Override]
     public function addGame(AgainstGame $game): void
     {
         if ($game->getSport() !== $this->sport) {

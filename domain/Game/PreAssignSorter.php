@@ -11,7 +11,7 @@ use SportsPlanning\Game\Place\Together as TogetherGamePlace;
 use SportsPlanning\Input;
 use SportsPlanning\Planning;
 
-class PreAssignSorter
+final class PreAssignSorter
 {
     /**
      * @var array<int, array<int, int|float>>
@@ -135,7 +135,7 @@ class PreAssignSorter
             return $gameRoundNumber;
         }
         $multiplier = $this->muliplierMap[$game->getSport()->getNumber()][$game->getPoule()->getNumber()];
-        return (int)($multiplier * $gameRoundNumber);
+        return (int)(((float)$multiplier) * (float)$gameRoundNumber);
     }
 
     protected function getDefaultGameNumber(TogetherGame|AgainstGame $game): int

@@ -14,7 +14,7 @@ use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class SingleTest extends TestCase
+final class SingleTest extends TestCase
 {
     use PlanningCreator;
     use GppMarginCalculator;

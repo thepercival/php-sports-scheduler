@@ -2,6 +2,6 @@
 
 namespace SportsScheduler\Exceptions;
 
-class UnequalAssignedRefereesException extends \Exception
+final class UnequalAssignedRefereesException extends \Exception
 {
 }

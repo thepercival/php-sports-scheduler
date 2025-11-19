@@ -15,7 +15,7 @@ use SportsPlanning\GameRound\Together\GamePlace;
 use SportsPlanning\Place;
 use SportsPlanning\Poule;
 
-class Single
+final class Single
 {
     protected GameRoundOutput $gameRoundOutput;
 //    /**

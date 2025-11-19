@@ -14,7 +14,7 @@ use SportsPlanning\Output\Planning as PlanningOutput;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class AllInOneGameTest extends TestCase
+final class AllInOneGameTest extends TestCase
 {
     use PlanningCreator;
     use GppMarginCalculator;

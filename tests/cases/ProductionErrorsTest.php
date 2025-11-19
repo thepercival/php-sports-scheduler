@@ -15,7 +15,7 @@ use SportsPlanning\Output\Planning as PlanningOutput;
 use SportsPlanning\Referee\Info as RefereeInfo;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class ProductionErrorsTest extends TestCase
+final class ProductionErrorsTest extends TestCase
 {
     use PlanningCreator;
 

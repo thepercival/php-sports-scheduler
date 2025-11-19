@@ -30,7 +30,7 @@ use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
 use stdClass;
 
 
-class Creator
+final class Creator
 {
     /**
      * @var list<Schedule>|null

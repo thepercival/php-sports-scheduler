@@ -15,7 +15,7 @@ use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
 use SportsScheduler\Schedule\SportVariantWithNr;
 
-class AgainstDifferenceManager
+final class AgainstDifferenceManager
 {
     /**
      * @var array<int, AmountRange>

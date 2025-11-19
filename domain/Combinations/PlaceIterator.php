@@ -11,7 +11,7 @@ use SportsPlanning\Poule;
 /**
  * @implements Iterator<int, Place>
  */
-class PlaceIterator implements Iterator
+final class PlaceIterator implements Iterator
 {
     private int $current;
 
@@ -20,11 +20,13 @@ class PlaceIterator implements Iterator
         $this->current = $startNr;
     }
 
+    #[\Override]
     public function current(): Place
     {
         return $this->poule->getPlace($this->current);
     }
 
+    #[\Override]
     public function next(): void
     {
         if ($this->current === $this->poule->getPlaces()->count()) {
@@ -34,16 +36,19 @@ class PlaceIterator implements Iterator
         }
     }
 
+    #[\Override]
     public function key(): int
     {
         return $this->current;
     }
 
+    #[\Override]
     public function valid(): bool
     {
         return true;
     }
 
+    #[\Override]
     public function rewind(): void
     {
         $this->current = 1;

@@ -9,6 +9,7 @@ use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\VariantWithFields;
 use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
@@ -16,7 +17,7 @@ use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
 use SportsScheduler\Combinations\HomeAwayCreator\H2h as HomeAwayCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class H2hTest extends TestCase
+final class H2hTest extends TestCase
 {
     use PlanningCreator;
 
@@ -91,7 +92,7 @@ class H2hTest extends TestCase
         $processor = new UidProcessor();
         $logger->pushProcessor($processor);
 
-        $handler = new StreamHandler('php://stdout', Logger::INFO);
+        $handler = new StreamHandler('php://stdout', LogLevel::INFO);
         $logger->pushHandler($handler);
         return $logger;
     }

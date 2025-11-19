@@ -2,7 +2,7 @@
 
 namespace SportsScheduler\Exceptions;
 
-class UnequalAssignedFieldsException extends \Exception
+final class UnequalAssignedFieldsException extends \Exception
 
 {
 }

@@ -2,7 +2,7 @@
 
 namespace SportsScheduler\Combinations\StatisticsCalculator;
 
-class LeastAmountAssigned
+final class LeastAmountAssigned
 {
     public function __construct(public int $amount, public int $nrOfPlaces)
     {

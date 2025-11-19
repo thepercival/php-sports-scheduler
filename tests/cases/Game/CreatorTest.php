@@ -9,6 +9,7 @@ use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use SportsHelpers\SportRange;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsScheduler\Game\Assigner as GameAssigner;
@@ -24,7 +25,7 @@ use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class CreatorTest extends TestCase
+final class CreatorTest extends TestCase
 {
     use PlanningCreator;
     use GppMarginCalculator;
@@ -243,7 +244,7 @@ class CreatorTest extends TestCase
         $processor = new UidProcessor();
         $logger->pushProcessor($processor);
 
-        $handler = new StreamHandler('php://stdout', Logger::INFO);
+        $handler = new StreamHandler('php://stdout', LogLevel::INFO);
         $logger->pushHandler($handler);
         return $logger;
     }

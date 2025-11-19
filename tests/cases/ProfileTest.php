@@ -9,6 +9,7 @@ use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
@@ -31,7 +32,7 @@ use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWit
 use SportsScheduler\TestHelper\PlanningCreator;
 
 // cachegrind output default to /tmp
-class ProfileTest extends TestCase
+final class ProfileTest extends TestCase
 {
     use PlanningCreator;
 
@@ -131,7 +132,7 @@ class ProfileTest extends TestCase
         $processor = new UidProcessor();
         $logger->pushProcessor($processor);
 
-        $handler = new StreamHandler('php://stdout', Logger::INFO);
+        $handler = new StreamHandler('php://stdout', LogLevel::INFO);
         $logger->pushHandler($handler);
         return $logger;
     }

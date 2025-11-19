@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Combinations\HomeAwayCreator;
 
-use drupol\phpermutations\Iterators\Combinations as CombinationIt;
+use SportsScheduler\Combinations\DrupolCombinationIterator;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
 use SportsPlanning\Combinations\HomeAway;
@@ -33,6 +33,7 @@ final class GamesPerPlace extends HomeAwayCreator
         parent::__construct();
     }
 
+
     /**
      * @param AgainstGppWithPoule $againstGppWithPoule
      * @return list<HomeAway>
@@ -48,14 +49,23 @@ final class GamesPerPlace extends HomeAwayCreator
         $homeAways = [];
 
         /** @var \Iterator<string, list<Place>> $homeIt */
-        $homeIt = new CombinationIt($poule->getPlaceList(), $againstGpp->getNrOfHomePlaces());
+        $homeIt = new DrupolCombinationIterator($poule->getPlaceList(), $againstGpp->getNrOfHomePlaces());
+
         while ($homeIt->valid()) {
-            $homePlaceCombination = new PlaceCombination($homeIt->current());
-            $awayPlaces = array_diff($poule->getPlaceList(), $homeIt->current());
+            $currentHomeIt = $homeIt->current();
+            if( $currentHomeIt === null ) {
+                throw new \Exception("Current homeplacenrs can not be empty", E_ERROR);
+            }
+            $homePlaceCombination = new PlaceCombination($currentHomeIt);
+            $awayPlaces = array_diff($poule->getPlaceList(), $currentHomeIt);
             /** @var \Iterator<string, list<Place>> $awayIt */
-            $awayIt = new CombinationIt($awayPlaces, $againstGpp->getNrOfAwayPlaces());
+            $awayIt = new DrupolCombinationIterator($awayPlaces, $againstGpp->getNrOfAwayPlaces());
             while ($awayIt->valid()) {
-                $awayPlaceCombination = new PlaceCombination($awayIt->current());
+                $currentAwayIt = $awayIt->current();
+                if( $currentAwayIt === null ) {
+                    throw new \Exception("Current awayplacenrs can not be empty", E_ERROR);
+                }
+                $awayPlaceCombination = new PlaceCombination($currentAwayIt);
                 if ($againstGpp->getNrOfHomePlaces() !== $againstGpp->getNrOfAwayPlaces()
                     || $homePlaceCombination->getNumber() < $awayPlaceCombination->getNumber()) {
                     $homeAway = $this->createHomeAway($againstGpp, $homePlaceCombination, $awayPlaceCombination);

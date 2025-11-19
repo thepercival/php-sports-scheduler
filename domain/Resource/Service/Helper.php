@@ -20,7 +20,7 @@ use SportsPlanning\Planning\Type as PlanningType;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\Filter as PlanningFilter;
 
-class Helper
+final class Helper
 {
     protected bool $balancedStructure;
     protected int $totalNrOfGames;

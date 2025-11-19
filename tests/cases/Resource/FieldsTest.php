@@ -11,7 +11,7 @@ use SportsScheduler\Resource\Fields;
 use SportsScheduler\TestHelper\PlanningCreator;
 // use SportsScheduler\TestHelper\PlanningReplacer;
 
-class FieldsTest extends TestCase
+final class FieldsTest extends TestCase
 {
     use PlanningCreator;
     // use PlanningReplacer;

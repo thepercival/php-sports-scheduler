@@ -103,7 +103,7 @@ abstract class StatisticsCalculator
     {
         $header = 'HomeTotals : ';
         $allowedRange = $this->assignedHomeMap->getAllowedRange();
-        $header .= ' allowedRange : ' . $allowedRange;
+        $header .= ' allowedRange : ' . ((string)$allowedRange);
         $nrOfPossiblities = count( $this->assignedHomeMap->getMap()->getList() );
         $header .= ', belowMinimum/max : ' . $this->assignedHomeMap->getNrOfPlaceCombinationsBelowMinimum();
         $header .= '/' . (new Calculator($nrOfPossiblities, $allowedRange))->maxCountBeneathMinimum();
@@ -113,7 +113,7 @@ abstract class StatisticsCalculator
         $map = $this->assignedHomeMap->getMap()->getAmountMap();
         $mapOutput = $prefix . 'map: ';
         foreach($map as $amount) {
-            $mapOutput .= $amount  . ', ';
+            $mapOutput .= ((string)$amount)  . ', ';
         }
         $this->logger->info($prefix . $mapOutput . 'difference : '.$this->assignedHomeMap->getAmountDifference());
 
@@ -123,7 +123,7 @@ abstract class StatisticsCalculator
         $prefix =  '    ' . $prefix;
         $amountPerLine = 4; $counter = 0; $line = '';
         foreach( $this->assignedHomeMap->getMap()->getList() as $counterIt ) {
-            $line .= $counterIt->getPlaceCombination() . ' ' . $counterIt->count() . 'x, ';
+            $line .= ((string)$counterIt->getPlaceCombination()) . ' ' . $counterIt->count() . 'x, ';
             if( ++$counter === $amountPerLine ) {
                 $this->logger->info($prefix . $line);
                 $counter = 0;

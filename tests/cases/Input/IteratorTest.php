@@ -10,7 +10,7 @@ use SportsHelpers\SportRange;
 use SportsScheduler\Input\Iterator as InputIterator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class IteratorTest extends TestCase
+final class IteratorTest extends TestCase
 {
     use PlanningCreator;
 

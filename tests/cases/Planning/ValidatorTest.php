@@ -9,6 +9,7 @@ use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use ReflectionObject;
 use SportsHelpers\Against\Side as AgainstSide;
 use SportsHelpers\SelfReferee;
@@ -16,6 +17,7 @@ use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\SportRange;
 use SportsPlanning\Batch;
+use SportsPlanning\Output\InputOutput;
 use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
 use SportsPlanning\Game\Against as AgainstGame;
@@ -35,7 +37,7 @@ use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 use SportsScheduler\TestHelper\PlanningReplacer;
 
-class ValidatorTest extends TestCase
+final class ValidatorTest extends TestCase
 {
     use PlanningCreator;
     use PlanningReplacer;
@@ -334,12 +336,16 @@ class ValidatorTest extends TestCase
     public function testInvalidAssignedRefereePlaceSamePoule(): void
     {
         $sportVariantWithFields = $this->getAgainstH2hSportVariantWithFields(1);
+        $planningInput = $this->createInput(
+            [3, 3],
+            [$sportVariantWithFields],
+            new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
+        );
+//        $inputOutput = new InputOutput($this->getLogger());
+//        $inputOutput->output($planningInput, false);
+
         $planning = $this->createPlanning(
-            $this->createInput(
-                [3, 3],
-                [$sportVariantWithFields],
-                new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
-            )
+            $planningInput
         );
 
         $firstBatch = $planning->createFirstBatch();
@@ -556,7 +562,7 @@ class ValidatorTest extends TestCase
         $processor = new UidProcessor();
         $logger->pushProcessor($processor);
 
-        $handler = new StreamHandler('php://stdout', Logger::INFO);
+        $handler = new StreamHandler('php://stdout', LogLevel::INFO);
         $logger->pushHandler($handler);
         return $logger;
     }

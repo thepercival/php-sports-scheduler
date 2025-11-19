@@ -10,9 +10,9 @@ use SportsPlanning\Combinations\PlaceCombinationCounter;
 use SportsPlanning\Combinations\PlaceCombinationCounterMap;
 use SportsPlanning\Combinations\PlaceCombinationCounterMap\Ranged as RangedPlaceCombinationCounterMap;
 
-class HomeAwayBalancer
+final class HomeAwayBalancer
 {
-    public function __construct(private LoggerInterface $logger)
+    public function __construct()
     {
     }
 

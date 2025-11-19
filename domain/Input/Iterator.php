@@ -23,7 +23,7 @@ use SportsPlanning\Referee\Info as RefereeInfo;
  * @template TValue
  * @implements \Iterator<TKey, TValue>
  */
-class Iterator implements \Iterator
+final class Iterator implements \Iterator
 {
     protected PouleStructureIterator $structureIterator;
     protected AgainstSportsIterator $sportsIterator;
@@ -70,11 +70,13 @@ class Iterator implements \Iterator
         $this->selfReferee = SelfReferee::Disabled;
     }
 
+    #[\Override]
     public function current(): ?PlanningInput
     {
         return $this->current;
     }
 
+    #[\Override]
     public function key(): string
     {
         $planningInputOutput = new PlanningOutput();
@@ -84,6 +86,7 @@ class Iterator implements \Iterator
         return $planningInputOutput->getInputConfigurationAsString($this->current->createConfiguration());
     }
 
+    #[\Override]
     public function next(): void
     {
         if ($this->current === null) {
@@ -123,6 +126,7 @@ class Iterator implements \Iterator
 //        }
     }
 
+    #[\Override]
     public function rewind(): void
     {
         $this->rewindStructure();
@@ -135,6 +139,7 @@ class Iterator implements \Iterator
         $this->current = $this->createInput($pouleStructure, $sportVariant);
     }
 
+    #[\Override]
     public function valid(): bool
     {
         return $this->current !== null;

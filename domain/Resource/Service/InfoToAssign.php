@@ -8,7 +8,7 @@ use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Game\Together as TogetherGame;
 use SportsScheduler\Place\GameCounter;
 
-class InfoToAssign
+final class InfoToAssign
 {
     protected int $nrOfGames = 0;
     /**

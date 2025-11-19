@@ -11,7 +11,7 @@ use SportsHelpers\SportRange;
 use SportsScheduler\Input\AgainstSportsIterator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-class AgainstSportsIteratorTest extends TestCase
+final class AgainstSportsIteratorTest extends TestCase
 {
     use PlanningCreator;
 

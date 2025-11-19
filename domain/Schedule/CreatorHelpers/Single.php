@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Schedule\CreatorHelpers;
 
-use drupol\phpermutations\Generators\Combinations as CombinationsGenerator;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
@@ -12,6 +11,7 @@ use SportsHelpers\Sport\Variant\AllInOneGame;
 use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
 use SportsPlanning\Combinations\AssignedCounter;
 use SportsPlanning\Combinations\PlaceCombination;
+use SportsScheduler\Combinations\DrupolCombinationGenerator;
 use SportsScheduler\GameRound\Creator\Single as SingleGameRoundCreator;
 use SportsPlanning\GameRound\Together as TogetherGameRound;
 use SportsPlanning\Place;
@@ -22,7 +22,7 @@ use SportsPlanning\Schedule\GamePlace;
 use SportsPlanning\Schedule\Sport as SportSchedule;
 use SportsScheduler\Schedule\SportVariantWithNr;
 
-class Single
+final class Single
 {
     public function __construct(protected LoggerInterface $logger)
     {
@@ -72,13 +72,13 @@ class Single
     }
 
     /**
-     * @param CombinationsGenerator $combinations
+     * @param DrupolCombinationGenerator $combinationsGenerator
      * @return list<PlaceCombination>
      */
-    protected function toPlaceCombinations(CombinationsGenerator $combinations): array
+    protected function toPlaceCombinations(DrupolCombinationGenerator $combinationsGenerator): array
     {
         /** @var array<int, list<Place>> $combinationsTmp */
-        $combinationsTmp = $combinations->toArray();
+        $combinationsTmp = $combinationsGenerator->toArray();
         return array_values(array_map(
             function (array $places): PlaceCombination {
                 return new PlaceCombination($places);

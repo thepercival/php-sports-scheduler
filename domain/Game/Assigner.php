@@ -13,7 +13,7 @@ use SportsPlanning\Planning\TimeoutConfig;
 use SportsScheduler\Resource\RefereePlace\Service as RefereePlaceService;
 use SportsScheduler\Resource\Service as ResourceService;
 
-class Assigner
+final class Assigner
 {
     protected bool $throwOnTimeout;
     protected bool $showHighestCompletedBatchNr = false;

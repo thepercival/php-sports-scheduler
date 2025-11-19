@@ -17,7 +17,7 @@ use SportsPlanning\Planning\State as PlanningState;
 use SportsPlanning\Planning\TimeoutConfig;
 use SportsPlanning\Resource\GameCounter\Place as PlaceGameCounter;
 
-class Service
+final class Service
 {
     protected int $nrOfPlaces;
     private Replacer $replacer;
@@ -94,7 +94,7 @@ class Service
             if ($this->throwOnTimeout && (new DateTimeImmutable()) > $timeoutDateTime) {
                 throw new TimeoutException(
                     "exceeded maximum duration",
-                    E_ERROR
+                    E_ERROR, null
                 );
             }
             return $this->assignBatch($nextBatch, $nextBatch->getBase()->getGames(), $refereePlaceMap, $timeoutDateTime);

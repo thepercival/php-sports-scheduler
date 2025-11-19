@@ -8,7 +8,7 @@ use SportsPlanning\Batch;
 use SportsPlanning\Input;
 use SportsPlanning\Referee;
 
-class RefereeService
+final class RefereeService
 {
     public function __construct(private Input $input)
     {

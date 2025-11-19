@@ -8,6 +8,7 @@ use Exception;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use SportsHelpers\PouleStructure;
 
 use SportsHelpers\Sport\Variant\AllInOneGame as AllInOneGameSportVariant;
@@ -101,7 +102,7 @@ trait PlanningCreator
 //        $processor = new UidProcessor();
 //        $logger->pushProcessor($processor);
 
-        $handler = new StreamHandler('php://stdout', Logger::INFO);
+        $handler = new StreamHandler('php://stdout', LogLevel::INFO);
         $logger->pushHandler($handler);
         return $logger;
     }

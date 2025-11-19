@@ -18,7 +18,7 @@ use SportsPlanning\Schedule\Sport as SportSchedule;
 use SportsPlanning\Sport;
 use SportsScheduler\Schedule\SportVariantWithNr;
 
-class AllInOneGame
+final class AllInOneGame
 {
     public function __construct()
     {

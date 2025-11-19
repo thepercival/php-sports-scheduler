@@ -4,7 +4,7 @@ namespace SportsScheduler\Resource\GameCounter;
 
 use SportsPlanning\Resource\GameCounter;
 
-class Unequal implements \Stringable
+final class Unequal implements \Stringable
 {
     private int $pouleNr = 0;
 
@@ -63,6 +63,7 @@ class Unequal implements \Stringable
         $this->pouleNr = $pouleNr;
     }
 
+    #[\Override]
     public function __toString(): string
     {
         $retVal = 'min:' . $this->getMinNrOfGames() . " => ";
