@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Input;
 
+use Psr\Log\LoggerInterface;
 use SportsHelpers\PouleStructure\Balanced as BalancedPouleStructure;
 use SportsHelpers\PouleStructure\BalancedIterator as PouleStructureIterator;
 use SportsHelpers\SelfReferee;
@@ -39,7 +40,8 @@ final class Iterator implements \Iterator
         SportRange $rangePoules,
         SportRange $rangeNrOfReferees,
         SportRange $rangeNrOfFields,
-        SportRange $rangeGameAmount
+        SportRange $rangeGameAmount,
+        private LoggerInterface $logger
     ) {
         $this->structureIterator = new PouleStructureIterator($rangePlaces, $rangePlacesPerPoule, $rangePoules);
         $this->sportsIterator = new AgainstSportsIterator($rangeNrOfFields, $rangeGameAmount);
@@ -79,7 +81,7 @@ final class Iterator implements \Iterator
     #[\Override]
     public function key(): string
     {
-        $planningInputOutput = new PlanningOutput();
+        $planningInputOutput = new PlanningOutput($this->logger);
         if ($this->current === null) {
             return 'no current value';
         }

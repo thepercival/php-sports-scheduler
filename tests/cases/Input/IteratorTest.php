@@ -22,7 +22,8 @@ final class IteratorTest extends TestCase
             new SportRange(1, 3),
             new SportRange(0, 3),
             new SportRange(1, 3),
-            new SportRange(1, 2)
+            new SportRange(1, 2),
+            $this->getLogger()
         );
 
         $planningInput = $inputIterator->current();
@@ -60,7 +61,8 @@ final class IteratorTest extends TestCase
             new SportRange(1, 3),
             new SportRange(0, 3),
             new SportRange(1, 3),
-            new SportRange(1, 2)
+            new SportRange(1, 2),
+            $this->getLogger()
         );
 
         $nrOfPossibilities = 0;
