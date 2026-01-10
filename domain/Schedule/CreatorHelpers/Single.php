@@ -11,7 +11,6 @@ use SportsHelpers\Sport\Variant\AllInOneGame;
 use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
 use SportsPlanning\Combinations\AssignedCounter;
 use SportsPlanning\Combinations\PlaceCombination;
-use SportsScheduler\Combinations\DrupolCombinationGenerator;
 use SportsScheduler\GameRound\Creator\Single as SingleGameRoundCreator;
 use SportsPlanning\GameRound\Together as TogetherGameRound;
 use SportsPlanning\Place;
@@ -20,6 +19,7 @@ use SportsPlanning\Schedule;
 use SportsPlanning\Schedule\Game;
 use SportsPlanning\Schedule\GamePlace;
 use SportsPlanning\Schedule\Sport as SportSchedule;
+use SportsScheduler\Permutations\Generators\CombinationsGenerator;
 use SportsScheduler\Schedule\SportVariantWithNr;
 
 final class Single
@@ -72,13 +72,13 @@ final class Single
     }
 
     /**
-     * @param DrupolCombinationGenerator $combinationsGenerator
+     * @param CombinationsGenerator $combinationsGenerator
      * @return list<PlaceCombination>
      */
-    protected function toPlaceCombinations(DrupolCombinationGenerator $combinationsGenerator): array
+    protected function toPlaceCombinations(CombinationsGenerator $combinationsGenerator): array
     {
         /** @var array<int, list<Place>> $combinationsTmp */
-        $combinationsTmp = $combinationsGenerator->toArray();
+        $combinationsTmp = $combinationsGenerator->rewindAndExport();
         return array_values(array_map(
             function (array $places): PlaceCombination {
                 return new PlaceCombination($places);

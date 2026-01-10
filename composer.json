@@ -32,7 +32,6 @@
     "league/period": "^5.0",
     "doctrine/orm": "^3.0",
     "monolog/monolog": "^3.0",
-    "drupol/phpermutations": "^1.4",
     "thepercival/php-sports-helpers": "dev-deprecated",
     "thepercival/php-sports-planning": "dev-deprecated"
   },
@@ -64,7 +63,7 @@
   },
   "scripts": {
     "test": [
-      "XDEBUG_MODE=coverage vendor/bin/phpunit --configuration tests/phpunit.xml tests/cases/"
+      "XDEBUG_MODE=coverage vendor/bin/phpunit --configuration tests/phpunit.xml --testsuite all"
     ],
     "profile": [
       "XDEBUG_MODE=profile vendor/bin/phpunit --configuration tests/phpunit.xml tests/cases/ProfileTest.php"

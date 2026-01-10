@@ -13,6 +13,7 @@ use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Place;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
+use SportsScheduler\Permutations\Iterators\CombinationsIterator;
 
 final class With extends Validator
 {
@@ -32,9 +33,9 @@ final class With extends Validator
         $placesMinPlace = array_values(array_filter($places, function (Place $placeIt) use ($place): bool {
             return $placeIt !== $place;
         }));
-        $combinationIt = new DrupolCombinationIterator($placesMinPlace, $nrOfPlaces - 1);
+        $combinationIt = new CombinationsIterator($placesMinPlace, $nrOfPlaces - 1);
         /** @var array<int, list<Place>> $allCombinations */
-        $allCombinations = $combinationIt->toArray();
+        $allCombinations = $combinationIt->rewindAndExport();
         return array_values(array_map(function (array $combinations): PlaceCombination {
             return new PlaceCombination($combinations);
         }, $allCombinations));

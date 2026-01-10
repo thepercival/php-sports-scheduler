@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<!--        displayDetailsOnTestsThatTriggerDeprecations="true" -->
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" colors="true" bootstrap="../vendor/autoload.php" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.4/phpunit.xsd" cacheDirectory=".phpunit.cache">
+<!-- displayDetailsOnTestsThatTriggerDeprecations="true" -->
+<phpunit displayDetailsOnTestsThatTriggerDeprecations="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" colors="true" bootstrap="../vendor/autoload.php" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.4/phpunit.xsd" cacheDirectory=".phpunit.cache">
   <coverage>
     <report>
       <html outputDirectory="./codecoverage/html" lowUpperBound="50" highLowerBound="80"/>
@@ -8,9 +8,12 @@
     </report>
   </coverage>
   <testsuites>
-    <testsuite name="php-sports-scheduler">
+    <testsuite name="all">
       <directory suffix="Test.php">cases</directory>
     </testsuite>
+      <testsuite name="combinations">
+          <directory suffix="Test.php">cases/Combinations</directory>
+      </testsuite>
   </testsuites>
   <logging/>
   <source>

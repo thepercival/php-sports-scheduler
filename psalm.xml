@@ -17,40 +17,6 @@
         </ignoreFiles>
     </projectFiles>
 
-
-
-
-
-<!--        <InvalidReturnType>-->
-<!--            <errorLevel type="suppress">-->
-<!--                <directory name="some_bad_directory" /> &lt;!&ndash; all InvalidReturnType issues in this directory are suppressed &ndash;&gt;-->
-<!--                <file name="some_bad_file.php" />  &lt;!&ndash; all InvalidReturnType issues in this file are suppressed &ndash;&gt;-->
-<!--            </errorLevel>-->
-<!--        </InvalidReturnType>-->
-<!--        <UndefinedMethod>-->
-<!--            <errorLevel type="suppress">-->
-<!--                <referencedMethod name="Bar\Bat::bar" /> &lt;!&ndash; not supported for all types of errors &ndash;&gt;-->
-<!--                <file name="some_bad_file.php" />-->
-<!--            </errorLevel>-->
-<!--        </UndefinedMethod>-->
-<!--        <UndefinedClass>-->
-<!--            <errorLevel type="suppress">-->
-<!--                <referencedClass name="Bar\Bat\Baz" />-->
-<!--            </errorLevel>-->
-<!--        </UndefinedClass>-->
-<!--        <PropertyNotSetInConstructor>-->
-<!--            <errorLevel type="suppress">-->
-<!--                <referencedProperty name="Symfony\Component\Validator\ConstraintValidator::$context" />-->
-<!--            </errorLevel>-->
-<!--        </PropertyNotSetInConstructor>-->
-<!--        <UndefinedGlobalVariable>-->
-<!--            <errorLevel type="suppress">-->
-<!--                <referencedVariable name="$fooBar" /> &lt;!&ndash; if your variable is "$fooBar" &ndash;&gt;-->
-<!--            </errorLevel>-->
-<!--        </UndefinedGlobalVariable>-->
-<!--        <PluginIssue name="IssueNameEmittedByPlugin" errorLevel="info" /> &lt;!&ndash; this is a special case to handle issues emitted by plugins &ndash;&gt;-->
-<!--    </issueHandlers>-->
-
     <plugins>
         <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
         <pluginClass class="Weirdan\DoctrinePsalmPlugin\Plugin"/>
