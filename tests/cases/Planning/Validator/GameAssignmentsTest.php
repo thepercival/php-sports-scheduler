@@ -13,7 +13,7 @@ use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
 use SportsPlanning\Resource\ResourceType;
 use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentValidator;
-use SportsPlanning\Referee\Info as RefereeInfo;
+use SportsPlanning\PlanningRefereeInfo;
 use SportsPlanning\Resource\GameCounter;
 use SportsPlanning\Resource\ResourceCounter;
 use SportsScheduler\TestHelper\PlanningCreator;
@@ -58,7 +58,7 @@ final class GameAssignmentsTest extends TestCase
 
     public function testGetCountersRefereePlaces(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
         $planning = $this->createPlanning(
             $this->createInput([5], null, $refereeInfo)
         );
@@ -79,7 +79,7 @@ final class GameAssignmentsTest extends TestCase
 
     public function testGetUnequalRefereePlaces(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
         $planning = $this->createPlanning(
             $this->createInput([5], null, $refereeInfo)
         );
@@ -126,7 +126,7 @@ final class GameAssignmentsTest extends TestCase
 
     public function testValidateRefereePlacesTwoPoulesNotEqualySized(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules, 1));
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules, 1));
         $planning = $this->createPlanning(
             $this->createInput([5, 4], null, $refereeInfo)
         );
@@ -138,7 +138,7 @@ final class GameAssignmentsTest extends TestCase
         self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoule
                          || $firstBatch instanceof SelfRefereeBatchSamePoule);
         $this->replaceRefereePlace(
-            $refereeInfo->selfRefereeInfo->selfReferee === SelfReferee::SamePoule,
+            $refereeInfo->selfRefereeInfo?->selfReferee === SelfReferee::SamePoule,
             $firstBatch,
             $replacedPlace,
             $replacedByPlace
@@ -175,7 +175,7 @@ final class GameAssignmentsTest extends TestCase
 
     public function testValidateUnequalReferees(): void
     {
-        $refereeInfo = new RefereeInfo(3);
+        $refereeInfo = new PlanningRefereeInfo(3);
         $planning = $this->createPlanning(
             $this->createInput([5], null, $refereeInfo)
         );
@@ -197,7 +197,7 @@ final class GameAssignmentsTest extends TestCase
 
     public function testValidateUnequalRefereePlaces(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
         $planning = $this->createPlanning(
             $this->createInput([5], null, $refereeInfo)
         );
@@ -238,7 +238,7 @@ final class GameAssignmentsTest extends TestCase
 
     public function testValidate(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
         $planning = $this->createPlanning(
             $this->createInput([5], null, $refereeInfo)
         );

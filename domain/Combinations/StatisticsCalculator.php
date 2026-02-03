@@ -6,7 +6,7 @@ namespace SportsScheduler\Combinations;
 
 
 use Psr\Log\LoggerInterface;
-use SportsHelpers\Against\Side;
+use SportsHelpers\Against\AgainstSide;
 use SportsPlanning\Combinations\Amount\Calculator;
 use SportsPlanning\Combinations\HomeAway;
 use SportsPlanning\Combinations\PlaceCombinationCounterMap;
@@ -85,7 +85,7 @@ abstract class StatisticsCalculator
     {
         $leastAmount = -1;
         $nrOfSides = 0;
-        foreach ([Side::Home,Side::Away] as $side ) {
+        foreach ([AgainstSide::Home,AgainstSide::Away] as $side ) {
             $sidePlaceCombination = $homeAway->get($side);
             $amountAssigned = $map->count($sidePlaceCombination);
             if ($leastAmount === -1 || $amountAssigned < $leastAmount) {

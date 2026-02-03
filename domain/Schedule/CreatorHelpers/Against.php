@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SportsScheduler\Schedule\CreatorHelpers;
 
 use Psr\Log\LoggerInterface;
-use SportsHelpers\Against\Side as AgainstSide;
+use SportsHelpers\Against\AgainstSide;
 use SportsPlanning\GameRound\Against as AgainstGameRound;
 use SportsPlanning\Schedule\Game;
 use SportsPlanning\Schedule\GamePlace;

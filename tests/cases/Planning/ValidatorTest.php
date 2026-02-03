@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use ReflectionObject;
-use SportsHelpers\Against\Side as AgainstSide;
+use SportsHelpers\Against\AgainstSide;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
@@ -30,7 +30,7 @@ use SportsPlanning\Planning\State as PlanningState;
 use SportsScheduler\Planning\Validator as PlanningValidator;
 use SportsPlanning\Planning\Validity;
 use SportsPlanning\Referee as PlanningReferee;
-use SportsPlanning\Referee\Info as RefereeInfo;
+use SportsPlanning\PlanningRefereeInfo;
 use SportsScheduler\Resource\RefereePlace\Service as RefereePlaceService;
 use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;
@@ -69,7 +69,7 @@ final class ValidatorTest extends TestCase
 
     public function testHasEmptyGameRefereePlace(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
         $planning = $this->createPlanning(
             $this->createInput([5], null, $refereeInfo)
         );
@@ -114,7 +114,7 @@ final class ValidatorTest extends TestCase
 
     public function testAllPlacesSameNrOfGames(): void
     {
-        $refereeInfo = new RefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo();
         $input = $this->createInput([5], null, $refereeInfo);
         $planning = new Planning($input, new SportRange(1, 1), 1);
 
@@ -265,7 +265,7 @@ final class ValidatorTest extends TestCase
             $this->createInput(
                 [8,8,8],
                 [$sportVariantWithFields],
-                new RefereeInfo(),
+                new PlanningRefereeInfo(),
                 true),
             new SportRange(6,6)
         );
@@ -277,7 +277,7 @@ final class ValidatorTest extends TestCase
 
     public function testValidResourcesPerReferee(): void
     {
-        $refereeInfo = new RefereeInfo(3);
+        $refereeInfo = new PlanningRefereeInfo(3);
         $planning = $this->createPlanning(
             $this->createInput([5], null, $refereeInfo)
         );
@@ -339,7 +339,7 @@ final class ValidatorTest extends TestCase
         $planningInput = $this->createInput(
             [3, 3],
             [$sportVariantWithFields],
-            new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
+            new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
         );
 //        $inputOutput = new InputOutput($this->getLogger());
 //        $inputOutput->output($planningInput, false);
@@ -385,7 +385,7 @@ final class ValidatorTest extends TestCase
             $this->createInput(
                 [5],
                 [$sportVariantWithFields],
-                new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
+                new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
             )
         );
 
@@ -422,7 +422,7 @@ final class ValidatorTest extends TestCase
 
     public function testValidResourcesPerRefereePlaceDifferentPouleSizes(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules));
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules));
         $sportVariantWithFields = $this->getAgainstH2hSportVariantWithFields(1);
         $planning = $this->createPlanning(
             $this->createInput(
@@ -444,7 +444,7 @@ final class ValidatorTest extends TestCase
 
     public function testValidityDescriptions(): void
     {
-        $refereeInfo = new RefereeInfo(3);
+        $refereeInfo = new PlanningRefereeInfo(3);
         $planning = $this->createPlanning(
             $this->createInput([5, 4], null, $refereeInfo)
         );
@@ -472,7 +472,7 @@ final class ValidatorTest extends TestCase
 
     public function testNrOfHomeAwayH2H2(): void
     {
-        $refereeInfo = new RefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo();
         $sportVariant = new SportVariantWithFields($this->getAgainstH2hSportVariant(1, 1, 2), 2);
         $input = $this->createInput([3], [$sportVariant], $refereeInfo);
         $planning = new Planning($input, new SportRange(1, 1), 0);
@@ -513,7 +513,7 @@ final class ValidatorTest extends TestCase
 
     public function test6Places2FieldsMax2GamesInARow(): void
     {
-        $refereeInfo = new RefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo();
         $sportVariant = new SportVariantWithFields($this->getAgainstH2hSportVariant(), 2);
         $input = $this->createInput([6], [$sportVariant], $refereeInfo);
         $planning = new Planning($input, new SportRange(2, 2), 2);

@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Combinations\Validator;
 
-use SportsHelpers\Against\Side;
-use SportsPlanning\Combinations\HomeAway;
-use SportsPlanning\Game\Place\Against as AgainstGamePlace;
-use SportsPlanning\PlaceCounter;
-use SportsPlanning\Combinations\PlaceCombination;
+use SportsHelpers\Against\AgainstSide;
 use SportsScheduler\Combinations\Validator;
 use SportsPlanning\Game\Against as AgainstGame;
-use SportsPlanning\Place;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
 
@@ -29,25 +24,25 @@ final class Against extends Validator
             return;
         }
 
-        foreach( $game->getSidePlaces(Side::Home) as $homeGamePlace ) {
+        foreach( $game->getSidePlaces(AgainstSide::Home) as $homeGamePlace ) {
 
             $placeCounterMap = $this->placeCounterMaps[$homeGamePlace->getPlace()->getPlaceNr()];
 //            if ($placeCounterMap === null ) {
 //                throw new \Exception('placeCounter not found');
 //            }
-            foreach( $game->getSidePlaces(Side::Away) as $awayGamePlace ) {
+            foreach( $game->getSidePlaces(AgainstSide::Away) as $awayGamePlace ) {
                 $placeCounterMap = $placeCounterMap->addPlace($awayGamePlace->getPlace());
             }
             $this->placeCounterMaps[$homeGamePlace->getPlace()->getPlaceNr()] = $placeCounterMap;
         }
 
-        foreach( $game->getSidePlaces(Side::Away) as $awayGamePlace ) {
+        foreach( $game->getSidePlaces(AgainstSide::Away) as $awayGamePlace ) {
 
             $placeCounterMap = $this->placeCounterMaps[$awayGamePlace->getPlace()->getPlaceNr()];
 //            if ($placeCounterMap === null ) {
 //                throw new \Exception('placeCounter not found');
 //            }
-            foreach( $game->getSidePlaces(Side::Home) as $homeGamePlace ) {
+            foreach( $game->getSidePlaces(AgainstSide::Home) as $homeGamePlace ) {
                 $placeCounterMap = $placeCounterMap->addPlace($homeGamePlace->getPlace());
             }
             $this->placeCounterMaps[$awayGamePlace->getPlace()->getPlaceNr()] = $placeCounterMap;

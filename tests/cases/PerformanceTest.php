@@ -10,10 +10,10 @@ use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\SportRange;
 use SportsScheduler\Game\Creator as GameCreator;
 use SportsPlanning\Planning;
-use SportsPlanning\Output\Planning as PlanningOutput;
+use SportsPlanning\Output\PlanningOutput;
 use SportsScheduler\Planning\Validator as PlanningValidator;
 use SportsPlanning\Planning\Validity;
-use SportsPlanning\Referee\Info as RefereeInfo;
+use SportsPlanning\PlanningRefereeInfo;
 use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
@@ -31,7 +31,7 @@ final class PerformanceTest extends TestCase
             $this->createInput(
                 [5, 4, 4, 4, 4, 4],
                 [$sportVariantsWithFields],
-                new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
+                new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
             ),
             $nrOfGamesPerBatchRange
         );
@@ -57,7 +57,7 @@ final class PerformanceTest extends TestCase
             $this->createInput(
                 [7, 7, 7, 7],
                 [$sportVariantsWithFields],
-                new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
+                new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
             ),
             $nrOfGamesPerBatchRange/*,
             0, false, true*/
@@ -89,7 +89,7 @@ final class PerformanceTest extends TestCase
             $this->createInput(
                 [7, 7, 7, 7],
                 [$sportVariantsWithFields],
-                new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
+                new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
             ),
             $nrOfGamesPerBatchRange,
             4/*, true, true*/
@@ -121,7 +121,7 @@ final class PerformanceTest extends TestCase
             [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
             // 16 poules, 8 wedstrijden => 4 velden dus 4 wedstrijden dus 4 batches
             [$sportVariantsWithFields],
-            new RefereeInfo()
+            new PlanningRefereeInfo()
         );
         $planning = $this->createPlanning($input, $nrOfGamesPerBatchRange/*, 0, true*/);
         self::assertEquals(

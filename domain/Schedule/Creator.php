@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SportsScheduler\Schedule;
 
 use Psr\Log\LoggerInterface;
-use SportsHelpers\PouleStructure;
+use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\Sport\Variant\AllInOneGame;
 use SportsHelpers\Sport\Variant\Single;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
@@ -14,7 +14,7 @@ use SportsHelpers\Sport\Variant\WithPoule\Against\EquallyAssignCalculator;
 use SportsPlanning\Combinations\AssignedCounter;
 use SportsPlanning\Input;
 use SportsPlanning\Poule;
-use SportsPlanning\Referee\Info;
+use SportsPlanning\PlanningRefereeInfo;
 use SportsPlanning\Schedule;
 use SportsPlanning\Schedule\Sport as SportSchedule;
 use SportsPlanning\Sport;
@@ -166,7 +166,7 @@ final class Creator
         $newPoule = (new Input( new Input\Configuration(
                 new PouleStructure( $schedule->getNrOfPlaces() ),
                 $schedule->createSportVariantWithFields(),
-                new Info(),
+                new PlanningRefereeInfo(),
                 false
         )))->getPoule(1);
 

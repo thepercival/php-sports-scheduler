@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Combinations\Validator;
 
-use SportsHelpers\Against\Side;
+use SportsHelpers\Against\AgainstSide;
 use SportsPlanning\PlaceCounter;
 use SportsPlanning\Combinations\PlaceCombination;
 use SportsScheduler\Combinations\DrupolCombinationIterator;
@@ -47,8 +47,8 @@ final class With extends Validator
         if ($game->getSport() !== $this->sport) {
             return;
         }
-        $homePlaceCombination = $this->getPlaceCombination($game, Side::Home);
-        $awayPlaceCombination = $this->getPlaceCombination($game, Side::Away);
+        $homePlaceCombination = $this->getPlaceCombination($game, AgainstSide::Home);
+        $awayPlaceCombination = $this->getPlaceCombination($game, AgainstSide::Away);
 
         $this->addCombinations($homePlaceCombination);
         $this->addCombinations($awayPlaceCombination);

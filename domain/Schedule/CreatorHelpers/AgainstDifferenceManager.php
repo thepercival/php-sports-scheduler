@@ -3,10 +3,9 @@
 namespace SportsScheduler\Schedule\CreatorHelpers;
 
 use Psr\Log\LoggerInterface;
-use SportsHelpers\Against\Side;
+use SportsHelpers\Against\AgainstSide;
 use SportsHelpers\Sport\Variant\WithPoule\Against\EquallyAssignCalculator;
 use SportsPlanning\Combinations\Amount;
-use SportsPlanning\Input;
 use SportsPlanning\Poule;
 use SportsPlanning\Combinations\Amount\Range as AmountRange;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
@@ -276,18 +275,18 @@ final class AgainstDifferenceManager
 //            }
 
             // $nrOfHomeCombinations = 1;
-            $nrOfHomeCombinationsSport = $againstVariant->getNrOfWithCombinationsPerGame(Side::Home) * $nrOfSportGames;
+            $nrOfHomeCombinationsSport = $againstVariant->getNrOfWithCombinationsPerGame(AgainstSide::Home) * $nrOfSportGames;
             $nrOfHomeCombinationsCumulative += $nrOfHomeCombinationsSport;
             $allowedHomeAmountCum = (new EquallyAssignCalculator())->getMaxAmount(
                 $nrOfHomeCombinationsCumulative,
-                $againstWithPoule->getNrOfPossibleWithCombinations(Side::Home)
+                $againstWithPoule->getNrOfPossibleWithCombinations(AgainstSide::Home)
             );
 
             $minNrOfHomeAllowedToAssignedToMinimumCum = (new EquallyAssignCalculator())->getNrOfDeficit(
                 $nrOfHomeCombinationsCumulative,
-                $againstWithPoule->getNrOfPossibleWithCombinations(Side::Home)
+                $againstWithPoule->getNrOfPossibleWithCombinations(AgainstSide::Home)
             );
-            $maxNrOfHomeAllowedToAssignedToMinimumCum = $againstWithPoule->getNrOfPossibleWithCombinations(Side::Home) - $minNrOfHomeAllowedToAssignedToMinimumCum;
+            $maxNrOfHomeAllowedToAssignedToMinimumCum = $againstWithPoule->getNrOfPossibleWithCombinations(AgainstSide::Home) - $minNrOfHomeAllowedToAssignedToMinimumCum;
 
             $allowedHomeMaxSport = $allowedHomeAmountCum + $this->allowedMargin;
             $allowedHomeMinSport = $allowedHomeAmountCum - $this->allowedMargin;

@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsPlanning\Input\Service as InputService;
-use SportsPlanning\Referee\Info as RefereeInfo;
+use SportsPlanning\PlanningRefereeInfo;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 final class ServiceTest extends TestCase
@@ -18,7 +18,7 @@ final class ServiceTest extends TestCase
     public function test332(): void
     {
         $inputService = new InputService();
-        $refereeInfo = new RefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo();
         $sportVariantWithFields = $this->getAgainstH2hSportVariantWithFields(2);
         $input = $this->createInput(
             [3, 2, 2],
@@ -34,7 +34,7 @@ final class ServiceTest extends TestCase
     public function test2(): void
     {
         $inputService = new InputService();
-        $refereeInfo = new RefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo();
         $sportVariantWithFields = $this->getAgainstH2hSportVariantWithFields(2);
         $input = $this->createInput([2], [$sportVariantWithFields], $refereeInfo);
 
@@ -46,7 +46,7 @@ final class ServiceTest extends TestCase
     public function test22SamePoule(): void
     {
         $inputService = new InputService();
-        $refereeInfo = new RefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo();
         $sportVariantWithFields = $this->getAgainstH2hSportVariantWithFields(2);
         $input = $this->createInput(
             [2, 2],
@@ -62,7 +62,7 @@ final class ServiceTest extends TestCase
     public function test32SamePoule(): void
     {
         $inputService = new InputService();
-        $refereeInfo = new RefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo();
         $sportVariantWithFields = $this->getAgainstH2hSportVariantWithFields(2);
         $input = $this->createInput(
             [3, 2],
@@ -78,7 +78,7 @@ final class ServiceTest extends TestCase
     public function test33SamePoule(): void
     {
         $inputService = new InputService();
-        $refereeInfo = new RefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo();
         $sportVariantWithFields = $this->getAgainstH2hSportVariantWithFields(2);
         $input = $this->createInput(
             [3, 3],
@@ -94,7 +94,7 @@ final class ServiceTest extends TestCase
     public function test3OtherPoule(): void
     {
         $inputService = new InputService();
-        $refereeInfo = new RefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo();
         $sportVariantWithFields = $this->getAgainstH2hSportVariantWithFields(2);
         $input = $this->createInput([3], [$sportVariantWithFields], $refereeInfo);
 
@@ -106,7 +106,7 @@ final class ServiceTest extends TestCase
     public function test22OtherPoule(): void
     {
         $inputService = new InputService();
-        $refereeInfo = new RefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo();
         $sportVariantWithFields = $this->getAgainstH2hSportVariantWithFields(2);
         $input = $this->createInput(
             [2, 2],

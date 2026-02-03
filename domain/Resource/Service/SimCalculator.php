@@ -2,7 +2,7 @@
 
 namespace SportsScheduler\Resource\Service;
 
-use SportsHelpers\PouleStructure;
+use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\Sport\Variant as SportVariant;
@@ -16,17 +16,17 @@ use SportsHelpers\Sport\Variant\WithPoule\Against\GamesPerPlace as AgainstGppWit
 use SportsHelpers\Sport\Variant\WithPoule\AllInOneGame as AllInOneGameWithPoule;
 use SportsHelpers\Sport\Variant\WithPoule\Single as SingleWithPoule;
 use SportsScheduler\Resource\UniquePlacesCounter;
-use SportsPlanning\Referee\Info as RefereeInfo;
+use SportsPlanning\PlanningRefereeInfo;
 
 final class SimCalculator
 {
-    private RefereeInfo $refereeInfo;
-    private PouleStructure $pouleStructure;
+    private PlanningRefereeInfo $refereeInfo;
+//    private PouleStructure $pouleStructure;
 
     public function __construct(Input $input)
     {
         $this->refereeInfo = $input->getRefereeInfo();
-        $this->pouleStructure = $input->createPouleStructure();
+//        $this->pouleStructure = $input->createPouleStructure();
         // $this->balancedStructure = $this->input->createPouleStructure()->isBalanced();
         // $sportVariants = array_values($this->input->createSportVariants()->toArray());
         // $this->totalNrOfGames = $this->input->createPouleStructure()->getTotalNrOfGames($sportVariants);
@@ -56,6 +56,9 @@ final class SimCalculator
     public function getMaxNrOfSportGamesPerBatch(
         PouleStructure $pouleStructure, SportVariantWithFields $sportVariantWithFields): int {
         $selfRefereeInfo = $this->refereeInfo->selfRefereeInfo;
+        if( $selfRefereeInfo === null ) {
+            $selfRefereeInfo = new SelfRefereeInfo(SelfReferee::Disabled);
+        }
         $minNrOfGamesPerBatch = array_sum(
             array_map( function( int $nrOfPlaces ) use ($sportVariantWithFields, $selfRefereeInfo): int {
                 $variantWithPoule = (new VariantCreator())->createWithPoule($nrOfPlaces, $sportVariantWithFields->getSportVariant());
@@ -65,7 +68,8 @@ final class SimCalculator
         if ($sportVariantWithFields->getNrOfFields() < $minNrOfGamesPerBatch) {
             $minNrOfGamesPerBatch = $sportVariantWithFields->getNrOfFields();
         }
-        if ($this->refereeInfo->selfRefereeInfo->selfReferee === SelfReferee::Disabled
+        if (($this->refereeInfo->selfRefereeInfo === null or
+                $this->refereeInfo->selfRefereeInfo->selfReferee === SelfReferee::Disabled)
             && $this->refereeInfo->nrOfReferees > 0
             && $this->refereeInfo->nrOfReferees < $minNrOfGamesPerBatch) {
             $minNrOfGamesPerBatch = $this->refereeInfo->nrOfReferees;
@@ -212,9 +216,9 @@ final class SimCalculator
         $sportVariant = $sportVariantWithPoule->getSportVariant();
         $nrOfGamePlaces = $sportVariant->getNrOfGamePlaces();
         if( $sportVariantWithPoule instanceof SingleWithPoule) {
-            if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrIfSimSelfRefs === 1) {
+            if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrOfSimSelfRefs === 1) {
                 $nrOfSimGames = (int)floor($sportVariantWithPoule->getNrOfPlaces() / ($nrOfGamePlaces + 1));
-            } else if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrIfSimSelfRefs > 1) {
+            } else if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrOfSimSelfRefs > 1) {
                 $nrOfSimGames = (int)floor(($sportVariantWithPoule->getNrOfPlaces() - 1) / $nrOfGamePlaces);
             } else {
                 $nrOfSimGames = (int)floor($sportVariantWithPoule->getNrOfPlaces() / $nrOfGamePlaces);
@@ -223,9 +227,9 @@ final class SimCalculator
         }
 
         // als i
-        if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrIfSimSelfRefs === 1) {
+        if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrOfSimSelfRefs === 1) {
             $nrOfSimGames = (int)floor($sportVariantWithPoule->getNrOfPlaces() / ($nrOfGamePlaces + 1));
-        } else if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrIfSimSelfRefs > 1) {
+        } else if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule && $selfRefereeInfo->nrOfSimSelfRefs > 1) {
             $nrOfSimGames = (int)floor(($sportVariantWithPoule->getNrOfPlaces() - 1) / $nrOfGamePlaces);
         } else {
             $nrOfSimGames = (int)floor($sportVariantWithPoule->getNrOfPlaces() / $nrOfGamePlaces);

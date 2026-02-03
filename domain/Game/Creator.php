@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SportsScheduler\Game;
 
 use Psr\Log\LoggerInterface;
-use SportsHelpers\Against\Side as AgainstSide;
+use SportsHelpers\Against\AgainstSide;
 use SportsHelpers\Sport\Variant\Against as AgainstSportVariant;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Game\Place\Against as AgainstGamePlace;

@@ -9,7 +9,7 @@ use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
-use SportsPlanning\Referee\Info as RefereeInfo;
+use SportsPlanning\PlanningRefereeInfo;
 use SportsScheduler\Resource\RefereePlace\Predicter;
 use SportsScheduler\TestHelper\PlanningCreator;
 // use SportsScheduler\TestHelper\PlanningReplacer;
@@ -21,7 +21,7 @@ final class PredicterTest extends TestCase
 
     public function testSamePouleEnoughRefereePlaces(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
         $planning = $this->createPlanning(
             $this->createInput([3], null, $refereeInfo)
         );
@@ -38,7 +38,7 @@ final class PredicterTest extends TestCase
 
     public function testSamePouleNotEnoughRefereePlaces(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
         self::expectException(\Exception::class);
         $this->createPlanning(
             $this->createInput([2], null, $refereeInfo)
@@ -47,7 +47,7 @@ final class PredicterTest extends TestCase
 
     public function testOtherPoulesEnoughRefereePlaces(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules));
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules));
         $planning = $this->createPlanning(
             $this->createInput([3, 3], null, $refereeInfo)
         );
@@ -64,7 +64,7 @@ final class PredicterTest extends TestCase
 
     public function testOtherPoulesEnoughRefereePlacesWithMultipleSimRefs(): void
     {
-        $refereeInfo = new RefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules, 2));
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules, 2));
         $planning = $this->createPlanning(
             $this->createInput([5, 4], null, $refereeInfo)
         );

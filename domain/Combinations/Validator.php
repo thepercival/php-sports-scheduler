@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Combinations;
 
-use SportsHelpers\Against\Side as AgainstSide;
+use SportsHelpers\Against\AgainstSide;
 use SportsHelpers\Sport\Variant\Against as AgainstSportVariant;
 use SportsPlanning\Combinations\PlaceCombination;
 use SportsPlanning\Combinations\PlaceCounterMap;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SportsScheduler\Input;
 
 use Psr\Log\LoggerInterface;
-use SportsHelpers\PouleStructure\Balanced as BalancedPouleStructure;
+use SportsHelpers\PouleStructures\BalancedPouleStructure;
 use SportsHelpers\PouleStructure\BalancedIterator as PouleStructureIterator;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
@@ -17,7 +17,7 @@ use SportsPlanning\Input as PlanningInput;
 use SportsPlanning\Input\Configuration;
 use SportsPlanning\Input\Service as PlanningInputService;
 use SportsPlanning\Output\PlanningOutput;
-use SportsPlanning\Referee\Info as RefereeInfo;
+use SportsPlanning\PlanningRefereeInfo;
 
 /**
  * @template TKey
@@ -151,12 +151,14 @@ final class Iterator implements \Iterator
         BalancedPouleStructure $pouleStructure,
         SportVariantWithFields  $sportVariantWithFields
     ): PlanningInput {
-        return new PlanningInput( new Configuration(
-            $pouleStructure,
-            [$sportVariantWithFields],
-            new RefereeInfo($this->selfReferee === SelfReferee::Disabled ? $this->nrOfReferees : new SelfRefereeInfo($this->selfReferee)),
+        return new PlanningInput(
+            new Configuration(
+                $pouleStructure,
+                [$sportVariantWithFields],
+                new PlanningRefereeInfo($this->selfReferee === SelfReferee::Disabled ? $this->nrOfReferees : new SelfRefereeInfo($this->selfReferee)),
             false
-        ) );
+            )
+        );
     }
 
     protected function incrementValue(): bool

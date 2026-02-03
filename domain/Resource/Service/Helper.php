@@ -204,8 +204,10 @@ final class Helper
                 // all pouleplaces
                 $nrOfPlaces = count($uniquePlacesCounter->getPoule()->getPlaces());
                 $variantWithPoule = (new VariantCreator())->createWithPoule($nrOfPlaces, $sportInfo->getVariant());
+                $refereeInfo = $this->input->getRefereeInfo();
+                $selfRefereeInfo = $refereeInfo->selfRefereeInfo ?? new SelfRefereeInfo(SelfReferee::Disabled);
                 $maxNrOfBatchGames = $simCalculator->getMaxNrOfGamesSimultaneously(
-                    $variantWithPoule, $this->input->getRefereeInfo()->selfRefereeInfo);
+                    $variantWithPoule, $selfRefereeInfo);
 
                 $nrOfBatchesNeeded = (int)ceil($uniquePlacesCounter->getNrOfGames() / $maxNrOfBatchGames);
                 if ($nrOfBatchesNeeded > $maxNrOfBatchesToGo) {

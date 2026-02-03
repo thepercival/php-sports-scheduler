@@ -3,7 +3,7 @@
 namespace SportsScheduler\Combinations;
 
 use Psr\Log\LoggerInterface;
-use SportsHelpers\Against\Side;
+use SportsHelpers\Against\AgainstSide;
 use SportsPlanning\Combinations\HomeAway;
 use SportsPlanning\Combinations\PlaceCombination;
 use SportsPlanning\Combinations\PlaceCombinationCounter;
@@ -194,8 +194,8 @@ final class HomeAwayBalancer
             return null;
         }
 
-        $greaterHomeHomeAways = $this->getHomeAwaysWithSide(Side::Home, $greater, $homeAways);
-        $otherHomeAways = $this->getHomeAwaysNotWithSide(Side::Home, $greater, $homeAways);
+        $greaterHomeHomeAways = $this->getHomeAwaysWithSide(AgainstSide::Home, $greater, $homeAways);
+        $otherHomeAways = $this->getHomeAwaysNotWithSide(AgainstSide::Home, $greater, $homeAways);
         $maxRouteLength = 10;
         return $this->getSwapRouteHelper($greaterHomeHomeAways, $otherHomeAways, $smaller, [], $maxRouteLength);
     }
@@ -228,8 +228,8 @@ final class HomeAwayBalancer
             if( $homeAway->getAway()->getIndex() === $target->getIndex()) {
                 return $routeToTry;
             }
-            $newHomeHomeAways = $this->getHomeAwaysWithSide(Side::Home, $homeAway->getAway(), $otherHomeAways);
-            $newOtherHomeAways = $this->getHomeAwaysNotWithSide(Side::Home, $homeAway->getAway(), $otherHomeAways);
+            $newHomeHomeAways = $this->getHomeAwaysWithSide(AgainstSide::Home, $homeAway->getAway(), $otherHomeAways);
+            $newOtherHomeAways = $this->getHomeAwaysNotWithSide(AgainstSide::Home, $homeAway->getAway(), $otherHomeAways);
 
             $finalRoute = $this->getSwapRouteHelper($newHomeHomeAways, $newOtherHomeAways, $target, $routeToTry, $maxRouteLength);
             if( $finalRoute !== null) {
@@ -303,22 +303,22 @@ final class HomeAwayBalancer
     }
 
     /**
-     * @param Side $side
+     * @param AgainstSide $side
      * @param list<HomeAway> $homeAways
      * @return list<HomeAway>
      */
-    protected function getHomeAwaysWithSide(Side $side, PlaceCombination $placeCombination, array $homeAways): array {
+    protected function getHomeAwaysWithSide(AgainstSide $side, PlaceCombination $placeCombination, array $homeAways): array {
         return array_values( array_filter($homeAways, function(HomeAway $homeAway) use($side, $placeCombination): bool {
             return $homeAway->get($side)->getIndex() === $placeCombination->getIndex();
         }));
     }
 
     /**
-     * @param Side $side
+     * @param AgainstSide $side
      * @param list<HomeAway> $homeAways
      * @return list<HomeAway>
      */
-    protected function getHomeAwaysNotWithSide(Side $side, PlaceCombination $placeCombination, array $homeAways): array {
+    protected function getHomeAwaysNotWithSide(AgainstSide $side, PlaceCombination $placeCombination, array $homeAways): array {
         return array_values( array_filter($homeAways, function(HomeAway $homeAway) use($side, $placeCombination): bool {
             return $homeAway->get($side)->getIndex() !== $placeCombination->getIndex();
         }));

@@ -17,10 +17,10 @@ use SportsScheduler\Game\Creator as GameCreator;
 use SportsPlanning\Game\Together as TogetherGame;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\Validity;
-use SportsPlanning\Output\Planning as PlanningOutput;
+use SportsPlanning\Output\PlanningOutput;
 use SportsPlanning\Planning\State as PlanningState;
 use SportsScheduler\Planning\Validator as PlanningValidator;
-use SportsPlanning\Referee\Info as RefereeInfo;
+use SportsPlanning\PlanningRefereeInfo;
 use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
@@ -32,7 +32,7 @@ final class CreatorTest extends TestCase
 
     public function testGameInstanceAgainst(): void
     {
-        $refereeInfo = new RefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo();
         $input = $this->createInput([2], null, $refereeInfo);
         $planning = $this->createPlanning($input);
         $scheduleCreator = new ScheduleCreator($this->getLogger());
@@ -50,7 +50,7 @@ final class CreatorTest extends TestCase
     public function testGameInstanceTogether(): void
     {
         $singleSportVariantWithFields = $this->getSingleSportVariantWithFields(2);
-        $refereeInfo = new RefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo();
         $input = $this->createInput([2], [$singleSportVariantWithFields], $refereeInfo);
         $planning = $this->createPlanning($input);
 
@@ -139,7 +139,7 @@ final class CreatorTest extends TestCase
         $sportVariants = [
             $this->getAgainstH2hSportVariantWithFields(1, 1, 1, 2),
         ];
-        $refereeInfo = new RefereeInfo();
+        $refereeInfo = new PlanningRefereeInfo();
         $input = $this->createInput([3], $sportVariants, $refereeInfo);
         $planning = new Planning($input, new SportRange(1, 1), 0);
 

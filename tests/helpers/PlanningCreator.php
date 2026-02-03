@@ -9,8 +9,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
-use SportsHelpers\PouleStructure;
-
+use SportsHelpers\PouleStructures\PouleStructure;
 use SportsHelpers\Sport\Variant\AllInOneGame as AllInOneGameSportVariant;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
@@ -23,7 +22,7 @@ use SportsPlanning\Input;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\State as PlanningState;
 use SportsPlanning\Planning\TimeoutState;
-use SportsPlanning\Referee\Info as RefereeInfo;
+use SportsPlanning\PlanningRefereeInfo;
 use SportsScheduler\Schedule\Creator as ScheduleCreator;
 
 trait PlanningCreator
@@ -115,20 +114,20 @@ trait PlanningCreator
     /**
      * @param list<int> $pouleStructureAsArray
      * @param list<SportVariantWithFields>|null $sportVariantsWithFields
-     * @param RefereeInfo|null $refereeInfo
+     * @param PlanningRefereeInfo|null $refereeInfo
      * @return Input
      */
     protected function createInput(
         array $pouleStructureAsArray,
         array|null $sportVariantsWithFields = null,
-        RefereeInfo|null $refereeInfo = null,
+        PlanningRefereeInfo|null $refereeInfo = null,
         bool $perPoule = false
     ) {
         if ($sportVariantsWithFields === null) {
             $sportVariantsWithFields = [$this->getAgainstH2hSportVariantWithFields(2)];
         }
         if ($refereeInfo === null) {
-            $refereeInfo = new RefereeInfo($this->getDefaultNrOfReferees());
+            $refereeInfo = new PlanningRefereeInfo($this->getDefaultNrOfReferees());
         }
         $input = new Input( new Input\Configuration(
             new PouleStructure(...$pouleStructureAsArray),
@@ -142,7 +141,7 @@ trait PlanningCreator
 
     protected function createPlanning(
         Input $input,
-        SportRange $nrOfGamesPerBatchRange = null,
+        SportRange|null $nrOfGamesPerBatchRange = null,
         int $maxNrOfGamesInARow = 0,
         bool $disableThrowOnTimeout = false,
         bool $showHighestCompletedBatchNr = false,
