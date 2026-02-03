@@ -6,21 +6,14 @@ namespace SportsScheduler\Tests\Planning\Validator;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
-use SportsHelpers\PouleStructures\PouleStructure;
-use SportsHelpers\RefereeInfo;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
-use SportsHelpers\Sports\AgainstOneVsOne;
-use SportsHelpers\Sports\AgainstTwoVsTwo;
-use SportsPlanning\Batches\Batch;
-use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
-use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
-use SportsPlanning\Planning;
-use SportsPlanning\PlanningConfiguration;
-use SportsPlanning\PlanningOrchestration;
+use SportsPlanning\Batch;
+use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
+use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
 use SportsPlanning\Resource\ResourceType;
-use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentValidator;
+use SportsPlanning\PlanningRefereeInfo;
 use SportsPlanning\Resource\GameCounter;
 use SportsPlanning\Resource\ResourceCounter;
 use SportsScheduler\TestHelper\PlanningCreator;
@@ -33,24 +26,13 @@ final class GameAssignmentsTest extends TestCase
 
     public function testGetCountersFields(): void
     {
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
-        ];
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([5]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            null,
-            false
-        );
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->getPlanning();
+        $planning = $this->createPlanning($this->createInput([5]));
 
-        $resourceCounter = new ResourceCounter($planningWithMeta);
+        $resourceCounter = new ResourceCounter($planning);
         $gameCounters = $resourceCounter->getCounters(ResourceType::Fields->value);
 
         $fieldGameCounters = $gameCounters[ResourceType::Fields->value];
-        $field = $planning->getSport(1)->getField(1);
+        $field = $planning->getInput()->getSport(1)->getField(1);
         $gameFieldCounter = $fieldGameCounters[$field->getUniqueIndex()];
         self::assertSame($field, $gameFieldCounter->getResource());
         self::assertSame(5, $gameFieldCounter->getNrOfGames());
@@ -58,88 +40,58 @@ final class GameAssignmentsTest extends TestCase
 
     public function testGetCountersReferees(): void
     {
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
-        ];
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([5]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            RefereeInfo::fromNrOfReferees(2),
-            false
-        );
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->getPlanning();
+        $planning = $this->createPlanning($this->createInput([5]));
 
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
 
-        $resourceCounter = new ResourceCounter($planningWithMeta);
+        $resourceCounter = new ResourceCounter($planning);
         $gameCounters = $resourceCounter->getCounters(ResourceType::Referees->value);
 
-        /** @var GameCounter[] $gameCountersForReferee */
-        $gameCountersForReferee = $gameCounters[ResourceType::Referees->value];
-        $referee = $planning->getReferee(1);
-        $gameRefereeCounter = $gameCountersForReferee[$referee->getUniqueIndex()];
+        /** @var GameCounter[] $gameRefereeCounters */
+        $gameRefereeCounters = $gameCounters[ResourceType::Referees->value];
+        $referee = $planning->getInput()->getReferee(1);
+        $gameRefereeCounter = $gameRefereeCounters[(string)$referee->getNumber()];
         self::assertSame($referee, $gameRefereeCounter->getResource());
         self::assertSame(5, $gameRefereeCounter->getNrOfGames());
     }
 
     public function testGetCountersRefereePlaces(): void
     {
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
-        ];
-        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([5]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            $refereeInfo,
-            false
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $planning = $this->createPlanning(
+            $this->createInput([5], null, $refereeInfo)
         );
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->getPlanning();
 
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
 
-        $resourceCounter = new ResourceCounter($planningWithMeta);
+        $resourceCounter = new ResourceCounter($planning);
         $gameCounters = $resourceCounter->getCounters(ResourceType::RefereePlaces->value);
 
         /** @var GameCounter[] $gameRefereePlaceCounters */
         $gameRefereePlaceCounters = $gameCounters[ResourceType::RefereePlaces->value];
-        $place = $planning->getPoule(1)->getPlace(1);
-        $gameRefereePlaceCounter = $gameRefereePlaceCounters[$place->getUniqueIndex()];
+        $place = $planning->getInput()->getPoule(1)->getPlace(1);
+        $gameRefereePlaceCounter = $gameRefereePlaceCounters[(string)$place];
         self::assertSame($place, $gameRefereePlaceCounter->getResource());
         self::assertSame(2, $gameRefereePlaceCounter->getNrOfGames());
     }
 
     public function testGetUnequalRefereePlaces(): void
     {
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
-        ];
-        $selfReferee = SelfReferee::SamePoule;
-        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo($selfReferee));
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([5]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            $refereeInfo,
-            false
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
+        $planning = $this->createPlanning(
+            $this->createInput([5], null, $refereeInfo)
         );
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->getPlanning();
 
-        $firstPoule = $planning->getPoule(1);
+        $firstPoule = $planning->getInput()->getPoule(1);
         $replacedPlace = $firstPoule->getPlace(5);
         $replacedByPlace = $firstPoule->getPlace(1);
-        $firstBatch = $planningWithMeta->createFirstBatch();
-        self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoules
+        $firstBatch = $planning->createFirstBatch();
+        self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoule
             || $firstBatch instanceof SelfRefereeBatchSamePoule);
         $this->replaceRefereePlace(
-            $selfReferee === SelfReferee::SamePoule,
+            $planning->getInput()->getSelfReferee() === SelfReferee::SamePoule,
             $firstBatch,
             $replacedPlace,
             $replacedByPlace
@@ -148,7 +100,7 @@ final class GameAssignmentsTest extends TestCase
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
 
-        $validator = new GameAssignmentValidator($planningWithMeta);
+        $validator = new GameAssignmentValidator($planning);
         $unequals = $validator->getRefereePlaceUnequals();
 
 
@@ -174,26 +126,16 @@ final class GameAssignmentsTest extends TestCase
 
     public function testValidateRefereePlacesTwoPoulesNotEqualySized(): void
     {
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
-        ];
-        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules, 1));
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([5, 4]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            $refereeInfo,
-            false
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::OtherPoules, 1));
+        $planning = $this->createPlanning(
+            $this->createInput([5, 4], null, $refereeInfo)
         );
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->getPlanning();
 
-
-        $secondPoule = $planning->getPoule(2);
+        $secondPoule = $planning->getInput()->getPoule(2);
         $replacedPlace = $secondPoule->getPlace(4);
         $replacedByPlace = $secondPoule->getPlace(3);
-        $firstBatch = $planningWithMeta->createFirstBatch();
-        self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoules
+        $firstBatch = $planning->createFirstBatch();
+        self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoule
                          || $firstBatch instanceof SelfRefereeBatchSamePoule);
         $this->replaceRefereePlace(
             $refereeInfo->selfRefereeInfo?->selfReferee === SelfReferee::SamePoule,
@@ -205,7 +147,7 @@ final class GameAssignmentsTest extends TestCase
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
 
-        $validator = new GameAssignmentValidator($planningWithMeta);
+        $validator = new GameAssignmentValidator($planning);
         $unequals = $validator->getRefereePlaceUnequals();
 
         self::assertCount(1, $unequals);
@@ -213,85 +155,61 @@ final class GameAssignmentsTest extends TestCase
 
     public function testValidateUnequalFields(): void
     {
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1),
-        ];
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([5]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            null,
-            false
+        $sportVariant = $this->getAgainstH2hSportVariantWithFields(2);
+        $planning = $this->createPlanning(
+            $this->createInput([5], [$sportVariant])
         );
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-        $planning = $planningWithMeta->getPlanning();
 
         // $planningGames = $planning->getPoule(1)->getGames();
-        $replacedField = $planning->getSport(1)->getField(2);
-        $replacedByField = $planning->getSport(1)->getField(1);
-        $this->replaceField($planningWithMeta->createFirstBatch(), $replacedField, $replacedByField);
+        $replacedField = $planning->getInput()->getSport(1)->getField(2);
+        $replacedByField = $planning->getInput()->getSport(1)->getField(1);
+        $this->replaceField($planning->createFirstBatch(), $replacedField, $replacedByField);
 
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
 
-        $validator = new GameAssignmentValidator($planningWithMeta);
+        $validator = new GameAssignmentValidator($planning);
         self::expectException(Exception::class);
         $validator->validate();
     }
 
     public function testValidateUnequalReferees(): void
     {
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
-        ];
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([5]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            RefereeInfo::fromNrOfReferees(3),
-            false
+        $refereeInfo = new PlanningRefereeInfo(3);
+        $planning = $this->createPlanning(
+            $this->createInput([5], null, $refereeInfo)
         );
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration);
 
         // $planningGames = $planning->getPoule(1)->getGames();
-        $replacedReferee = $planningWithMeta->getPlanning()->getReferee(2);
-        $replacedByReferee = $planningWithMeta->getPlanning()->getReferee(1);
-        $firstBatch = $planningWithMeta->createFirstBatch();
+        $replacedReferee = $planning->getInput()->getReferee(2);
+        $replacedByReferee = $planning->getInput()->getReferee(1);
+        $firstBatch = $planning->createFirstBatch();
         self::assertInstanceOf(Batch::class, $firstBatch);
         $this->replaceReferee($firstBatch, $replacedReferee, $replacedByReferee);
 
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
 
-        $validator = new GameAssignmentValidator($planningWithMeta);
+        $validator = new GameAssignmentValidator($planning);
         self::expectException(Exception::class);
         $validator->validate();
     }
 
     public function testValidateUnequalRefereePlaces(): void
     {
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
-        ];
-        $selfReferee = SelfReferee::SamePoule;
-        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo($selfReferee, 1));
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([5]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            $refereeInfo,
-            false
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
+        $planning = $this->createPlanning(
+            $this->createInput([5], null, $refereeInfo)
         );
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration);
 
-        $firstPoule = $planningWithMeta->getPlanning()->getPoule(1);
+        $firstPoule = $planning->getInput()->getPoule(1);
         $replacedPlace = $firstPoule->getPlace(5);
         $replacedByPlace = $firstPoule->getPlace(1);
-        $firstBatch = $planningWithMeta->createFirstBatch();
-        self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoules
+        $firstBatch = $planning->createFirstBatch();
+        self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoule
                          || $firstBatch instanceof SelfRefereeBatchSamePoule);
         $this->replaceRefereePlace(
-            $selfReferee === SelfReferee::SamePoule,
+            $planning->getInput()->getSelfReferee() === SelfReferee::SamePoule,
             $firstBatch,
             $replacedPlace,
             $replacedByPlace
@@ -300,47 +218,33 @@ final class GameAssignmentsTest extends TestCase
 //        $planningOutput = new PlanningOutput();
 //        $planningOutput->outputWithGames($planning, true);
 
-        $validator = new GameAssignmentValidator($planningWithMeta);
+        $validator = new GameAssignmentValidator($planning);
         self::expectException(Exception::class);
         $validator->validate();
     }
 
     public function testEquallyAssignedFieldsMultipleSport(): void
     {
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 4, 4),
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 1, 4)
-        ];
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([5]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            null,
-            false
+        $sportVariant1 = $this->getAgainstGppSportVariantWithFields(4, 1, 1, 4);
+        $sportVariant2 = $this->getAgainstGppSportVariantWithFields(1, 1, 1, 4);
+        $planning = $this->createPlanning(
+            $this->createInput([5], [$sportVariant1, $sportVariant2])
         );
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration);
 
-        $validator = new GameAssignmentValidator($planningWithMeta);
+        $validator = new GameAssignmentValidator($planning);
         self::expectNotToPerformAssertions();
         $validator->validate();
     }
 
     public function testValidate(): void
     {
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 2, 1)
-        ];
-        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([5]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            $refereeInfo,
-            false
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule, 1));
+        $planning = $this->createPlanning(
+            $this->createInput([5], null, $refereeInfo)
         );
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration);
-
-        $validator = new GameAssignmentValidator($planningWithMeta);
+//        $planningOutput = new PlanningOutput();
+//        $planningOutput->outputWithGames($planning, true);
+        $validator = new GameAssignmentValidator($planning);
         self::expectNotToPerformAssertions();
         $validator->validate();
     }

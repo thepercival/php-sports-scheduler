@@ -2,20 +2,24 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Tests\Combinations\HomeAwayGenerators;
+namespace SportsScheduler\Tests\Combinations\HomeAwayCreator;
 
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsScheduler\Combinations\HomeAwayGenerators\GppHomeAwayGenerator as HomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as HomeAwayCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
 use SportsPlanning\Output\Combinations\HomeAway as HomeAwayOutput;
 
-class GamesPerPlaceTest extends TestCase
+/**
+ * @psalm-suppress InvalidReturnType
+ */
+final class GamesPerPlaceTest extends TestCase
 {
     use PlanningCreator;
 
@@ -109,7 +113,7 @@ class GamesPerPlaceTest extends TestCase
 //        $input = $this->createInput([7]);
 //        $poule = $input->getPoule(1);
 //        $creator = new HomeAwayCreator($poule, $sportVariant);
-//        $homeAways = $creator->createForOneH2h();
+//        $homeAways = $creator->createForOneH2H();
 //        (new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
 //        (new HomeAwayOutput($this->getLogger()))->outputTotals($homeAways);
 //        // self::assertCount(66, $homeAways);
@@ -120,5 +124,14 @@ class GamesPerPlaceTest extends TestCase
     ////        self::assertCount(6, $homes);
 //    }
 
+    protected function getLogger(): LoggerInterface
+    {
+        $logger = new Logger("test-logger");
+        $processor = new UidProcessor();
+        $logger->pushProcessor($processor);
 
+        $handler = new StreamHandler('php://stdout', LogLevel::INFO);
+        $logger->pushHandler($handler);
+        return $logger;
+    }
 }

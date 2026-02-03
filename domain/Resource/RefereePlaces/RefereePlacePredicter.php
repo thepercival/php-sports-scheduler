@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Resource\RefereePlaces;
+namespace SportsScheduler\Resource\RefereePlace;
 
 use SportsHelpers\SelfReferee;
-use SportsPlanning\Batches\SelfRefereeBatchOtherPoules;
-use SportsPlanning\Batches\SelfRefereeBatchSamePoule;
-use SportsPlanning\Counters\GamePlacesCounterForPoule;
+use SportsPlanning\Batch\SelfReferee as SelfRefereeBatch;
 use SportsPlanning\Poule;
+use SportsPlanning\Poule\PouleCounter;
 
-final class RefereePlacePredicter
+final class Predicter
 {
     private const int SAME_POULE_MAX_DELTA = 1;
 
@@ -21,10 +20,9 @@ final class RefereePlacePredicter
     {
     }
 
-    public function canStillAssign(
-        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch, SelfReferee|null $selfReferee): bool
+    public function canStillAssign(SelfRefereeBatch $batch, SelfReferee $selfReferee): bool
     {
-        if ($selfReferee === null) {
+        if ($selfReferee === SelfReferee::Disabled) {
             return true;
         }
         if ($selfReferee === SelfReferee::SamePoule) {
@@ -32,14 +30,14 @@ final class RefereePlacePredicter
                     $batch
                 );
         }
-        return $this->validatePouleAssignmentsOtherPoules($batch)
-            && $this->validateTooMuchForcedAssignmentDiffernce($batch);
+        return $this->validatePouleAssignmentsOtherPoules($batch) && $this->validateTooMuchForcedAssignmentDiffernce(
+                $batch
+            );
     }
 
-    protected function validatePouleAssignmentsSamePoule(
-        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch): bool
+    protected function validatePouleAssignmentsSamePoule(SelfRefereeBatch $batch): bool
     {
-        $pouleCounterMap = $this->createGamePlacesCounterMap();
+        $pouleCounterMap = $this->createPouleCounterMap();
         $this->addGamesToPouleCounterMap($pouleCounterMap, $batch);
 
         foreach ($pouleCounterMap as $pouleCounter) {
@@ -52,40 +50,38 @@ final class RefereePlacePredicter
     }
 
     /**
-     * @return array<int,GamePlacesCounterForPoule>
+     * @return array<int,PouleCounter>
      */
-    protected function createGamePlacesCounterMap(): array
+    protected function createPouleCounterMap(): array
     {
         $pouleCounterMap = [];
         foreach ($this->poules as $poule) {
-            $pouleCounterMap[$poule->pouleNr] = new GamePlacesCounterForPoule($poule);
+            $pouleCounterMap[$poule->getNumber()] = new PouleCounter($poule);
         }
         return $pouleCounterMap;
     }
 
     /**
-     * @param array<int,GamePlacesCounterForPoule> $pouleCounterMap
-     * @param SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch
+     * @param array<int,PouleCounter> $pouleCounterMap
+     * @param SelfRefereeBatch $batch
      */
-    protected function addGamesToPouleCounterMap(array $pouleCounterMap,
-        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch): void
+    protected function addGamesToPouleCounterMap(array $pouleCounterMap, SelfRefereeBatch $batch): void
     {
         foreach ($batch->getBase()->getGames() as $game) {
-            $pouleCounterMap[$game->pouleNr]->add(count($game->getGamePlaces()));
+            $pouleCounterMap[$game->getPoule()->getNumber()]->add($game->getPlaces()->count());
         }
     }
 
-    protected function validatePouleAssignmentsOtherPoules(
-        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch): bool
+    protected function validatePouleAssignmentsOtherPoules(SelfRefereeBatch $batch): bool
     {
-        $pouleCounterMap = $this->createGamePlacesCounterMap();
+        $pouleCounterMap = $this->createPouleCounterMap();
         $this->addGamesToPouleCounterMap($pouleCounterMap, $batch);
 
         foreach ($pouleCounterMap as $pouleCounter) {
             $otherPouleCounters = array_values(
                 array_filter(
                     $pouleCounterMap,
-                    function (GamePlacesCounterForPoule $pouleCounterIt) use ($pouleCounter): bool {
+                    function (PouleCounter $pouleCounterIt) use ($pouleCounter): bool {
                         return $pouleCounter !== $pouleCounterIt;
                     }
                 )
@@ -99,15 +95,15 @@ final class RefereePlacePredicter
     }
 
     /**
-     * @param list<GamePlacesCounterForPoule> $pouleCounters
+     * @param list<PouleCounter> $pouleCounters
      * @return int
      */
     protected function getNrOfPlacesAvailable(array $pouleCounters): int
     {
         $nrOfPlacesAvailable = 0;
         foreach ($pouleCounters as $pouleCounter) {
-            $nrOfPlaces = count($pouleCounter->getPoule()->places);
-            $nrOfPlacesAvailable += ($nrOfPlaces - $pouleCounter->calculateNrOfAssignedGamePlaces());
+            $nrOfPlaces = $pouleCounter->getPoule()->getPlaces()->count();
+            $nrOfPlacesAvailable += ($nrOfPlaces - $pouleCounter->getNrOfPlacesAssigned());
         }
         return $nrOfPlacesAvailable;
     }
@@ -116,15 +112,14 @@ final class RefereePlacePredicter
      * voor selfref = samepoule , per plek kijken hoevaak deze verplicht is als scheidsrechter
      * dit mag max. het gemiddelde + 1.500000001 zijn
      */
-    protected function validateTooMuchForcedAssignmentDiffernce(
-        SelfRefereeBatchOtherPoules|SelfRefereeBatchSamePoule $batch): bool
+    protected function validateTooMuchForcedAssignmentDiffernce(SelfRefereeBatch $batch): bool
     {
         $totalNrOfForcedRefereePlaces = $batch->getTotalNrOfForcedRefereePlaces();
         $totalPouleCounters = $batch->getTotalPouleCounters();
 
         $pouleHasForcedRefereePlaces = function (Poule $poule) use ($totalNrOfForcedRefereePlaces): bool {
-            foreach ($poule->places as $place) {
-                if (array_key_exists($place->getUniqueIndex(), $totalNrOfForcedRefereePlaces)) {
+            foreach ($poule->getPlaces() as $place) {
+                if (array_key_exists((string)$place, $totalNrOfForcedRefereePlaces)) {
                     return true;
                 }
             }
@@ -140,22 +135,23 @@ final class RefereePlacePredicter
             /** @var int|null $minNrOfForcedRefereePlaces */
             $minNrOfForcedRefereePlaces = null;
 
-            $avgNrOfGamesForRefereePlace = 0.0;
-            if (array_key_exists($poule->pouleNr, $totalPouleCounters)) {
-                $avgNrOfGamesForRefereePlace = (float)($totalPouleCounters[$poule->pouleNr]->getNrOfGames() / count($poule->places));
+            $avgNrOfGamesForRefereePlace = 0;
+            if (array_key_exists($poule->getNumber(), $totalPouleCounters)) {
+                $avgNrOfGamesForRefereePlace = $totalPouleCounters[$poule->getNumber()]->getNrOfGames(
+                    ) / $poule->getPlaces()->count();
             }
 
-            $pouleMax = $avgNrOfGamesForRefereePlace + (float)self::SAME_POULE_MAX_DELTA;
+            $pouleMax = (float)$avgNrOfGamesForRefereePlace + (float)self::SAME_POULE_MAX_DELTA;
             // $pouleMin = $avgNrOfGamesForRefereePlace - self::SAME_POULE_MAX_DELTA;
 
             // naast de forced referee assignments heb je ook dat places niet beschikbaar zijn, omdat ze zelf moeten
             // place met laagste nrOfForcedAssignment moet minimaal 1x beschikbaar zijn
-            foreach ($poule->places as $place) {
+            foreach ($poule->getPlaces() as $place) {
                 $nrOfForcedRefereePlaces = 0;
-                if (array_key_exists($place->getUniqueIndex(), $totalNrOfForcedRefereePlaces)) {
-                    $nrOfForcedRefereePlaces = $totalNrOfForcedRefereePlaces[$place->getUniqueIndex()];
+                if (array_key_exists((string)$place, $totalNrOfForcedRefereePlaces)) {
+                    $nrOfForcedRefereePlaces = $totalNrOfForcedRefereePlaces[(string)$place];
                 }
-                if ($nrOfForcedRefereePlaces >= $pouleMax /*|| $nrOfForcedRefereePlaces <= $pouleMin*/) {
+                if (((float)$nrOfForcedRefereePlaces) >= $pouleMax /*|| $nrOfForcedRefereePlaces <= $pouleMin*/) {
                     return false;
                 }
                 if ($minNrOfForcedRefereePlaces === null || $nrOfForcedRefereePlaces < $minNrOfForcedRefereePlaces) {

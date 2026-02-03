@@ -4,7 +4,31 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Tests;
 
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
+use SportsHelpers\SelfReferee;
+use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
+use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
+use SportsHelpers\SportRange;
+use SportsPlanning\Combinations\AssignedCounter;
+use SportsPlanning\Combinations\HomeAway;
+use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as GppHomeAwayCreator;
+use SportsPlanning\Combinations\Mapper;
+use SportsPlanning\Combinations\PlaceCombinationCounterMap\Ranged as RangedPlaceCombinationCounterMap;
+use SportsPlanning\Combinations\PlaceCounterMap;
+use SportsScheduler\Combinations\StatisticsCalculator\Against\GamesPerPlace as GppStatisticsCalculator;
+use SportsScheduler\Game\Creator as GameCreator;
+use SportsPlanning\Input;
+use SportsPlanning\Planning;
+use SportsPlanning\Poule;
+use SportsPlanning\Referee\Info as RefereeInfo;
+use SportsScheduler\Schedule\Creator as ScheduleCreator;
+use SportsScheduler\Schedule\CreatorHelpers\AgainstDifferenceManager;
+use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 // cachegrind output default to /tmp
@@ -66,39 +90,50 @@ final class ProfileTest extends TestCase
         self::assertCount(0, []);
     }
 
-//    /**
-//     * @param GppHomeAwayCreator $homeAwayCreator
-//     * @param Poule $poule
-//     * @param AgainstGpp $sportVariant
-//     * @return list<HomeAway>
-//     */
-//    protected function createHomeAways(
-//        GppHomeAwayCreator $homeAwayCreator,
-//        Poule $poule,
-//        AgainstGpp $sportVariant): array
-//    {
-//        $variantWithPoule = (new AgainstGppWithPoule($poule, $sportVariant));
-//        $totalNrOfGames = $variantWithPoule->getTotalNrOfGames();
-//        $homeAways = [];
-//        while ( count($homeAways) < $totalNrOfGames ) {
-//            $homeAways = array_merge($homeAways, $homeAwayCreator->create($variantWithPoule));
-//        }
-//        return $homeAways;
-//    }
-//
-//    /**
-//     * @param Input $input
-//     * @return array<int, AgainstGpp>
-//     */
-//    protected function getAgainstGppSportVariantMap(Input $input): array
-//    {
-//        $map = [];
-//        foreach( $input->getSports() as $sport) {
-//            $sportVariant = $sport->createVariant();
-//            if( $sportVariant instanceof AgainstGpp) {
-//                $map[$sport->getNumber()] = $sportVariant;
-//            }
-//        }
-//        return $map;
-//    }
+    /**
+     * @param GppHomeAwayCreator $homeAwayCreator
+     * @param Poule $poule
+     * @param AgainstGpp $sportVariant
+     * @return list<HomeAway>
+     */
+    protected function createHomeAways(
+        GppHomeAwayCreator $homeAwayCreator,
+        Poule $poule,
+        AgainstGpp $sportVariant): array
+    {
+        $variantWithPoule = (new AgainstGppWithPoule($poule, $sportVariant));
+        $totalNrOfGames = $variantWithPoule->getTotalNrOfGames();
+        $homeAways = [];
+        while ( count($homeAways) < $totalNrOfGames ) {
+            $homeAways = array_merge($homeAways, $homeAwayCreator->create($variantWithPoule));
+        }
+        return $homeAways;
+    }
+
+    /**
+     * @param Input $input
+     * @return array<int, AgainstGpp>
+     */
+    protected function getAgainstGppSportVariantMap(Input $input): array
+    {
+        $map = [];
+        foreach( $input->getSports() as $sport) {
+            $sportVariant = $sport->createVariant();
+            if( $sportVariant instanceof AgainstGpp) {
+                $map[$sport->getNumber()] = $sportVariant;
+            }
+        }
+        return $map;
+    }
+
+    protected function getLogger(): LoggerInterface
+    {
+        $logger = new Logger("test-logger");
+        $processor = new UidProcessor();
+        $logger->pushProcessor($processor);
+
+        $handler = new StreamHandler('php://stdout', LogLevel::INFO);
+        $logger->pushHandler($handler);
+        return $logger;
+    }
 }

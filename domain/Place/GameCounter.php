@@ -5,7 +5,10 @@ namespace SportsScheduler\Place;
 use SportsPlanning\Place;
 use SportsPlanning\Resource\GameCounter as ResourceGameCounter;
 
-final readonly class GameCounter extends ResourceGameCounter
+/**
+ * @api
+ */
+class GameCounter extends ResourceGameCounter
 {
     public function __construct(protected Place $place, int $nrOfGames = 0)
     {

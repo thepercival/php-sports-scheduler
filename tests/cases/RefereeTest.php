@@ -14,9 +14,11 @@ final class RefereeTest extends TestCase
 
     public function testConstruct(): void
     {
-        $referee = new Referee(1);
+        $input = $this->createInput([3]);
+        $referee = new Referee($input, null);
         $referee->setPriority(2);
-        self::assertSame(1, $referee->refereeNr);
+        self::assertSame($input, $referee->getInput());
+        self::assertSame(3, $referee->getNumber());
         self::assertSame(2, $referee->getPriority());
     }
 }

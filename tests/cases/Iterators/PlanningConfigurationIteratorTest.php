@@ -2,38 +2,36 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Tests\Iterators;
+namespace SportsScheduler\Tests\Input;
 
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SportRange;
-use SportsScheduler\Iterators\PlanningConfigurationIterator;
+use SportsScheduler\Input\Iterator as InputIterator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
-final class PlanningConfigurationIteratorTest extends TestCase
+final class IteratorTest extends TestCase
 {
     use PlanningCreator;
 
     public function testRewind(): void
     {
-        $rangeNrOfTogetherCycles = new SportRange(1, 2);
-        $configIterator = new PlanningConfigurationIterator(
+        $inputIterator = new InputIterator(
             new SportRange(2, 6),
             new SportRange(2, 6),
             new SportRange(1, 3),
             new SportRange(0, 3),
             new SportRange(1, 3),
-            new SportRange(1, 3),
-            $rangeNrOfTogetherCycles,
-            new SportRange(1, 4)
+            new SportRange(1, 2),
+            $this->getLogger()
         );
 
-        $planningConfig = $configIterator->current();
-        self::assertNotNull($planningConfig);
+        $planningInput = $inputIterator->current();
+        self::assertNotNull($planningInput);
         // self::assertGreaterThan(30, $inputIterator->key());
-        self::assertEquals([2], $planningConfig->pouleStructure->toArray());
-        self::assertSame(0, $planningConfig->refereeInfo?->nrOfReferees);
-        self::assertNull($planningConfig->refereeInfo?->selfRefereeInfo);
+        self::assertEquals([2], $planningInput->createPouleStructure()->toArray());
+        self::assertCount(0, $planningInput->getReferees());
+        self::assertEquals(SelfReferee::Disabled, $planningInput->getSelfReferee());
     }
 
 //    public function testLast()
@@ -57,26 +55,25 @@ final class PlanningConfigurationIteratorTest extends TestCase
 
     public function testCount(): void
     {
-        $configIterator = new PlanningConfigurationIterator(
+        $inputIterator = new InputIterator(
             new SportRange(2, 6),
             new SportRange(2, 6),
             new SportRange(1, 3),
             new SportRange(0, 3),
+            new SportRange(1, 3),
             new SportRange(1, 2),
-            new SportRange(1, 2),
-            new SportRange(1, 5),
-            new SportRange(1, 4)
+            $this->getLogger()
         );
 
         $nrOfPossibilities = 0;
-        while ($configIterator->valid()) {
+        while ($inputIterator->valid()) {
             // echo $inputIterator->key() . PHP_EOL;
             $nrOfPossibilities++;
-            $configIterator->next();
+            $inputIterator->next();
         }
-        $configIterator->next(); // should do nothing
-        self::assertFalse($configIterator->valid());
-        self::assertEquals(2050, $nrOfPossibilities);
+        $inputIterator->next(); // should do nothing
+        self::assertFalse($inputIterator->valid());
+        self::assertEquals(450, $nrOfPossibilities);
         // last change => remove gamePlaceStrategy
     }
 }

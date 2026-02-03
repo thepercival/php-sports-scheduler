@@ -5,171 +5,179 @@ declare(strict_types=1);
 namespace SportsScheduler\TestHelper;
 
 use Exception;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use SportsHelpers\PouleStructures\PouleStructure;
-use SportsHelpers\RefereeInfo;
+use SportsHelpers\Sport\Variant\AllInOneGame as AllInOneGameSportVariant;
+use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
+use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
+use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
+use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\SportRange;
-use SportsHelpers\Sports\AgainstOneVsOne;
-use SportsPlanning\Exceptions\NoBestPlanningException;
-use SportsPlanning\Game\AgainstGame;
-use SportsPlanning\Game\TogetherGame;
-use SportsPlanning\Output\PlanningOutput;
-use SportsPlanning\Output\ScheduleOutput;
+use SportsScheduler\Game\Assigner as GameAssigner;
+use SportsScheduler\Game\Creator as GameCreator;
+use SportsPlanning\Input;
 use SportsPlanning\Planning;
-use SportsPlanning\Planning\PlanningFilter;
-use SportsPlanning\Planning\PlanningState;
-use SportsPlanning\Planning\PlanningType;
+use SportsPlanning\Planning\State as PlanningState;
 use SportsPlanning\Planning\TimeoutState;
-use SportsPlanning\PlanningConfiguration;
-use SportsPlanning\PlanningOrchestration;
-use SportsPlanning\PlanningWithMeta;
-use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
-use SportsScheduler\Game\GameAssigner;
-use SportsScheduler\Game\PlannableGameCreator;
-use SportsScheduler\Schedules\CycleCreator;
+use SportsPlanning\PlanningRefereeInfo;
+use SportsScheduler\Schedule\Creator as ScheduleCreator;
 
 trait PlanningCreator
 {
-    use LoggerCreator;
+    protected function getAgainstH2hSportVariant(
+        int $nrOfHomePlaces = 1,
+        int $nrOfAwayPlaces = 1,
+        int $nrOfH2H = 1
+    ): AgainstH2h {
+        return new AgainstH2h($nrOfHomePlaces, $nrOfAwayPlaces, $nrOfH2H);
+    }
 
-//    protected function getAgainstH2hSportVariantWithFields(
-//        int $nrOfFields,
-//        int $nrOfHomePlaces = 1,
-//        int $nrOfAwayPlaces = 1,
-//        int $nrOfH2H = 1
-//    ): SportVariantWithFields {
-//        return new SportVariantWithFields(
-//            $this->getAgainstH2hSportVariant($nrOfHomePlaces, $nrOfAwayPlaces, $nrOfH2H),
-//            $nrOfFields
-//        );
-//    }
-//
-//    protected function getAgainstGppSportVariantWithFields(
-//        int $nrOfFields,
-//        int $nrOfHomePlaces = 1,
-//        int $nrOfAwayPlaces = 1,
-//        int $nrOfGamesPerPlace = 1
-//    ): SportVariantWithFields {
-//        return new SportVariantWithFields(
-//            $this->getAgainstGppSportVariant($nrOfHomePlaces, $nrOfAwayPlaces, $nrOfGamesPerPlace),
-//            $nrOfFields
-//        );
-//    }
-//
-//    protected function getSingleSportVariantWithFields(
-//        int $nrOfFields,
-//        int $nrOfGamesPerPlace = 1,
-//        int $nrOfGamePlaces = 1
-//    ): SportVariantWithFields {
-//        return new SportVariantWithFields(
-//            $this->getSingleSportVariant($nrOfGamesPerPlace, $nrOfGamePlaces),
-//            $nrOfFields
-//        );
-//    }
-//
-//    protected function getAllInOneGameSportVariantWithFields(
-//        int $nrOfFields,
-//        int $nrOfGamesPerPlace = 1
-//    ): SportVariantWithFields {
-//        return new SportVariantWithFields($this->getAllInOneGameSportVariant($nrOfGamesPerPlace), $nrOfFields);
-//    }
-//
-//    protected function getDefaultNrOfReferees(): int
-//    {
-//        return 2;
-//    }
+    protected function getAgainstGppSportVariant(
+        int $nrOfHomePlaces = 1,
+        int $nrOfAwayPlaces = 1,
+        int $nrOfGamesPerPlace = 1
+    ): AgainstGpp {
+        return new AgainstGpp($nrOfHomePlaces, $nrOfAwayPlaces, $nrOfGamesPerPlace);
+    }
 
-    protected function createPlanningWithMeta(
-        PlanningOrchestration $orchestration,
-        SportRange $nrOfBatchGamesRange = null,
+    protected function getSingleSportVariant(int $nrOfGamesPerPlace = 1, int $nrOfGamePlaces = 1): SingleSportVariant
+    {
+        return new SingleSportVariant($nrOfGamePlaces, $nrOfGamesPerPlace);
+    }
+
+    protected function getAllInOneGameSportVariant(int $nrOfGamesPerPlace = 1): AllInOneGameSportVariant
+    {
+        return new AllInOneGameSportVariant($nrOfGamesPerPlace);
+    }
+
+    protected function getAgainstH2hSportVariantWithFields(
+        int $nrOfFields,
+        int $nrOfHomePlaces = 1,
+        int $nrOfAwayPlaces = 1,
+        int $nrOfH2H = 1
+    ): SportVariantWithFields {
+        return new SportVariantWithFields(
+            $this->getAgainstH2hSportVariant($nrOfHomePlaces, $nrOfAwayPlaces, $nrOfH2H),
+            $nrOfFields
+        );
+    }
+
+    protected function getAgainstGppSportVariantWithFields(
+        int $nrOfFields,
+        int $nrOfHomePlaces = 1,
+        int $nrOfAwayPlaces = 1,
+        int $nrOfGamesPerPlace = 1
+    ): SportVariantWithFields {
+        return new SportVariantWithFields(
+            $this->getAgainstGppSportVariant($nrOfHomePlaces, $nrOfAwayPlaces, $nrOfGamesPerPlace),
+            $nrOfFields
+        );
+    }
+
+    protected function getSingleSportVariantWithFields(
+        int $nrOfFields,
+        int $nrOfGamesPerPlace = 1,
+        int $nrOfGamePlaces = 1
+    ): SportVariantWithFields {
+        return new SportVariantWithFields(
+            $this->getSingleSportVariant($nrOfGamesPerPlace, $nrOfGamePlaces),
+            $nrOfFields
+        );
+    }
+
+    protected function getAllInOneGameSportVariantWithFields(
+        int $nrOfFields,
+        int $nrOfGamesPerPlace = 1
+    ): SportVariantWithFields {
+        return new SportVariantWithFields($this->getAllInOneGameSportVariant($nrOfGamesPerPlace), $nrOfFields);
+    }
+
+    protected function getLogger(): LoggerInterface
+    {
+        $logger = new Logger("test-logger");
+//        $processor = new UidProcessor();
+//        $logger->pushProcessor($processor);
+
+        $handler = new StreamHandler('php://stdout', LogLevel::INFO);
+        $logger->pushHandler($handler);
+        return $logger;
+    }
+
+    protected function getDefaultNrOfReferees(): int
+    {
+        return 2;
+    }
+
+    /**
+     * @param list<int> $pouleStructureAsArray
+     * @param list<SportVariantWithFields>|null $sportVariantsWithFields
+     * @param PlanningRefereeInfo|null $refereeInfo
+     * @return Input
+     */
+    protected function createInput(
+        array $pouleStructureAsArray,
+        array|null $sportVariantsWithFields = null,
+        PlanningRefereeInfo|null $refereeInfo = null,
+        bool $perPoule = false
+    ) {
+        if ($sportVariantsWithFields === null) {
+            $sportVariantsWithFields = [$this->getAgainstH2hSportVariantWithFields(2)];
+        }
+        if ($refereeInfo === null) {
+            $refereeInfo = new PlanningRefereeInfo($this->getDefaultNrOfReferees());
+        }
+        $input = new Input( new Input\Configuration(
+            new PouleStructure(...$pouleStructureAsArray),
+            $sportVariantsWithFields,
+            $refereeInfo,
+            $perPoule
+        ) );
+
+        return $input;
+    }
+
+    protected function createPlanning(
+        Input $input,
+        SportRange|null $nrOfGamesPerBatchRange = null,
         int $maxNrOfGamesInARow = 0,
         bool $disableThrowOnTimeout = false,
         bool $showHighestCompletedBatchNr = false,
-        TimeoutState|null $timeoutState = null
-    ): PlanningWithMeta {
-        if ($nrOfBatchGamesRange === null) {
-            $nrOfBatchGamesRange = new SportRange(1, 1);
+        TimeoutState|null $timeoutState = null,
+        int|null $allowedGppMargin = null
+    ): Planning {
+        if ($nrOfGamesPerBatchRange === null) {
+            $nrOfGamesPerBatchRange = new SportRange(1, 1);
         }
-        $planning = Planning::fromConfiguration($orchestration->configuration);
-        $planningWithMeta = new PlanningWithMeta($orchestration, $nrOfBatchGamesRange, $maxNrOfGamesInARow, $planning);
+        $planning = new Planning($input, $nrOfGamesPerBatchRange, $maxNrOfGamesInARow);
         if ($timeoutState !== null) {
-            $planningWithMeta->setTimeoutState($timeoutState);
+            $planning->setTimeoutState($timeoutState);
         }
 
-        $cycleCreator = new CycleCreator($this->createLogger());
-        $sportRootCyclesMap = $cycleCreator->createSportCyclesMap($orchestration->configuration);
+        $scheduleCreator = new ScheduleCreator($this->getLogger());
+        if( $allowedGppMargin === null ) {
+            $biggestPoule = $input->getPoule(1);
+            $sports = array_values($input->getSports()->toArray());
+            $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sports);
+            $allowedGppMargin = $scheduleCreator->getMaxGppMargin($sportVariantsWithNr, count($biggestPoule->getPlaces()));
+        }
+        $schedules = $scheduleCreator->createFromInput($input, $allowedGppMargin);
 
-//        foreach( $sportRootCyclesMap as $placeNr => $sportRootCycles) {
-//            foreach( $sportRootCycles as $sportRootCycle) {
-//                (new ScheduleOutput($this->createLogger()))->outputCycle($sportRootCycle);
-//            }
-//        }
+        $gameCreator = new GameCreator($this->getLogger());
+        $gameCreator->createGames($planning, $schedules);
 
-        $gameCreator = new PlannableGameCreator($this->createLogger());
-        $gameCreator->createGamesFromCycles($planning, $sportRootCyclesMap);
-
-        $gameAssigner = new GameAssigner($this->createLogger());
+        $gameAssigner = new GameAssigner($this->getLogger());
         if ($disableThrowOnTimeout) {
             $gameAssigner->disableThrowOnTimeout();
         }
         if ($showHighestCompletedBatchNr) {
             $gameAssigner->showHighestCompletedBatchNr();
         }
-        $betterNrOfBatches = $this->determineBetterNrOfBatches($orchestration, $planningWithMeta->getType(), $nrOfBatchGamesRange);
-        if( $betterNrOfBatches === null ) {
-            $betterNrOfBatches = $this->calculateMaxNrOfBatches($planningWithMeta);
-        }
-        if( $gameAssigner->assignGames($planningWithMeta, $betterNrOfBatches) !== PlanningState::Succeeded ) {
+        if( $gameAssigner->assignGames($planning) !== PlanningState::Succeeded ) {
             throw new Exception("planning could not be created", E_ERROR);
         }
-        return $planningWithMeta;
-    }
-
-    private function calculateMaxNrOfBatches(PlanningWithMeta $planning): int
-    {
-        $totalNrOfGames = $planning->getConfiguration()->createPlanningPouleStructure()->calculateNrOfGames();
-        return (int)ceil($totalNrOfGames / $planning->minNrOfBatchGames);
-    }
-
-    public function determineBetterNrOfBatches(
-        PlanningOrchestration $orchestration, PlanningType $planningType, SportRange $batchGamesRange): int|null
-    {
-        try {
-            if ($planningType === PlanningType::BatchGames) {
-                // -1 because needs to be less nrOfBatches
-                return $orchestration->getBestPlanning(null)->getNrOfBatches() - 1;
-            } else {
-                $planningFilter = new PlanningFilter( null, null, $batchGamesRange, 0);
-                $batchGamePlanning = $orchestration->getPlanningWithMeta($planningFilter);
-                if ($batchGamePlanning !== null) {
-                    return $batchGamePlanning->getNrOfBatches();
-                }
-            }
-        } catch (NoBestPlanningException $e) {
-        }
-        return null;
-    }
-
-    /**
-     * @param Planning $planning
-     * @return list<AgainstGame>
-     */
-    protected function getAgainstGames(Planning $planning): array {
-        $games = [];
-        foreach($planning->poules as $poule) {
-            $games = array_merge($poule->getAgainstGames());
-        }
-        return $games;
-    }
-
-    /**
-     * @param Planning $planning
-     * @return list<TogetherGame>
-     */
-    protected function getTogetherGames(Planning $planning): array {
-        $games = [];
-        foreach($planning->poules as $poule) {
-            $games = array_merge($poule->getTogetherGames());
-        }
-        return $games;
+        return $planning;
     }
 }

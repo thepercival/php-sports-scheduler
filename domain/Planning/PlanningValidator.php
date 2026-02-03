@@ -6,59 +6,66 @@ namespace SportsScheduler\Planning;
 
 use SportsHelpers\Against\AgainstSide;
 use SportsHelpers\SelfReferee;
-use SportsHelpers\Sports\TogetherSport;
-use SportsPlanning\Game\AgainstGame;
-use SportsPlanning\Game\TogetherGame;
-use SportsPlanning\Planning\PlanningValidity;
-use SportsPlanning\PlanningWithMeta;
-use SportsPlanning\Sports\SportsWithNrAndFields\AgainstOneVsOneWithNrAndFields;
-use SportsPlanning\Sports\SportsWithNrAndFields\AgainstOneVsTwoWithNrAndFields;
-use SportsPlanning\Sports\SportsWithNrAndFields\AgainstTwoVsTwoWithNrAndFields;
-use SportsPlanning\Sports\SportsWithNrAndFields\TogetherSportWithNrAndFields;
+use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
+use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
+use SportsHelpers\Sport\Variant\AllInOneGame;
+use SportsHelpers\Sport\Variant\Creator as VariantCreator;
+use SportsPlanning\Planning\Validity as PlanningValidity;
+use SportsScheduler\Combinations\Validator\Against as AgainstValidator;
+use SportsScheduler\Combinations\Validator\With as WithValidator;
 use SportsScheduler\Exceptions\UnequalAssignedFieldsException;
 use SportsScheduler\Exceptions\UnequalAssignedRefereePlacesException;
 use SportsScheduler\Exceptions\UnequalAssignedRefereesException;
+use SportsPlanning\Game;
+use SportsPlanning\Game\Against as AgainstGame;
+use SportsPlanning\Game\Together as TogetherGame;
+use SportsPlanning\Input;
 use SportsPlanning\Place;
 use SportsPlanning\Planning;
 use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentsValidator;
 use SportsPlanning\Poule;
+use SportsPlanning\Sport;
+use SportsHelpers\Sport\Variant\WithPoule\Against\H2h as AgainstH2hWithPoule;
+use SportsHelpers\Sport\Variant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
+use SportsHelpers\Sport\Variant\WithPoule\Single as SingleWithPoule;
+use SportsHelpers\Sport\Variant\WithPoule\AllInOneGame as AllInOneGameWithPoule;
 
-final class PlanningValidator
+final class Validator
 {
     public function __construct()
     {
     }
 
-    public function validate(PlanningWithMeta $planningWithMeta, bool $onlyUnassigned = false): int
+    public function validate(Planning $planning, bool $onlyUnassigned = false): int
     {
-        $validity = $this->validateNrOfBatches($planningWithMeta);
+        $validity = $this->validateNrOfBatches($planning);
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
-        $validity = $this->validateRefereesWithSelf($planningWithMeta);
+        $validity = $this->validateRefereesWithSelf($planning->getInput());
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
-        $validity = $this->validateHasGamesAndAssignedGamePlaces($planningWithMeta->getPlanning());
+        $validity = $this->validateGamesAndGamePlaces($planning);
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
-        $validity = $this->validateGamesInARow($planningWithMeta);
+        $validity = $this->validateGamesInARow($planning);
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
         if ($onlyUnassigned) {
             return $validity;
         }
-        $validity = $this->validateRefereesCorrectlyAssigned($planningWithMeta);
+        $validity = $this->validateResourcesCorrectlyAssigned($planning);
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
-        $validity = $this->validateResourcesPerBatch($planningWithMeta->getPlanning());
+        $validity = $this->validateResourcesPerBatch($planning);
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
-        $validity = $this->validateEquallyAssigned($planningWithMeta);
+        $validity = $this->validateEquallyAssigned($planning);
         if (PlanningValidity::VALID !== $validity) {
             return $validity;
         }
@@ -67,10 +74,10 @@ final class PlanningValidator
 
     /**
      * @param int $validity
-     * @param PlanningWithMeta|null $planningWithMeta
+     * @param Planning|null $planning
      * @return list<string>
      */
-    public function getValidityDescriptions(int $validity, PlanningWithMeta|null $planningWithMeta = null): array
+    public function getValidityDescriptions(int $validity, Planning|null $planning = null): array
     {
         $invalidations = [];
         if ($validity === 0) {
@@ -124,12 +131,12 @@ final class PlanningValidator
         if (($validity & PlanningValidity::INVALID_NROFBATCHES) === PlanningValidity::INVALID_NROFBATCHES) {
             $invalidations[] = "maxBatchNr of games is not equal to planning->getNrOfBatches";
         }
-        if ($planningWithMeta !== null) {
+        if ($planning !== null) {
             if ((($validity & PlanningValidity::UNEQUALLY_ASSIGNED_FIELDS) === PlanningValidity::UNEQUALLY_ASSIGNED_FIELDS
                 || ($validity & PlanningValidity::UNEQUALLY_ASSIGNED_REFEREES) === PlanningValidity::UNEQUALLY_ASSIGNED_REFEREES
                 || ($validity & PlanningValidity::UNEQUALLY_ASSIGNED_REFEREEPLACES) === PlanningValidity::UNEQUALLY_ASSIGNED_REFEREEPLACES)
             ) {
-                $invalidations[] = $this->getUnqualAssignedDescription($planningWithMeta);
+                $invalidations[] = $this->getUnqualAssignedDescription($planning);
             }
         }
         if (count($invalidations) === 0) {
@@ -139,23 +146,27 @@ final class PlanningValidator
         return $invalidations;
     }
 
-    protected function validateRefereesWithSelf(PlanningWithMeta $planningWithMeta): int
+    protected function validateRefereesWithSelf(Input $input): int
     {
-        $refereeInfo = $planningWithMeta->getConfiguration()->refereeInfo;
-        if ($refereeInfo?->selfRefereeInfo !== null && count($planningWithMeta->getPlanning()->referees) > 0) {
+        if ($input->selfRefereeEnabled() && $input->getReferees()->count() > 0) {
             return PlanningValidity::INVALID_REFEREESELF_AND_REFEREES;
         }
         return PlanningValidity::VALID;
     }
 
-    protected function validateHasGamesAndAssignedGamePlaces(Planning $planning): int
+    protected function validateGamesAndGamePlaces(Planning $planning): int
     {
-        foreach ($planning->poules as $poule) {
-            $pouleGames = $poule->getGames();
+        foreach ($planning->getInput()->getPoules() as $poule) {
+            $pouleGames = $planning->getGamesForPoule($poule);
             if (count($pouleGames) === 0) {
                 return PlanningValidity::NO_GAMES;
             }
-            $validity = $this->validateAllGamePlacesAssigned($planning, $poule);
+            $validity = $this->validateNrOfBatches($planning);
+            if (PlanningValidity::VALID !== $validity) {
+                return $validity;
+            }
+
+            $validity = $this->allPlacesInPouleSameNrOfGames($planning, $poule);
             if ($validity !== PlanningValidity::VALID) {
                 return $validity;
             }
@@ -163,24 +174,24 @@ final class PlanningValidator
         return PlanningValidity::VALID;
     }
 
-    protected function validateNrOfBatches(PlanningWithMeta $planningWithMeta): int
+    protected function validateNrOfBatches(Planning $planning): int
     {
-        $games = $planningWithMeta->getPlanning()->getGames();
+        $games = $planning->getGames();
         if (count($games) === 0) {
-            return 0 === $planningWithMeta->getNrOfBatches() ? PlanningValidity::VALID : PlanningValidity::INVALID_NROFBATCHES;
+            return 0 === $planning->getNrOfBatches() ? PlanningValidity::VALID : PlanningValidity::INVALID_NROFBATCHES;
         }
         $maxBatchNr = max(
             array_map(function (AgainstGame|TogetherGame $game): int {
                 return $game->getBatchNr();
             }, $games)
         );
-        return $maxBatchNr === $planningWithMeta->getNrOfBatches() ? PlanningValidity::VALID : PlanningValidity::INVALID_NROFBATCHES;
+        return $maxBatchNr === $planning->getNrOfBatches() ? PlanningValidity::VALID : PlanningValidity::INVALID_NROFBATCHES;
     }
 
-    protected function validateAllGamePlacesAssigned(Planning $planning, Poule $poule): int
+    protected function allPlacesInPouleSameNrOfGames(Planning $planning, Poule $poule): int
     {
-        foreach ($planning->sports as $sportWithNrAndFields) {
-            $invalid = $this->validateAllGamePlacesAssignedForSport($planning, $poule, $sportWithNrAndFields);
+        foreach ($planning->getInput()->getSports() as $sport) {
+            $invalid = $this->allPlacesInPouleSameNrOfSportGames($planning, $poule, $sport);
             if ($invalid !== PlanningValidity::VALID) {
                 return $invalid;
             }
@@ -188,51 +199,132 @@ final class PlanningValidator
         return PlanningValidity::VALID;
     }
 
-
-    protected function validateAllGamePlacesAssignedForSport(
-        Planning $planning, Poule $poule,
-        TogetherSportWithNrAndFields|AgainstOneVsOneWithNrAndFields|AgainstOneVsTwoWithNrAndFields|AgainstTwoVsTwoWithNrAndFields $sportWithNrAndFields): int
+    protected function allPlacesInPouleSameNrOfSportGames(Planning $planning, Poule $poule, Sport $sport): int
     {
         $nrOfGamesPerPlace = [];
-        $nrOfPlaces = count($poule->places);
+        $nrOfPlaces = count($poule->getPlaces());
         /** @var non-empty-array<int, int> $nrOfHomeSideGames */
         $nrOfHomeSideGames = [];
+        $sportVariant = $sport->createVariant();
 
-        if (!($sportWithNrAndFields->sport instanceof TogetherSport)) {
-
-            foreach ($poule->places as $place) {
+        if ($sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
+            if( $sportVariant instanceof AgainstH2h ) {
+                $againstWithPoule = new AgainstH2hWithPoule($nrOfPlaces, $sportVariant);
+            } else {
+                $againstWithPoule = new AgainstGppWithPoule($nrOfPlaces, $sportVariant);
+            }
+            foreach ($poule->getPlaces() as $place) {
                 $nrOfHomeSideGames[$place->getUniqueIndex()] = 0;
             }
+            // if ($againstWithPoule instanceof AgainstH2hWithPoule || $againstWithPoule->allPlacesSameNrOfGamesAssignable()) {
+                if (// $sportVariant->hasMultipleSidePlaces() &&
+                    ($againstWithPoule instanceof AgainstH2hWithPoule || $againstWithPoule->allWithSameNrOfGamesAssignable())) {
+                    $withValidator = new WithValidator($poule, $sport);
+                    $withValidator->addGames($planning);
+                    if (!$withValidator->balanced()) {
+                        return PlanningValidity::UNEQUAL_GAME_WITH;
+                    }
+                }
+                if ($againstWithPoule instanceof AgainstH2hWithPoule || $againstWithPoule->allAgainstSameNrOfGamesAssignable()) {
+                    $againstValidator = new AgainstValidator($poule, $sport);
+                    $againstValidator->addGames($planning);
+                    if (!$againstValidator->balanced()) {
+                        return PlanningValidity::UNEQUAL_GAME_AGAINST;
+                    }
+                }
+            // }
         }
 
-        $games = array_filter($poule->getGames(),
-            function (AgainstGame|TogetherGame $game) use ($sportWithNrAndFields): bool {
-                return $game->getField()->sportNr === $sportWithNrAndFields->sportNr;
-            });
-        foreach ($games as $game) {
-            $gameSportWithNrAndFields = $planning->getSport($game->getField()->sportNr);
-            if( !($gameSportWithNrAndFields->sport instanceof TogetherSport))
-            {
-                if( !($game instanceof AgainstGame )) {
+        $sportGames = array_filter($planning->getGamesForPoule($poule), function (Game $game) use ($sport): bool {
+            return $game->getSport() === $sport;
+        });
+        foreach ($sportGames as $game) {
+            $sportVariant = $game->createVariant();
+            if ($sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
+                if (!$game instanceof AgainstGame) {
+                    return PlanningValidity::UNEQUAL_GAME_HOME_AWAY;
+                }
+                $homePlaces = $game->getSidePlaces(AgainstSide::Home);
+                $awayPlaces = $game->getSidePlaces(AgainstSide::Away);
+                $nrOfHomePlaces = count($homePlaces);
+                $nrOfAwayPlaces = count($awayPlaces);
+                if ($nrOfHomePlaces === 0 || $nrOfAwayPlaces === 0) {
                     return PlanningValidity::EMPTY_PLACE;
                 }
-                $homeGamePlaces = $game->getSideGamePlaces(AgainstSide::Home);
-                $awayGamePlaces = $game->getSideGamePlaces(AgainstSide::Away);
-                if (count($homeGamePlaces) === 0 || count($awayGamePlaces) === 0) {
-                    return PlanningValidity::EMPTY_PLACE;
+                if ($sportVariant->getNrOfHomePlaces() === $sportVariant->getNrOfAwayPlaces()) {
+                    if ($sportVariant->getNrOfHomePlaces() !== $nrOfHomePlaces
+                        || $sportVariant->getNrOfAwayPlaces() !== $nrOfAwayPlaces) {
+                        return PlanningValidity::UNEQUAL_GAME_HOME_AWAY;
+                    }
+                } else {
+                    if (
+                        ($sportVariant->getNrOfHomePlaces() !== $nrOfHomePlaces && $sportVariant->getNrOfAwayPlaces(
+                            ) !== $nrOfHomePlaces)
+                        ||
+                        ($sportVariant->getNrOfHomePlaces() !== $nrOfAwayPlaces && $sportVariant->getNrOfAwayPlaces(
+                            ) !== $nrOfAwayPlaces)) {
+                        return PlanningValidity::UNEQUAL_GAME_HOME_AWAY;
+                    }
+                }
+
+                foreach ($homePlaces as $homePlace) {
+                    $nrOfHomeSideGames[$homePlace->getPlace()->getUniqueIndex()]++;
+                }
+            } elseif ($sportVariant instanceof AllInOneGame) {
+                if ($poule->getPlaces()->count() !== $game->getPlaces()->count()) {
+                    return PlanningValidity::UNEQUAL_GAME_HOME_AWAY;
                 }
             }
-            if (count($game->getPlaceNrs()) === 0) {
+            if ($game->getPlaces()->count() === 0) {
                 return PlanningValidity::EMPTY_PLACE;
             }
+            $places = $game->getPoulePlaces();
+            foreach ($places as $place) {
+                if (array_key_exists((string)$place, $nrOfGamesPerPlace) === false) {
+                    $nrOfGamesPerPlace[(string)$place] = 0;
+                }
+                $nrOfGamesPerPlace[(string)$place]++;
+            }
         }
+
+        $variantWithPoule = (new VariantCreator())->createWithPoule($nrOfPlaces, $sportVariant);
+        if (!($variantWithPoule instanceof AgainstGppWithPoule) || $variantWithPoule->allPlacesSameNrOfGamesAssignable()) {
+            $nrOfGamesFirstPlace = reset($nrOfGamesPerPlace);
+            foreach ($nrOfGamesPerPlace as $nrOfGamesSomePlace) {
+                if ($nrOfGamesFirstPlace !== $nrOfGamesSomePlace) {
+                    return PlanningValidity::NOT_EQUALLY_ASSIGNED_PLACES;
+                }
+            }
+        }
+
+        if ($variantWithPoule instanceof SingleWithPoule || $variantWithPoule instanceof AllInOneGameWithPoule) {
+            return PlanningValidity::VALID;
+        }
+        if ($variantWithPoule instanceof AgainstGppWithPoule) {
+            if (!$variantWithPoule->allWithSameNrOfGamesAssignable(AgainstSide::Home)) {
+                return PlanningValidity::VALID;
+            }
+        }
+        $maxDifference = 1;
+
+//        $totalNrOfHomePlaces = $variantWithPoule->getTotalNrOfGames() * $variantWithPoule->getSportVariant()->getNrOfHomePlaces();
+//        if (($totalNrOfHomePlaces % $nrOfPlaces ) > 0) {
+//            $maxDifference++;
+//        }
+        $minValue = min($nrOfHomeSideGames);
+        foreach ($nrOfHomeSideGames as $amount) {
+            if ($amount - $minValue > $maxDifference) {
+                return PlanningValidity::UNEQUAL_PLACE_NROFHOMESIDES;
+            }
+        }
+
         return PlanningValidity::VALID;
     }
 
-    protected function validateRefereesCorrectlyAssigned(PlanningWithMeta $planningWithMeta): int
+    protected function validateResourcesCorrectlyAssigned(Planning $planning): int
     {
-        foreach ($planningWithMeta->getPlanning()->poules as $poule) {
-            $validity = $this->validateRefereesCorrectlyAssignedHelper($planningWithMeta, $poule);
+        foreach ($planning->getInput()->getPoules() as $poule) {
+            $validity = $this->validateResourcesCorrectlyAssignedHelper($planning, $poule);
             if ($validity !== PlanningValidity::VALID) {
                 return $validity;
             }
@@ -240,31 +332,25 @@ final class PlanningValidator
         return PlanningValidity::VALID;
     }
 
-    protected function validateRefereesCorrectlyAssignedHelper(PlanningWithMeta $planningWithMeta, Poule $poule): int
+    protected function validateResourcesCorrectlyAssignedHelper(Planning $planning, Poule $poule): int
     {
-        $refereeInfo = $planningWithMeta->getConfiguration()->refereeInfo;
-        if( $refereeInfo === null) {
-            return PlanningValidity::VALID;
-        }
-        $selfRefereeInfo = $refereeInfo->selfRefereeInfo;
-        foreach ($poule->getGames() as $game) {
-            if ($selfRefereeInfo !== null) {
-                $refereePlaceUniqueIndex = $game->getRefereePlaceUniqueIndex();
-                if ($refereePlaceUniqueIndex === null) {
+        foreach ($planning->getGamesForPoule($poule) as $game) {
+            if ($planning->getInput()->selfRefereeEnabled()) {
+                $refereePlace = $game->getRefereePlace();
+                if ($refereePlace === null) {
                     return PlanningValidity::EMPTY_REFEREEPLACE;
                 }
-                $refereePlace = $planningWithMeta->getPlanning()->getPlace($refereePlaceUniqueIndex);
-                if ($selfRefereeInfo->selfReferee === SelfReferee::SamePoule
-                    && $refereePlace->pouleNr !== $game->pouleNr) {
+                if ($planning->getInput()->getSelfReferee() === SelfReferee::SamePoule
+                    && $refereePlace->getPoule() !== $game->getPoule()) {
                     return PlanningValidity::INVALID_ASSIGNED_REFEREEPLACE;
                 }
-                if ($selfRefereeInfo->selfReferee === SelfReferee::OtherPoules
-                    && $refereePlace->pouleNr === $game->pouleNr) {
+                if ($planning->getInput()->getSelfReferee() === SelfReferee::OtherPoules
+                    && $refereePlace->getPoule() === $game->getPoule()) {
                     return PlanningValidity::INVALID_ASSIGNED_REFEREEPLACE;
                 }
             } else {
-                if (count($planningWithMeta->getPlanning()->referees) > 0) {
-                    if ($game->getRefereeNr() === null) {
+                if ($planning->getInput()->getReferees()->count() > 0) {
+                    if ($game->getReferee() === null) {
                         return PlanningValidity::EMPTY_REFEREE;
                     }
                 }
@@ -273,14 +359,14 @@ final class PlanningValidator
         return PlanningValidity::VALID;
     }
 
-    protected function validateGamesInARow(PlanningWithMeta $planningWithMeta): int
+    protected function validateGamesInARow(Planning $planning): int
     {
-        if ($planningWithMeta->maxNrOfGamesInARow === 0) {
+        if ($planning->getMaxNrOfGamesInARow() === 0) {
             return PlanningValidity::VALID;
         }
-        foreach ($planningWithMeta->getPlanning()->poules as $poule) {
-            foreach ($poule->places as $place) {
-                if ($this->checkGamesInARowForPlace($planningWithMeta, $place) === false) {
+        foreach ($planning->getInput()->getPoules() as $poule) {
+            foreach ($poule->getPlaces() as $place) {
+                if ($this->checkGamesInARowForPlace($planning, $place) === false) {
                     return PlanningValidity::TOO_MANY_GAMES_IN_A_ROW;
                 }
             }
@@ -288,14 +374,14 @@ final class PlanningValidator
         return PlanningValidity::VALID;
     }
 
-    protected function checkGamesInARowForPlace(PlanningWithMeta $planningWithMeta, Place $place): bool
+    protected function checkGamesInARowForPlace(Planning $planning, Place $place): bool
     {
         /**
          * @param Place $place
          * @return array<int,bool>
          */
-        $getBatchParticipations = function (Place $place) use ($planningWithMeta): array {
-            $games = $planningWithMeta->getPlanning()->getGames(PlanningWithMeta::ORDER_GAMES_BY_BATCH);
+        $getBatchParticipations = function (Place $place) use ($planning): array {
+            $games = $planning->getGames(Game::ORDER_BY_BATCH);
             $batchMap = [];
             foreach ($games as $game) {
                 if (array_key_exists($game->getBatchNr(), $batchMap) === false) {
@@ -304,7 +390,7 @@ final class PlanningValidator
                 if ($batchMap[$game->getBatchNr()] === true) {
                     continue;
                 }
-                $batchMap[$game->getBatchNr()] = $game->isParticipating($place->placeNr);
+                $batchMap[$game->getBatchNr()] = $game->isParticipating($place);
             }
             return $batchMap;
         };
@@ -329,7 +415,7 @@ final class PlanningValidator
             return $maxNrOfGamesInRow;
         };
 
-        return $getMaxInARow($getBatchParticipations($place)) <= $planningWithMeta->maxNrOfGamesInARow;
+        return $getMaxInARow($getBatchParticipations($place)) <= $planning->getMaxNrOfGamesInARow();
     }
 
 //    /**
@@ -348,17 +434,16 @@ final class PlanningValidator
 
     protected function validateResourcesPerBatch(Planning $planning): int
     {
-        $games = $planning->getGames(PlanningWithMeta::ORDER_GAMES_BY_BATCH);
+        $games = $planning->getGames(Game::ORDER_BY_BATCH);
         $batchMap = [];
         foreach ($games as $game) {
             if (array_key_exists($game->getBatchNr(), $batchMap) === false) {
                 $batchMap[$game->getBatchNr()] = array("fields" => [], "referees" => [], "places" => []);
             }
-            $poule = $planning->getPoule($game->pouleNr);;
-            $places = $poule->getPlaces($game);
-            $refereePlaceUniqueIndex = $game->getRefereePlaceUniqueIndex();
-            if ($refereePlaceUniqueIndex !== null) {
-                $places[] = $planning->getPlace($refereePlaceUniqueIndex);
+            $places = $game->getPoulePlaces();
+            $refereePlace = $game->getRefereePlace();
+            if ($refereePlace !== null) {
+                $places[] = $refereePlace;
             }
             foreach ($places as $placeIt) {
                 /** @var bool|int|string $search */
@@ -376,9 +461,8 @@ final class PlanningValidator
             }
             array_push($batchMap[$game->getBatchNr()]["fields"], $game->getField());
 
-            $refereeNr = $game->getRefereeNr();
-            if ($refereeNr !== null) {
-                $referee = $planning->getReferee($refereeNr);
+            $referee = $game->getReferee();
+            if ($referee !== null) {
                 /** @var bool|int|string $search */
                 $search = array_search($referee, $batchMap[$game->getBatchNr()]["referees"], true);
                 if ($search !== false) {
@@ -390,10 +474,10 @@ final class PlanningValidator
         return PlanningValidity::VALID;
     }
 
-    protected function validateEquallyAssigned(PlanningWithMeta $planningWithMeta): int
+    protected function validateEquallyAssigned(Planning $planning): int
     {
         try {
-            $assignmentValidator = new GameAssignmentsValidator($planningWithMeta);
+            $assignmentValidator = new GameAssignmentsValidator($planning);
             $assignmentValidator->validate();
         } catch (UnequalAssignedFieldsException $e) {
             return PlanningValidity::UNEQUALLY_ASSIGNED_FIELDS;
@@ -405,10 +489,10 @@ final class PlanningValidator
         return PlanningValidity::VALID;
     }
 
-    protected function getUnqualAssignedDescription(PlanningWithMeta $planningWithMeta): string
+    protected function getUnqualAssignedDescription(Planning $planning): string
     {
         try {
-            $assignmentValidator = new GameAssignmentsValidator($planningWithMeta);
+            $assignmentValidator = new GameAssignmentsValidator($planning);
             $assignmentValidator->validate();
         } catch (UnequalAssignedFieldsException | UnequalAssignedRefereesException | UnequalAssignedRefereePlacesException $e) {
             return $e->getMessage();

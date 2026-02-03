@@ -5,17 +5,16 @@ declare(strict_types=1);
 namespace SportsScheduler\Tests;
 
 use PHPUnit\Framework\TestCase;
-use SportsHelpers\PouleStructures\PouleStructure;
-use SportsHelpers\RefereeInfo;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\SportRange;
-use SportsHelpers\Sports\AgainstOneVsOne;
-use SportsPlanning\Planning\PlanningValidity;
-use SportsPlanning\PlanningConfiguration;
-use SportsPlanning\PlanningOrchestration;
-use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
-use SportsScheduler\Planning\PlanningValidator as PlanningValidator;
+use SportsScheduler\Game\Creator as GameCreator;
+use SportsPlanning\Planning;
+use SportsPlanning\Output\PlanningOutput;
+use SportsScheduler\Planning\Validator as PlanningValidator;
+use SportsPlanning\Planning\Validity;
+use SportsPlanning\PlanningRefereeInfo;
+use SportsScheduler\Schedule\Creator as ScheduleCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 final class PerformanceTest extends TestCase
@@ -27,24 +26,21 @@ final class PerformanceTest extends TestCase
     {
         $time_start = microtime(true);
         $nrOfGamesPerBatchRange = new SportRange(4, 4);
-
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 6, 1)
-        ];
-        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([5, 4, 4, 4, 4, 4]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            $refereeInfo,
-            false);
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfGamesPerBatchRange);
+        $sportVariantsWithFields = $this->getAgainstH2hSportVariantWithFields(6);
+        $planning = $this->createPlanning(
+            $this->createInput(
+                [5, 4, 4, 4, 4, 4],
+                [$sportVariantsWithFields],
+                new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
+            ),
+            $nrOfGamesPerBatchRange
+        );
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
         $planningValidator = new PlanningValidator();
-        $validity = $planningValidator->validate($planningWithMeta);
-        self::assertSame(PlanningValidity::VALID, $validity);
+        $validity = $planningValidator->validate($planning);
+        self::assertSame(Validity::VALID, $validity);
 
         //(new PlanningOutput())->outputWithGames($planning, true);
         // echo "============ " . (microtime(true) - $time_start);
@@ -56,24 +52,22 @@ final class PerformanceTest extends TestCase
     {
         // $time_start = microtime(true);
         $nrOfGamesPerBatchRange = new SportRange(7, 7);
-
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 9, 1)
-        ];
-        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([7, 7, 7, 7]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            $refereeInfo,
-            false);
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfGamesPerBatchRange);
+        $sportVariantsWithFields = $this->getAgainstH2hSportVariantWithFields(9);
+        $planning = $this->createPlanning(
+            $this->createInput(
+                [7, 7, 7, 7],
+                [$sportVariantsWithFields],
+                new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
+            ),
+            $nrOfGamesPerBatchRange/*,
+            0, false, true*/
+        );
 
         // (new PlanningOutput())->outputWithGames($planning, true);
 
         $planningValidator = new PlanningValidator();
-        $validity = $planningValidator->validate($planningWithMeta);
-        self::assertSame(PlanningValidity::VALID, $validity);
+        $validity = $planningValidator->validate($planning);
+        self::assertSame(Validity::VALID, $validity);
 //
         // (new PlanningOutput())->outputWithGames($planning, true);
 //        (new BatchOutput())->output($planning->createFirstBatch(), null, null, null, true);
@@ -90,24 +84,22 @@ final class PerformanceTest extends TestCase
     {
         $time_start = microtime(true);
         $nrOfGamesPerBatchRange = new SportRange(8, 8);
-
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 9, 1)
-        ];
-        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([7, 7, 7, 7]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            $refereeInfo,
-            false);
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfGamesPerBatchRange,4);
+        $sportVariantsWithFields = $this->getAgainstH2hSportVariantWithFields(9);
+        $planning = $this->createPlanning(
+            $this->createInput(
+                [7, 7, 7, 7],
+                [$sportVariantsWithFields],
+                new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule))
+            ),
+            $nrOfGamesPerBatchRange,
+            4/*, true, true*/
+        );
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
         $planningValidator = new PlanningValidator();
-        $validity = $planningValidator->validate($planningWithMeta);
-        self::assertSame(PlanningValidity::VALID, $validity);
+        $validity = $planningValidator->validate($planning);
+        self::assertSame(Validity::VALID, $validity);
 //
         // (new PlanningOutput())->outputWithGames($planning, true);
 //        (new BatchOutput())->output($planning->createFirstBatch(), null, null, null, true);
@@ -123,28 +115,23 @@ final class PerformanceTest extends TestCase
     public function testOnMinNrOfBatches(): void
     {
         // $time_start = microtime(true);
-
         $nrOfGamesPerBatchRange = new SportRange(4, 4);
-
-        $sportsWithNrOfFieldsAndNrOfCycles = [
-            new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), 4, 1)
-        ];
-        $refereeInfo = RefereeInfo::fromSelfRefereeInfo(new SelfRefereeInfo(SelfReferee::SamePoule));
-        $configuration = new PlanningConfiguration(
-            new PouleStructure([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]),
-            $sportsWithNrOfFieldsAndNrOfCycles,
-            null,
-            false);
-        $orchestration = new PlanningOrchestration($configuration);
-        $planningWithMeta = $this->createPlanningWithMeta($orchestration, $nrOfGamesPerBatchRange);
-//        self::assertEquals(
-//            '[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] - [against(1vs1) h2h:gpp=>1:0 f(4)] - ref=>0:',
-//            $input->createConfiguration()->getName()
-//        );
+        $sportVariantsWithFields = $this->getAgainstH2hSportVariantWithFields(4);
+        $input = $this->createInput(
+            [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+            // 16 poules, 8 wedstrijden => 4 velden dus 4 wedstrijden dus 4 batches
+            [$sportVariantsWithFields],
+            new PlanningRefereeInfo()
+        );
+        $planning = $this->createPlanning($input, $nrOfGamesPerBatchRange/*, 0, true*/);
+        self::assertEquals(
+            '[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2] - [against(1vs1) h2h:gpp=>1:0 f(4)] - ref=>0:',
+            $input->createConfiguration()->getName()
+        );
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 
-//        $planningValidator = new PlanningValidator($this->createLogger());
+//        $planningValidator = new PlanningValidator();
 //        $validity = $planningValidator->validate($planning);
 //        self::assertSame(PlanningValidator::VALID, $validity);
 //
@@ -155,7 +142,7 @@ final class PerformanceTest extends TestCase
 //        (new PlanningOutput())->outputWithTotals($planning,  false);
 
 //
-        self::assertEquals(4, $planningWithMeta->createFirstBatch()->getLeaf()->getNumber());
+        self::assertEquals(4, $planning->createFirstBatch()->getLeaf()->getNumber());
     }
 
 //    public function test2V2With18PlacesAnd26GamesPerPlace(): void
@@ -166,15 +153,15 @@ final class PerformanceTest extends TestCase
 //        $input = $this->createInput([18], $sportVariants);
 //        $planning = new Planning($input, new SportRange(1, 1), 0);
 //
-//        $scheduleCreator = new ScheduleCreator($this->createLogger());
+//        $scheduleCreator = new ScheduleCreator($this->getLogger());
 //        $scheduleCreator->setAgainstGppMargin(1);
 //        $schedules = $scheduleCreator->createFromInput($input);
-//        $gameCreator = new GameCreator($this->createLogger());
+//        $gameCreator = new GameCreator($this->getLogger());
 //        $gameCreator->createGames($planning, $schedules);
 ////        (new PlanningOutput())->outputWithGames($planning, true);
 //
 //        self::assertCount(117, $planning->getAgainstGames());
-//        $validator = new PlanningValidator($this->createLogger());
+//        $validator = new PlanningValidator();
 //        self::assertEquals(PlanningValidator::VALID, $validator->validate($planning, true));
 //    }
 

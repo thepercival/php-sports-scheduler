@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace SportsScheduler\Tests\Resource\Service;
 
 use PHPUnit\Framework\TestCase;
-use SportsHelpers\PouleStructures\PouleStructure;
-use SportsHelpers\RefereeInfo;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
-use SportsHelpers\Sports\AgainstOneVsOne;
-use SportsPlanning\Sports\SportWithNrOfFields;
+use SportsHelpers\SportRange;
+use SportsPlanning\Output\PlanningOutput;
+use SportsPlanning\PlanningRefereeInfo;
+use SportsScheduler\Resource\Service\InfoToAssign;
 use SportsScheduler\Resource\Service\SimCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
@@ -20,18 +20,18 @@ final class SimCalculatorTest extends TestCase
 
     public function testMultipleUnknown(): void
     {
-        $sportsWithNrOfFields = [
-            new SportWithNrOfFields( new AgainstOneVsOne(), 2),
-            new SportWithNrOfFields( new AgainstOneVsOne(), 1),
-            new SportWithNrOfFields( new AgainstOneVsOne(), 1),
+        $sportVariantsWithFields = [
+            $this->getAgainstGppSportVariantWithFields(2, 1, 1, 9),
+            $this->getAgainstGppSportVariantWithFields(1, 1, 1, 9),
+            $this->getAgainstGppSportVariantWithFields(1, 1, 1, 9),
         ];
+        $refereeInfo = new PlanningRefereeInfo(new SelfRefereeInfo(SelfReferee::Disabled));
+        $input = $this->createInput([10], $sportVariantsWithFields, $refereeInfo);
+        $planning = $this->createPlanning($input, new SportRange(3, 3), 0, true, false, null, 6);
 
-        $calculator = new SimCalculator();
-        $maxNrOfSimultaneousGames = $calculator->calculateMaxSimNrOfGames(
-            new PouleStructure([10]),
-            $sportsWithNrOfFields,
-            null
-        );
+        $calculator = new SimCalculator($input);
+        $infoToAssign = new InfoToAssign($planning->getGames());
+        $maxNrOfSimultaneousGames = $calculator->getMaxNrOfGamesPerBatch($infoToAssign);
 
 //        (new PlanningOutput())->outputWithGames($planning, true);
 

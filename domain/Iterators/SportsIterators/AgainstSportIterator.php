@@ -2,33 +2,38 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Iterators\SportsIterators;
+namespace SportsScheduler\Input;
 
+use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
+use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
+use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\SportRange;
-use SportsHelpers\Sports\AgainstOneVsOne;
-use SportsHelpers\Sports\AgainstOneVsTwo;
-use SportsHelpers\Sports\AgainstTwoVsTwo;
-use SportsPlanning\Sports\SportWithNrOfFieldsAndNrOfCycles;
 
 /**
- * @implements \Iterator<string, SportWithNrOfFieldsAndNrOfCycles|null>
+ * @implements \Iterator<string, SportVariantWithFields|null>
  */
-final class AgainstSportIterator implements \Iterator
+final class AgainstSportsIterator implements \Iterator
 {
     protected SportRange $sidePlacesRange;
 
     protected int $nrOfFields;
     protected int $nrOfHomePlaces;
     protected int $nrOfAwayPlaces;
-    protected int $nrOfCycles;
-    protected SportWithNrOfFieldsAndNrOfCycles|null $current;
+    protected int $nrOfH2H;
+    protected SportVariantWithFields|null $current;
 
     public function __construct(
         protected SportRange $fieldRange,
-        protected SportRange $nrOfCyclesRange
+        protected SportRange $nrOfH2HRange
     ) {
         $this->sidePlacesRange = new SportRange(1, 2);
         $this->rewind();
+    }
+
+    protected function rewindNrOfFields(): void
+    {
+        $this->nrOfFields = $this->fieldRange->getMin();
+        $this->rewindNrOfHomePlaces();
     }
 
     protected function rewindNrOfHomePlaces(): void
@@ -49,22 +54,16 @@ final class AgainstSportIterator implements \Iterator
         if ($this->nrOfAwayPlaces < $this->nrOfHomePlaces) {
             $this->nrOfAwayPlaces = $this->nrOfHomePlaces;
         }
-        $this->rewindNrOfFields();
+        $this->rewindNrOfH2H();
     }
 
-    protected function rewindNrOfFields(): void
+    protected function rewindNrOfH2H(): void
     {
-        $this->nrOfFields = $this->fieldRange->getMin();
-        $this->rewindNrOfCycles();
-    }
-
-    protected function rewindNrOfCycles(): void
-    {
-        $this->nrOfCycles = $this->nrOfCyclesRange->getMin();
+        $this->nrOfH2H = $this->nrOfH2HRange->getMin();
     }
 
     #[\Override]
-    public function current(): SportWithNrOfFieldsAndNrOfCycles|null
+    public function current(): SportVariantWithFields|null
     {
         return $this->current;
     }
@@ -72,7 +71,7 @@ final class AgainstSportIterator implements \Iterator
     #[\Override]
     public function key(): string
     {
-        throw new \Exception('has no key');
+        return (string)$this->current;
     }
 
     #[\Override]
@@ -85,14 +84,14 @@ final class AgainstSportIterator implements \Iterator
             $this->current = null;
             return;
         }
-        $this->current = $this->createSport();
+        $this->current = $this->createAgainstSportVariantWithFields();
     }
 
     #[\Override]
     public function rewind(): void
     {
-        $this->rewindNrOfHomePlaces();
-        $this->current = $this->createSport();
+        $this->rewindNrOfFields();
+        $this->current = $this->createAgainstSportVariantWithFields();
     }
 
     #[\Override]
@@ -101,39 +100,28 @@ final class AgainstSportIterator implements \Iterator
         return $this->current !== null;
     }
 
-    protected function createSport(): SportWithNrOfFieldsAndNrOfCycles
+    protected function createAgainstSportVariantWithFields(): SportVariantWithFields
     {
-        if ($this->nrOfHomePlaces === 1 && $this->nrOfAwayPlaces == 1) {
-            return new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsOne(), $this->nrOfFields, $this->nrOfCycles);
-        } else if ($this->nrOfHomePlaces === 1 && $this->nrOfAwayPlaces == 2) {
-            return new SportWithNrOfFieldsAndNrOfCycles(new AgainstOneVsTwo(), $this->nrOfFields, $this->nrOfCycles);
-        } else if ($this->nrOfHomePlaces === 2 && $this->nrOfAwayPlaces == 2) {
-            return new SportWithNrOfFieldsAndNrOfCycles(new AgainstTwoVsTwo(), $this->nrOfFields, $this->nrOfCycles);
+        if ($this->nrOfHomePlaces + $this->nrOfAwayPlaces > 2) {
+            $againstSportVariant = new AgainstGpp($this->nrOfHomePlaces, $this->nrOfAwayPlaces, 1);
+        } else {
+            $againstSportVariant = new AgainstH2h($this->nrOfHomePlaces, $this->nrOfAwayPlaces, $this->nrOfH2H);
         }
-        throw new \Exception('unknown homeawaycombination');
+
+        return new SportVariantWithFields($againstSportVariant, $this->nrOfFields);
     }
 
     protected function incrementValue(): bool
     {
-        return $this->incrementNrOfCycles();
+        return $this->incrementNrOfH2H();
     }
 
-    protected function incrementNrOfCycles(): bool
+    protected function incrementNrOfH2H(): bool
     {
-        if ($this->nrOfCycles === $this->nrOfCyclesRange->getMax()) {
-            return $this->incrementNrOfFields();
-        }
-        $this->nrOfCycles++;
-        return true;
-    }
-
-    protected function incrementNrOfFields(): bool
-    {
-        if ($this->nrOfFields === $this->fieldRange->getMax()) {
+        if ($this->nrOfH2H === $this->nrOfH2HRange->getMax()) {
             return $this->incrementNrOfAwayPlaces();
         }
-        $this->nrOfFields++;
-        $this->rewindNrOfCycles();
+        $this->nrOfH2H++;
         return true;
     }
 
@@ -143,19 +131,27 @@ final class AgainstSportIterator implements \Iterator
             return $this->incrementNrOfHomePlaces();
         }
         $this->nrOfAwayPlaces++;
-        $this->rewindNrOfFields();
+        $this->rewindNrOfH2H();
         return true;
     }
 
     protected function incrementNrOfHomePlaces(): bool
     {
         if ($this->nrOfHomePlaces === $this->sidePlacesRange->getMax()) {
-            return false;
+            return $this->incrementNrOfFields();
         }
         $this->nrOfHomePlaces++;
         $this->rewindNrOfAwayPlaces();
         return true;
     }
 
-
+    protected function incrementNrOfFields(): bool
+    {
+        if ($this->nrOfFields === $this->fieldRange->getMax()) {
+            return false;
+        }
+        $this->nrOfFields++;
+        $this->rewindNrOfHomePlaces();
+        return true;
+    }
 }

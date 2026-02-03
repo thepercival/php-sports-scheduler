@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace SportsScheduler\Planning\Validator;
 
 use SportsHelpers\SelfReferee;
-use SportsPlanning\PlanningWithMeta;
-use SportsPlanning\Resource\GameCounter\GameCounterForPlace;
 use SportsPlanning\Resource\ResourceType;
 use SportsScheduler\Exceptions\UnequalAssignedFieldsException;
 use SportsScheduler\Exceptions\UnequalAssignedRefereePlacesException;
@@ -14,6 +12,7 @@ use SportsScheduler\Exceptions\UnequalAssignedRefereesException;
 use SportsPlanning\Place;
 use SportsPlanning\Planning;
 use SportsPlanning\Resource\GameCounter;
+use SportsPlanning\Resource\GameCounter\Place as PlaceGameCounter;
 use SportsScheduler\Resource\GameCounter\Unequal as UnequalGameCounter;
 use SportsPlanning\Resource\ResourceCounter as ResourceCounterManager;
 use stdClass;
@@ -22,9 +21,9 @@ final class GameAssignments
 {
     private ResourceCounterManager $counterManager;
 
-    public function __construct(protected PlanningWithMeta $planningWithMeta)
+    public function __construct(protected Planning $planning)
     {
-        $this->counterManager = new ResourceCounterManager($planningWithMeta);
+        $this->counterManager = new ResourceCounterManager($planning);
     }
 
 
@@ -32,7 +31,7 @@ final class GameAssignments
 
     public function validate(): void
     {
-        if (count($this->planningWithMeta->getPlanning()->sports) === 1) {
+        if (!$this->planning->getInput()->hasMultipleSports()) {
             $fieldMap = $this->counterManager->getCounter(ResourceType::Fields);
             $unequalFields = $this->getMaxUnequal($fieldMap);
             if ($unequalFields !== null) {
@@ -60,21 +59,18 @@ final class GameAssignments
 
     protected function shouldValidatePerPoule(): bool
     {
-        $refereeInfo = $this->planningWithMeta->getConfiguration()->refereeInfo;
-        $selfRefereeInfo = $refereeInfo?->selfRefereeInfo;
-
-        $nrOfPoules = count($this->planningWithMeta->getPlanning()->poules);
-        if ($selfRefereeInfo?->selfReferee === SelfReferee::SamePoule) {
+        $nrOfPoules = $this->planning->getInput()->getPoules()->count();
+        if ($this->planning->getInput()->getSelfReferee() === SelfReferee::SamePoule) {
             return true;
         }
-        if (($this->planningWithMeta->getNrOfPlaces() % $nrOfPoules) === 0) {
+        if (($this->planning->getInput()->getPlaces()->count() % $nrOfPoules) === 0) {
             return false;
         }
         if ($nrOfPoules === 2) {
             return true;
         }
-
-        if ($nrOfPoules > 2 && $selfRefereeInfo !== null) {
+        $input = $this->planning->getInput();
+        if ($nrOfPoules > 2 && $input->selfRefereeEnabled()) {
             return true;
         }
         return false;
@@ -95,7 +91,7 @@ final class GameAssignments
                     $unequals[] = $unequal;
                 }
             }
-        } elseif ($this->planningWithMeta->getConfiguration()->pouleStructure->isAlmostBalanced()) {
+        } elseif ($this->planning->getInput()->createPouleStructure()->isAlmostBalanced()) {
             $refereePlaceMap = $this->counterManager->getCounter(ResourceType::RefereePlaces);
             $unequal = $this->getMaxUnequal($refereePlaceMap);
             if ($unequal !== null) {
@@ -106,17 +102,17 @@ final class GameAssignments
     }
 
     /**
-     * @return array<int,array<string|int,GameCounterForPlace>>
+     * @return array<int,array<string|int,PlaceGameCounter>>
      */
     protected function getRefereePlacesPerPoule(): array
     {
         $refereePlacesPerPoule = [];
         $refereePlaceMap = $this->counterManager->getCounter(ResourceType::RefereePlaces);
-        /** @var GameCounterForPlace $gameCounter */
+        /** @var PlaceGameCounter $gameCounter */
         foreach ($refereePlaceMap as $gameCounter) {
             /** @var Place $place */
             $place = $gameCounter->getResource();
-            $pouleNr = $place->pouleNr;
+            $pouleNr = $place->getPoule()->getNumber();
             if (!array_key_exists($pouleNr, $refereePlacesPerPoule)) {
                 $refereePlacesPerPoule[$pouleNr] = [];
             }
@@ -188,6 +184,6 @@ final class GameAssignments
     protected function getUnequalDescription(UnequalGameCounter $unequal, string $suffix): string
     {
         $retVal = "too much difference(" . $unequal->getDifference() . ") in number of games for " . $suffix;
-        return $retVal . '(' .(string)$unequal . ')';
+        return $retVal . '(' . ((string)$unequal) . ')';
     }
 }
