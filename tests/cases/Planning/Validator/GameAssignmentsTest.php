@@ -138,7 +138,7 @@ final class GameAssignmentsTest extends TestCase
         self::assertTrue($firstBatch instanceof SelfRefereeBatchOtherPoule
                          || $firstBatch instanceof SelfRefereeBatchSamePoule);
         $this->replaceRefereePlace(
-            $refereeInfo->selfRefereeInfo?->selfReferee === SelfReferee::SamePoule,
+            $refereeInfo->selfRefereeInfo->selfReferee === SelfReferee::SamePoule,
             $firstBatch,
             $replacedPlace,
             $replacedByPlace

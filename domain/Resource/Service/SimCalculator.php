@@ -56,9 +56,7 @@ final class SimCalculator
     public function getMaxNrOfSportGamesPerBatch(
         PouleStructure $pouleStructure, SportVariantWithFields $sportVariantWithFields): int {
         $selfRefereeInfo = $this->refereeInfo->selfRefereeInfo;
-        if( $selfRefereeInfo === null ) {
-            $selfRefereeInfo = new SelfRefereeInfo(SelfReferee::Disabled);
-        }
+
         $minNrOfGamesPerBatch = array_sum(
             array_map( function( int $nrOfPlaces ) use ($sportVariantWithFields, $selfRefereeInfo): int {
                 $variantWithPoule = (new VariantCreator())->createWithPoule($nrOfPlaces, $sportVariantWithFields->getSportVariant());
@@ -68,8 +66,7 @@ final class SimCalculator
         if ($sportVariantWithFields->getNrOfFields() < $minNrOfGamesPerBatch) {
             $minNrOfGamesPerBatch = $sportVariantWithFields->getNrOfFields();
         }
-        if (($this->refereeInfo->selfRefereeInfo === null or
-                $this->refereeInfo->selfRefereeInfo->selfReferee === SelfReferee::Disabled)
+        if ($this->refereeInfo->selfRefereeInfo->selfReferee === SelfReferee::Disabled
             && $this->refereeInfo->nrOfReferees > 0
             && $this->refereeInfo->nrOfReferees < $minNrOfGamesPerBatch) {
             $minNrOfGamesPerBatch = $this->refereeInfo->nrOfReferees;

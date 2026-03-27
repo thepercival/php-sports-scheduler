@@ -205,7 +205,7 @@ final class Helper
                 $nrOfPlaces = count($uniquePlacesCounter->getPoule()->getPlaces());
                 $variantWithPoule = (new VariantCreator())->createWithPoule($nrOfPlaces, $sportInfo->getVariant());
                 $refereeInfo = $this->input->getRefereeInfo();
-                $selfRefereeInfo = $refereeInfo->selfRefereeInfo ?? new SelfRefereeInfo(SelfReferee::Disabled);
+                $selfRefereeInfo = $refereeInfo->selfRefereeInfo;
                 $maxNrOfBatchGames = $simCalculator->getMaxNrOfGamesSimultaneously(
                     $variantWithPoule, $selfRefereeInfo);
 
