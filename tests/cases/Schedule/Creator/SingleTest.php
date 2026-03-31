@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace SportsScheduler\Tests\Schedule\Creator;
 
 use PHPUnit\Framework\TestCase;
+use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\SportRange;
-use SportsScheduler\Game\Creator as GameCreator;
+use SportsScheduler\Game\GameCreatorFromSchedule as GameCreator;
 use SportsPlanning\Game\Place\Together as TogetherGamePlace;
 use SportsPlanning\Game\Together as TogetherGame;
 use SportsPlanning\Planning;
-use SportsScheduler\Schedule\Creator as ScheduleCreator;
+use SportsScheduler\Schedule\ScheduleCreator as ScheduleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
@@ -21,14 +22,21 @@ final class SingleTest extends TestCase
 
     public function testSimple(): void
     {
-        $sportVariant = $this->getSingleSportVariantWithFields(2, 2, 2);
-        $input = $this->createInput([7], [$sportVariant]);
+        $sportVariantsWithFields = [
+            $this->getSingleSportVariantWithFields(2, 2, 2)
+        ];
+        $input = $this->createInput([7], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(7, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
         // (new ScheduleOutput($this->getLogger()))->output($schedules);
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
@@ -39,14 +47,21 @@ final class SingleTest extends TestCase
 
     public function test5Places2GamePlaces1GamePerPlace(): void
     {
-        $sportVariant = $this->getSingleSportVariantWithFields(2, 1, 2);
-        $input = $this->createInput([5], [$sportVariant]);
+        $sportVariantsWithFields = [
+            $this->getSingleSportVariantWithFields(2, 1, 2)
+        ];
+        $input = $this->createInput([5], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(5, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
@@ -56,14 +71,21 @@ final class SingleTest extends TestCase
 
     public function test5Places2GamePlaces2GamesPerPlace(): void
     {
-        $sportVariant = $this->getSingleSportVariantWithFields(2, 2, 2);
-        $input = $this->createInput([5], [$sportVariant]);
+        $sportVariantsWithFields = [
+            $this->getSingleSportVariantWithFields(2, 2, 2)
+        ];
+        $input = $this->createInput([5], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(5, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
@@ -73,14 +95,21 @@ final class SingleTest extends TestCase
 
     public function test5Places2GamePlaces2GamesPerPlaceRandom(): void
     {
-        $sportVariant = $this->getSingleSportVariantWithFields(2, 2, 2);
-        $input = $this->createInput([5], [$sportVariant]);
+        $sportVariantsWithFields = [
+            $this->getSingleSportVariantWithFields(2, 2, 2)
+        ];
+        $input = $this->createInput([5], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(5, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
@@ -90,9 +119,15 @@ final class SingleTest extends TestCase
 
     public function testTwoSingleSports(): void
     {
-        $singleSport1 = $this->getSingleSportVariantWithFields(2, 1, 2);
-        $singleSport2 = $this->getSingleSportVariantWithFields(2, 1, 2);
-        $input = $this->createInput([5], [$singleSport1, $singleSport2]);
+        $sportVariantsWithFields = [
+            $this->getSingleSportVariantWithFields(2, 1, 2),
+            $this->getSingleSportVariantWithFields(2, 1, 2)
+        ];
+        $input = $this->createInput([5], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
 //        $getPlacesDescription = function (array $togetherGamePlaces): string {
@@ -104,9 +139,10 @@ final class SingleTest extends TestCase
 //        };
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(5, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
@@ -118,17 +154,22 @@ final class SingleTest extends TestCase
 
     public function test4Places1GamePlaces1GamesPerPlace(): void
     {
-        $sportVariants = [
+        $sportVariantsWithFields = [
             $this->getSingleSportVariantWithFields(1, 1, 1),
             $this->getSingleSportVariantWithFields(1, 1, 1)
         ];
-        $input = $this->createInput([4], $sportVariants);
+        $input = $this->createInput([4], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(4, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
@@ -140,14 +181,21 @@ final class SingleTest extends TestCase
 
     public function test3Places2GamePlaces1GamesPerPlace(): void
     {
-        $sportVariants = [$this->getSingleSportVariantWithFields(1, 1, 2)];
-        $input = $this->createInput([3], $sportVariants);
+        $sportVariantsWithFields = [
+            $this->getSingleSportVariantWithFields(1, 1, 2)
+        ];
+        $input = $this->createInput([3], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(3, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
         // (new ScheduleOutput($this->getLogger()))->output($schedules);
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);

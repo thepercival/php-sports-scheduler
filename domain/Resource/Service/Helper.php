@@ -330,12 +330,12 @@ final class Helper
 
 //    }
 
-    // AllInOneGame
+    // ScheduleAllInOneGameCreatorHelper
     //    public function getMaxNrOfGamesSimultaneouslyPossible(SelfRefereeInfo $selfRefereeInfo): int {
 //        return 1;
 //    }
 
-    // Against
+    // ScheduleAgainstGameRoundCreatorAbstract
 //    public function getMaxNrOfGamesSimultaneouslyPossible(SelfRefereeInfo $refereeInfo): int {
 
 //    }

@@ -4,36 +4,25 @@ declare(strict_types=1);
 
 namespace SportsScheduler\TestHelper;
 
-use Exception;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
 use Psr\Log\LoggerInterface;
-use SportsHelpers\PouleStructure;
 
-use SportsHelpers\Sport\Variant\AllInOneGame as AllInOneGameSportVariant;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
-use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
-use SportsHelpers\SportRange;
-use SportsPlanning\Poule;
-use SportsScheduler\Game\Assigner as GameAssigner;
-use SportsScheduler\Game\Creator as GameCreator;
-use SportsPlanning\Input;
-use SportsPlanning\Planning;
-use SportsPlanning\Planning\State as PlanningState;
-use SportsPlanning\Planning\TimeoutState;
-use SportsPlanning\Referee\Info as RefereeInfo;
-use SportsScheduler\Schedule\Creator as ScheduleCreator;
+use SportsHelpers\Sport\Variant\AllInOneGame;
+use SportsHelpers\Sport\Variant\Single;
+use SportsScheduler\Schedule\ScheduleCreator as ScheduleCreator;
 
 trait GppMarginCalculator
 {
-    protected function getMaxGppMargin(Poule $poule, LoggerInterface $logger): int {
-        $sports = array_values($poule->getInput()->getSports()->toArray());
-
+    /**
+     * @param int $nrOfPlaces
+     * @param list<AgainstGpp|AgainstH2h|Single|AllInOneGame> $sportVariants
+     * @param LoggerInterface $logger
+     * @return int
+     */
+    protected function getMaxGppMargin(int $nrOfPlaces, array $sportVariants, LoggerInterface $logger): int {
         $scheduleCreator = new ScheduleCreator($logger);
-        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sports);
-        $nrOfPlaces = count($poule->getPlaces());
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
         return $scheduleCreator->getMaxGppMargin($sportVariantsWithNr, $nrOfPlaces);
     }
 }

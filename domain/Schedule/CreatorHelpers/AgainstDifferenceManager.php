@@ -5,13 +5,12 @@ namespace SportsScheduler\Schedule\CreatorHelpers;
 use Psr\Log\LoggerInterface;
 use SportsHelpers\Against\AgainstSide;
 use SportsHelpers\Sport\Variant\WithPoule\Against\EquallyAssignCalculator;
-use SportsPlanning\Combinations\Amount;
-use SportsPlanning\Poule;
-use SportsPlanning\Combinations\Amount\Range as AmountRange;
-use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
-use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
+use SportsPlanning\Combinations\Amounts\Amount;
+use SportsPlanning\Combinations\Amounts\AmountRange;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
+use SportsPlanning\SportVariant\AgainstGppWithNrOfPlaces;
+use SportsPlanning\SportVariant\AgainstH2hWithNrOfPlaces;
 use SportsScheduler\Schedule\SportVariantWithNr;
 
 final class AgainstDifferenceManager
@@ -37,45 +36,45 @@ final class AgainstDifferenceManager
     // private bool|null $canVariantWithBeEquallyAssigned = null;
 
     /**
-     * @param Poule $poule
+     * @param int $nrOfPlaces
      * @param non-empty-list<SportVariantWithNr> $againstWithNr
      * @param int $allowedMargin
      * @param LoggerInterface $logger
      */
     public function __construct(
-        protected Poule $poule,
+        protected int $nrOfPlaces,
         array $againstWithNr,
         protected int $allowedMargin,
         protected LoggerInterface $logger)
     {
-        $this->initAmountMaps($poule, $againstWithNr);
+        $this->initAmountMaps($nrOfPlaces, $againstWithNr);
     }
 
     /**
-     * @param Poule $poule
+     * @param int $nrOfPlaces
      * @param non-empty-list<SportVariantWithNr> $againstVariantsWithNr
      * @return void
      */
-    private function initAmountMaps(Poule $poule, array $againstVariantsWithNr): void
+    private function initAmountMaps(int $nrOfPlaces, array $againstVariantsWithNr): void
     {
         $againstGppMap = $this->getAgainstGppMap($againstVariantsWithNr);
-        $this->initAmountMap($poule, $againstGppMap);
-        $this->initAgainstAmountMap($poule, $againstGppMap);
-        $this->initWithAmountMap($poule, $againstGppMap);
-        $this->initHomeAmountMap($poule, $againstVariantsWithNr);
+        $this->initAmountMap($nrOfPlaces, $againstGppMap);
+        $this->initAgainstAmountMap($nrOfPlaces, $againstGppMap);
+        $this->initWithAmountMap($nrOfPlaces, $againstGppMap);
+        $this->initHomeAmountMap($nrOfPlaces, $againstVariantsWithNr);
     }
 
     /**
-     * @param Poule $poule
+     * @param int $nrOfPlaces
      * @param array<int, AgainstGpp> $againstGppMap
      * @return void
      */
-    private function initAmountMap(Poule $poule, array $againstGppMap): void
+    private function initAmountMap(int $nrOfPlaces, array $againstGppMap): void
     {
         $nrOfAmountCumulative = 0;
 
         foreach ($againstGppMap as $sportNr => $againstGpp) {
-            $againstGppWithPoule = new AgainstGppWithPoule($poule, $againstGpp);
+            $againstGppWithPoule = new AgainstGppWithNrOfPlaces($nrOfPlaces, $againstGpp);
             $nrOfSportGames = $againstGppWithPoule->getTotalNrOfGames();
 
             $nrOfAmountSport = $againstGpp->getNrOfGamePlaces() * $nrOfSportGames;
@@ -111,16 +110,16 @@ final class AgainstDifferenceManager
     }
 
     /**
-     * @param Poule $poule
+     * @param int $nrOfPlaces
      * @param array<int, AgainstGpp> $againstGppMap
      * @return void
      */
-    private function initAgainstAmountMap(Poule $poule, array $againstGppMap): void
+    private function initAgainstAmountMap(int $nrOfPlaces, array $againstGppMap): void
     {
         $nrOfAgainstCombinationsCumulative = 0;
 
         foreach ($againstGppMap as $sportNr => $againstGpp) {
-            $againstGppWithPoule = new AgainstGppWithPoule($poule, $againstGpp);
+            $againstGppWithPoule = new AgainstGppWithNrOfPlaces($nrOfPlaces, $againstGpp);
             $nrOfSportGames = $againstGppWithPoule->getTotalNrOfGames();
 
             $nrOfAgainstCombinationsSport = $againstGpp->getNrOfAgainstCombinationsPerGame() * $nrOfSportGames;
@@ -158,11 +157,11 @@ final class AgainstDifferenceManager
     }
 
     /**
-     * @param Poule $poule
+     * @param int $nrOfPlaces
      * @param array<int, AgainstGpp> $againstGppMap
      * @return void
      */
-    private function initWithAmountMap(Poule $poule, array $againstGppMap): void
+    private function initWithAmountMap(int $nrOfPlaces, array $againstGppMap): void
     {
       //  $totalNrOfGames = $this->getTotalNrOfGames($poule, $againstGppMap);
 
@@ -171,7 +170,7 @@ final class AgainstDifferenceManager
 
 //        $counter = 0;
         foreach ($againstGppMap as $sportNr => $againstGpp) {
-            $againstGppWithPoule = new AgainstGppWithPoule($poule, $againstGpp);
+            $againstGppWithPoule = new AgainstGppWithNrOfPlaces($nrOfPlaces, $againstGpp);
             $nrOfSportGames = $againstGppWithPoule->getTotalNrOfGames();
             //$lastSportVariant = ++$counter === count($againstGppMap);
 
@@ -237,11 +236,11 @@ final class AgainstDifferenceManager
     }
 
     /**
-     * @param Poule $poule
+     * @param int $nrOfPlaces
      * @param non-empty-list<SportVariantWithNr> $againstVariantsWithNr
      * @return void
      */
-    private function initHomeAmountMap(Poule $poule, array $againstVariantsWithNr): void
+    private function initHomeAmountMap(int $nrOfPlaces, array $againstVariantsWithNr): void
     {
         // $totalNrOfGames = $this->getTotalNrOfGames($poule, $againstVariantMap);
 
@@ -255,8 +254,8 @@ final class AgainstDifferenceManager
                 continue;
             }
             $sportNr = $againstVariantWithNr->number;
-            $againstWithPoule = $this->getVariantWithPoule($poule, $againstVariant);
-            $nrOfSportGames = $againstWithPoule->getTotalNrOfGames();
+            $againstWithNrOfPlaces = $this->getVariantWithNrOfPlaces($nrOfPlaces, $againstVariant);
+            $nrOfSportGames = $againstWithNrOfPlaces->getTotalNrOfGames();
            // $lastSportVariant = ++$counter === count($againstVariantMap);
 
 //            if ($this->allowedMargin === 0) { // alle 1 en de laatste 0
@@ -279,14 +278,14 @@ final class AgainstDifferenceManager
             $nrOfHomeCombinationsCumulative += $nrOfHomeCombinationsSport;
             $allowedHomeAmountCum = (new EquallyAssignCalculator())->getMaxAmount(
                 $nrOfHomeCombinationsCumulative,
-                $againstWithPoule->getNrOfPossibleWithCombinations(AgainstSide::Home)
+                $againstWithNrOfPlaces->getNrOfPossibleWithCombinations(AgainstSide::Home)
             );
 
             $minNrOfHomeAllowedToAssignedToMinimumCum = (new EquallyAssignCalculator())->getNrOfDeficit(
                 $nrOfHomeCombinationsCumulative,
-                $againstWithPoule->getNrOfPossibleWithCombinations(AgainstSide::Home)
+                $againstWithNrOfPlaces->getNrOfPossibleWithCombinations(AgainstSide::Home)
             );
-            $maxNrOfHomeAllowedToAssignedToMinimumCum = $againstWithPoule->getNrOfPossibleWithCombinations(AgainstSide::Home) - $minNrOfHomeAllowedToAssignedToMinimumCum;
+            $maxNrOfHomeAllowedToAssignedToMinimumCum = $againstWithNrOfPlaces->getNrOfPossibleWithCombinations(AgainstSide::Home) - $minNrOfHomeAllowedToAssignedToMinimumCum;
 
             $allowedHomeMaxSport = $allowedHomeAmountCum + $this->allowedMargin;
             $allowedHomeMinSport = $allowedHomeAmountCum - $this->allowedMargin;
@@ -309,18 +308,18 @@ final class AgainstDifferenceManager
     }
 
     /**
-     * @param Poule $poule
+     * @param int $nrOfPlaces
      * @param array<int, AgainstH2h|AgainstGpp> $againstVariantMap
      * @return int
      */
-    private function getTotalNrOfGames(Poule $poule, array $againstVariantMap): int {
+    private function getTotalNrOfGames(int $nrOfPlaces, array $againstVariantMap): int {
         $nrOfGames = 0;
         foreach ($againstVariantMap as $againstVariant) {
             if( $againstVariant instanceof AgainstGpp) {
-                $againstGppWithPoule = new AgainstGppWithPoule($poule, $againstVariant);
+                $againstGppWithPoule = new AgainstGppWithNrOfPlaces($nrOfPlaces, $againstVariant);
                 $nrOfGames += $againstGppWithPoule->getTotalNrOfGames();
             } else {
-                $againstH2hWithPoule = new AgainstH2hWithPoule($poule, $againstVariant);
+                $againstH2hWithPoule = new AgainstH2hWithNrOfPlaces($nrOfPlaces, $againstVariant);
                 $nrOfGames += $againstH2hWithPoule->getTotalNrOfGames();
             }
         }
@@ -343,13 +342,13 @@ final class AgainstDifferenceManager
         return $map;
     }
 
-    protected function getVariantWithPoule(
-        Poule $poule,
-        AgainstH2h|AgainstGpp $againstVariant): AgainstH2hWithPoule|AgainstGppWithPoule {
+    protected function getVariantWithNrOfPlaces(
+        int $nrOfPlaces,
+        AgainstH2h|AgainstGpp $againstVariant): AgainstH2hWithNrOfPlaces|AgainstGppWithNrOfPlaces {
         if( $againstVariant instanceof AgainstGpp) {
-            return new AgainstGppWithPoule($poule, $againstVariant);
+            return new AgainstGppWithNrOfPlaces($nrOfPlaces, $againstVariant);
         }
-        return new AgainstH2hWithPoule($poule, $againstVariant);
+        return new AgainstH2hWithNrOfPlaces($nrOfPlaces, $againstVariant);
     }
 
 

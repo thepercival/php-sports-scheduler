@@ -17,22 +17,22 @@ use SportsHelpers\Sport\Variant\Single as SingleSportVariant;
 use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\SportRange;
 use SportsScheduler\Game\Assigner as GameAssigner;
-use SportsScheduler\Game\Creator as GameCreator;
+use SportsScheduler\Game\GameCreatorFromSchedule as GameCreator;
 use SportsPlanning\Input;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\State as PlanningState;
 use SportsPlanning\Planning\TimeoutState;
 use SportsPlanning\PlanningRefereeInfo;
-use SportsScheduler\Schedule\Creator as ScheduleCreator;
+use SportsScheduler\Schedule\ScheduleCreator as ScheduleCreator;
 
 trait PlanningCreator
 {
     protected function getAgainstH2hSportVariant(
         int $nrOfHomePlaces = 1,
         int $nrOfAwayPlaces = 1,
-        int $nrOfH2H = 1
+        int $nrOfH2h = 1
     ): AgainstH2h {
-        return new AgainstH2h($nrOfHomePlaces, $nrOfAwayPlaces, $nrOfH2H);
+        return new AgainstH2h($nrOfHomePlaces, $nrOfAwayPlaces, $nrOfH2h);
     }
 
     protected function getAgainstGppSportVariant(
@@ -57,10 +57,10 @@ trait PlanningCreator
         int $nrOfFields,
         int $nrOfHomePlaces = 1,
         int $nrOfAwayPlaces = 1,
-        int $nrOfH2H = 1
+        int $nrOfH2h = 1
     ): SportVariantWithFields {
         return new SportVariantWithFields(
-            $this->getAgainstH2hSportVariant($nrOfHomePlaces, $nrOfAwayPlaces, $nrOfH2H),
+            $this->getAgainstH2hSportVariant($nrOfHomePlaces, $nrOfAwayPlaces, $nrOfH2h),
             $nrOfFields
         );
     }
@@ -157,13 +157,13 @@ trait PlanningCreator
         }
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($input->createSportVariants());
         if( $allowedGppMargin === null ) {
             $biggestPoule = $input->getPoule(1);
-            $sports = array_values($input->getSports()->toArray());
-            $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sports);
             $allowedGppMargin = $scheduleCreator->getMaxGppMargin($sportVariantsWithNr, count($biggestPoule->getPlaces()));
         }
-        $schedules = $scheduleCreator->createFromInput($input, $allowedGppMargin);
+        $pouleStructure = $input->createPouleStructure();
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $allowedGppMargin);
 
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);

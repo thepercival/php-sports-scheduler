@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\SportRange;
+use SportsPlanning\Output\PlanningOutput\Extra;
 use SportsPlanning\Planning\TimeoutConfig;
 use SportsScheduler\Planning\Validator as PlanningValidator;
 use SportsPlanning\Planning\Validity;

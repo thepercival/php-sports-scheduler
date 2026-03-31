@@ -10,25 +10,16 @@ use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
-use SportsHelpers\SelfReferee;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
-use SportsHelpers\SportRange;
-use SportsPlanning\Combinations\AssignedCounter;
 use SportsPlanning\Combinations\HomeAway;
-use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as GppHomeAwayCreator;
-use SportsPlanning\Combinations\Mapper;
-use SportsPlanning\Combinations\PlaceCombinationCounterMap\Ranged as RangedPlaceCombinationCounterMap;
+use SportsPlanning\Combinations\PlaceNrCombinationCounterMap\Ranged as RangedPlaceNrCombinationCounterMap;
 use SportsPlanning\Combinations\PlaceCounterMap;
-use SportsScheduler\Combinations\StatisticsCalculator\Against\GamesPerPlace as GppStatisticsCalculator;
-use SportsScheduler\Game\Creator as GameCreator;
 use SportsPlanning\Input;
-use SportsPlanning\Planning;
 use SportsPlanning\Poule;
 use SportsPlanning\Referee\Info as RefereeInfo;
-use SportsScheduler\Schedule\Creator as ScheduleCreator;
-use SportsScheduler\Schedule\CreatorHelpers\AgainstDifferenceManager;
+use SportsPlanning\SportVariant\AgainstGppWithNrOfPlaces;
 use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
+use SportsScheduler\Combinations\HomeAwayCreators\AgainstGppHomeAwayCreator as GppHomeAwayCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 // cachegrind output default to /tmp
@@ -56,16 +47,16 @@ final class ProfileTest extends TestCase
 //            $this->getLogger());
 //        $againstAmountRange = $differenceManager->getAgainstRange(1);
 //
-//        $assignedAgainstMap = new RangedPlaceCombinationCounterMap(
+//        $assignedAgainstMap = new RangedPlaceNrCombinationCounterMap(
 //            $assignedCounter->getAssignedAgainstMap(),
 //            $againstAmountRange );
 //
 //        $withAmountRange = $differenceManager->getWithRange(1);
-//        $assignedWithMap = new RangedPlaceCombinationCounterMap(
+//        $assignedWithMap = new RangedPlaceNrCombinationCounterMap(
 //            $assignedCounter->getAssignedWithMap() , $withAmountRange);
 //
 //        $homeAmountRange = $differenceManager->getHomeRange(1);
-//        $assignedHomeMap = new RangedPlaceCombinationCounterMap(
+//        $assignedHomeMap = new RangedPlaceNrCombinationCounterMap(
 //            $assignedCounter->getAssignedHomeMap(), $homeAmountRange);
 //
 //        $statisticsCalculator = new GppStatisticsCalculator(
@@ -92,16 +83,16 @@ final class ProfileTest extends TestCase
 
     /**
      * @param GppHomeAwayCreator $homeAwayCreator
-     * @param Poule $poule
+     * @param int $nrOfPlaces
      * @param AgainstGpp $sportVariant
      * @return list<HomeAway>
      */
     protected function createHomeAways(
         GppHomeAwayCreator $homeAwayCreator,
-        Poule $poule,
+        int $nrOfPlaces,
         AgainstGpp $sportVariant): array
     {
-        $variantWithPoule = (new AgainstGppWithPoule($poule, $sportVariant));
+        $variantWithPoule = (new AgainstGppWithNrOfPlaces($nrOfPlaces, $sportVariant));
         $totalNrOfGames = $variantWithPoule->getTotalNrOfGames();
         $homeAways = [];
         while ( count($homeAways) < $totalNrOfGames ) {
