@@ -8,7 +8,6 @@ use Exception;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
-use oldsportshelpers\old\Persist\SportPersistVariantWithNrOfFields;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
