@@ -19,12 +19,12 @@ final class AgainstSportsIterator implements \Iterator
     protected int $nrOfFields;
     protected int $nrOfHomePlaces;
     protected int $nrOfAwayPlaces;
-    protected int $nrOfH2H;
+    protected int $nrOfH2h;
     protected SportVariantWithFields|null $current;
 
     public function __construct(
         protected SportRange $fieldRange,
-        protected SportRange $nrOfH2HRange
+        protected SportRange $nrOfH2hRange
     ) {
         $this->sidePlacesRange = new SportRange(1, 2);
         $this->rewind();
@@ -54,12 +54,12 @@ final class AgainstSportsIterator implements \Iterator
         if ($this->nrOfAwayPlaces < $this->nrOfHomePlaces) {
             $this->nrOfAwayPlaces = $this->nrOfHomePlaces;
         }
-        $this->rewindNrOfH2H();
+        $this->rewindNrOfH2h();
     }
 
-    protected function rewindNrOfH2H(): void
+    protected function rewindNrOfH2h(): void
     {
-        $this->nrOfH2H = $this->nrOfH2HRange->getMin();
+        $this->nrOfH2h = $this->nrOfH2hRange->getMin();
     }
 
     #[\Override]
@@ -105,7 +105,7 @@ final class AgainstSportsIterator implements \Iterator
         if ($this->nrOfHomePlaces + $this->nrOfAwayPlaces > 2) {
             $againstSportVariant = new AgainstGpp($this->nrOfHomePlaces, $this->nrOfAwayPlaces, 1);
         } else {
-            $againstSportVariant = new AgainstH2h($this->nrOfHomePlaces, $this->nrOfAwayPlaces, $this->nrOfH2H);
+            $againstSportVariant = new AgainstH2h($this->nrOfHomePlaces, $this->nrOfAwayPlaces, $this->nrOfH2h);
         }
 
         return new SportVariantWithFields($againstSportVariant, $this->nrOfFields);
@@ -113,15 +113,15 @@ final class AgainstSportsIterator implements \Iterator
 
     protected function incrementValue(): bool
     {
-        return $this->incrementNrOfH2H();
+        return $this->incrementNrOfH2h();
     }
 
-    protected function incrementNrOfH2H(): bool
+    protected function incrementNrOfH2h(): bool
     {
-        if ($this->nrOfH2H === $this->nrOfH2HRange->getMax()) {
+        if ($this->nrOfH2h === $this->nrOfH2hRange->getMax()) {
             return $this->incrementNrOfAwayPlaces();
         }
-        $this->nrOfH2H++;
+        $this->nrOfH2h++;
         return true;
     }
 
@@ -131,7 +131,7 @@ final class AgainstSportsIterator implements \Iterator
             return $this->incrementNrOfHomePlaces();
         }
         $this->nrOfAwayPlaces++;
-        $this->rewindNrOfH2H();
+        $this->rewindNrOfH2h();
         return true;
     }
 

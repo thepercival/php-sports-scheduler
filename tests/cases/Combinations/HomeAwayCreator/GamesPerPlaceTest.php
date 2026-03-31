@@ -11,10 +11,9 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
-use SportsScheduler\Combinations\HomeAwayCreator\GamesPerPlace as HomeAwayCreator;
+use SportsPlanning\SportVariant\AgainstGppWithNrOfPlaces;
+use SportsScheduler\Combinations\HomeAwayCreators\AgainstGppHomeAwayCreator as HomeAwayCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
-use SportsPlanning\SportVariant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
-use SportsPlanning\Output\Combinations\HomeAway as HomeAwayOutput;
 
 /**
  * @psalm-suppress InvalidReturnType
@@ -25,84 +24,78 @@ final class GamesPerPlaceTest extends TestCase
 
     public function testSimple1VS1(): void
     {
+        $nrOfPlaces = 5;
         $sportVariant = new AgainstGpp(1, 1, 1);
-        $input = $this->createInput([5]);
-        $poule = $input->getPoule(1);
+
         $creator = new HomeAwayCreator();
-        $variantWithPoule = new AgainstGppWithPoule($poule, $sportVariant);
-        $homeAways = $creator->create($variantWithPoule);
+        $variantWithNrOfPlaces = new AgainstGppWithNrOfPlaces($nrOfPlaces, $sportVariant);
+        $homeAways = $creator->create($variantWithNrOfPlaces);
         // (new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(10, $homeAways);
     }
 
     public function testSimple1VS2Pl3(): void
     {
+        $nrOfPlaces = 3;
         $sportVariant = new AgainstGpp(1, 2, 1);
-        $input = $this->createInput([3]);
-        $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $variantWithPoule = new AgainstGppWithPoule($poule, $sportVariant);
-        $homeAways = $creator->create($variantWithPoule);
+        $variantWithNrOfPlaces = new AgainstGppWithNrOfPlaces($nrOfPlaces, $sportVariant);
+        $homeAways = $creator->create($variantWithNrOfPlaces);
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(3, $homeAways);
     }
 
     public function testSimple1VS2Pl4(): void
     {
+        $nrOfPlaces = 4;
         $sportVariant = new AgainstGpp(1, 2, 1);
-        $input = $this->createInput([4]);
-        $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $variantWithPoule = new AgainstGppWithPoule($poule, $sportVariant);
-        $homeAways = $creator->create($variantWithPoule);
+        $variantWithNrOfPlaces = new AgainstGppWithNrOfPlaces($nrOfPlaces, $sportVariant);
+        $homeAways = $creator->create($variantWithNrOfPlaces);
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(12, $homeAways);
     }
 
     public function testSimple2VS2Pl4(): void
     {
+        $nrOfPlaces = 4;
         $sportVariant = new AgainstGpp(2, 2, 1);
-        $input = $this->createInput([4]);
-        $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $variantWithPoule = new AgainstGppWithPoule($poule, $sportVariant);
-        $homeAways = $creator->create($variantWithPoule);
+        $variantWithNrOfPlaces = new AgainstGppWithNrOfPlaces($nrOfPlaces, $sportVariant);
+        $homeAways = $creator->create($variantWithNrOfPlaces);
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(3, $homeAways);
     }
 
     public function testSimple2VS2Pl5(): void
     {
+        $nrOfPlaces = 5;
         $sportVariant = new AgainstGpp(2, 2, 1);
-        $input = $this->createInput([5]);
-        $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $variantWithPoule = new AgainstGppWithPoule($poule, $sportVariant);
-        $homeAways = $creator->create($variantWithPoule);
+        $variantWithNrOfPlaces = new AgainstGppWithNrOfPlaces($nrOfPlaces, $sportVariant);
+        $homeAways = $creator->create($variantWithNrOfPlaces);
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(15, $homeAways);
     }
 
     public function testSimple2VS2Pl6(): void
     {
+        $nrOfPlaces = 6;
         $sportVariant = new AgainstGpp(2, 2, 1);
-        $input = $this->createInput([6]);
-        $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $variantWithPoule = new AgainstGppWithPoule($poule, $sportVariant);
-        $homeAways = $creator->create($variantWithPoule);
+        $variantWithNrOfPlaces = new AgainstGppWithNrOfPlaces($nrOfPlaces, $sportVariant);
+        $homeAways = $creator->create($variantWithNrOfPlaces);
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(45, $homeAways);
     }
 
     public function testSimple2VS2Pl7(): void
     {
+        $nrOfPlaces = 7;
         $sportVariant = new AgainstGpp(2, 2, 1);
-        $input = $this->createInput([7]);
-        $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $variantWithPoule = new AgainstGppWithPoule($poule, $sportVariant);
-        $homeAways = $creator->create($variantWithPoule);
+        $variantWithNrOfPlaces = new AgainstGppWithNrOfPlaces($nrOfPlaces, $sportVariant);
+        $homeAways = $creator->create($variantWithNrOfPlaces);
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(105, $homeAways);
     }
@@ -112,8 +105,8 @@ final class GamesPerPlaceTest extends TestCase
 //        $sportVariant = new AgainstSportVariant(1, 1, 1, 0);
 //        $input = $this->createInput([7]);
 //        $poule = $input->getPoule(1);
-//        $creator = new HomeAwayCreator($poule, $sportVariant);
-//        $homeAways = $creator->createForOneH2H();
+//        $creator = new HomeAwayCreatorAbstract($poule, $sportVariant);
+//        $homeAways = $creator->createForOneH2h();
 //        (new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
 //        (new HomeAwayOutput($this->getLogger()))->outputTotals($homeAways);
 //        // self::assertCount(66, $homeAways);

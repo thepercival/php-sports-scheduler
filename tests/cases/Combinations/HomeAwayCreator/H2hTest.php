@@ -12,9 +12,9 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\VariantWithFields;
-use SportsPlanning\SportVariant\WithPoule\Against\H2h as AgainstH2hWithPoule;
+use SportsPlanning\SportVariant\AgainstH2hWithNrOfPlaces;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
-use SportsScheduler\Combinations\HomeAwayCreator\H2h as HomeAwayCreator;
+use SportsScheduler\Combinations\HomeAwayCreators\AgainstH2hHomeAwayCreator as HomeAwayCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 final class H2hTest extends TestCase
@@ -24,11 +24,8 @@ final class H2hTest extends TestCase
     public function testSimple1VS1Pl2(): void
     {
         $sportVariant = new AgainstH2h(1, 1, 1);
-        $sportVariantWithFields = new VariantWithFields($sportVariant, 1);
-        $input = $this->createInput([2], [$sportVariantWithFields]);
-        $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $homeAways = $creator->createForOneH2H(new AgainstH2hWithPoule($poule, $sportVariant));
+        $homeAways = $creator->createForOneH2h(new AgainstH2hWithNrOfPlaces(2, $sportVariant));
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(1, $homeAways);
     }
@@ -36,11 +33,8 @@ final class H2hTest extends TestCase
     public function testSimple1VS1Pl3(): void
     {
         $sportVariant = new AgainstH2h(1, 1, 1);
-        $sportVariantWithFields = new VariantWithFields($sportVariant, 1);
-        $input = $this->createInput([3],[$sportVariantWithFields]);
-        $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $homeAways = $creator->createForOneH2H(new AgainstH2hWithPoule($poule, $sportVariant));
+        $homeAways = $creator->createForOneH2h(new AgainstH2hWithNrOfPlaces(3, $sportVariant));
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(3, $homeAways);
     }
@@ -48,11 +42,8 @@ final class H2hTest extends TestCase
     public function testSimple1VS1Pl4(): void
     {
         $sportVariant = new AgainstH2h(1, 1, 1);
-        $sportVariantWithFields = new VariantWithFields($sportVariant, 1);
-        $input = $this->createInput([4],[$sportVariantWithFields]);
-        $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $homeAways = $creator->createForOneH2H(new AgainstH2hWithPoule($poule, $sportVariant));
+        $homeAways = $creator->createForOneH2h(new AgainstH2hWithNrOfPlaces(4, $sportVariant));
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(6, $homeAways);
     }
@@ -60,11 +51,8 @@ final class H2hTest extends TestCase
     public function testSimple1VS1Pl5(): void
     {
         $sportVariant = new AgainstH2h(1, 1, 1);
-        $sportVariantWithFields = new VariantWithFields($sportVariant, 1);
-        $input = $this->createInput([5], [$sportVariantWithFields]);
-        $poule = $input->getPoule(1);
         $creator = new HomeAwayCreator();
-        $homeAways = $creator->createForOneH2H(new AgainstH2hWithPoule($poule, $sportVariant));
+        $homeAways = $creator->createForOneH2h(new AgainstH2hWithNrOfPlaces(5, $sportVariant));
         //(new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
         self::assertCount(10, $homeAways);
     }
@@ -74,8 +62,8 @@ final class H2hTest extends TestCase
 //        $sportVariant = new AgainstSportVariant(1, 1, 1, 0);
 //        $input = $this->createInput([7]);
 //        $poule = $input->getPoule(1);
-//        $creator = new HomeAwayCreator($poule, $sportVariant);
-//        $homeAways = $creator->createForOneH2H();
+//        $creator = new HomeAwayCreatorAbstract($poule, $sportVariant);
+//        $homeAways = $creator->createForOneH2h();
 //        (new HomeAwayOutput($this->getLogger()))->outputHomeAways($homeAways);
 //        (new HomeAwayOutput($this->getLogger()))->outputTotals($homeAways);
 //        // self::assertCount(66, $homeAways);

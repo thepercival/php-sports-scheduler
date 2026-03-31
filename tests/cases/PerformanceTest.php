@@ -8,13 +8,13 @@ use PHPUnit\Framework\TestCase;
 use SportsHelpers\SelfReferee;
 use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\SportRange;
-use SportsScheduler\Game\Creator as GameCreator;
+use SportsScheduler\Game\GameCreatorFromSchedule as GameCreator;
 use SportsPlanning\Planning;
 use SportsPlanning\Output\PlanningOutput;
 use SportsScheduler\Planning\Validator as PlanningValidator;
 use SportsPlanning\Planning\Validity;
 use SportsPlanning\PlanningRefereeInfo;
-use SportsScheduler\Schedule\Creator as ScheduleCreator;
+use SportsScheduler\Schedule\ScheduleCreator as ScheduleCreator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
 final class PerformanceTest extends TestCase

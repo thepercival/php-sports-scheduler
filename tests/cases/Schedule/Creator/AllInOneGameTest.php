@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace SportsScheduler\Tests\Schedule\Creator;
 
-use SportsPlanning\Output\Schedule as ScheduleOutput;
-use SportsScheduler\Game\Creator as GameCreator;
-use SportsScheduler\Schedule\Creator as ScheduleCreator;
+use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
+use SportsScheduler\Game\GameCreatorFromSchedule as GameCreator;
+use SportsScheduler\Schedule\ScheduleCreator as ScheduleCreator;
 use PHPUnit\Framework\TestCase;
 use SportsHelpers\SportRange;
 use SportsPlanning\Planning;
-use SportsPlanning\Output\Planning as PlanningOutput;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
@@ -21,14 +20,22 @@ final class AllInOneGameTest extends TestCase
 
     public function testSimple(): void
     {
-        $sportVariant = $this->getAllInOneGameSportVariantWithFields(2, 3);
-        $input = $this->createInput([3, 3, 3], [$sportVariant]);
+        $sportVariantsWithFields = [
+            $this->getAllInOneGameSportVariantWithFields(2, 3)
+        ];
+        $input = $this->createInput([3, 3, 3], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(3, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
+
         // (new ScheduleOutput($this->getLogger()))->output($schedules);
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);

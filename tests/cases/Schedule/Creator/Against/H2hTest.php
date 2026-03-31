@@ -10,13 +10,13 @@ use Monolog\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\SportRange;
-use SportsScheduler\Game\Creator as GameCreator;
+use SportsScheduler\Game\GameCreatorFromSchedule as GameCreator;
 use SportsPlanning\Planning;
-use SportsPlanning\Output\Planning as PlanningOutput;
 use SportsScheduler\Planning\Validator as PlanningValidator;
 use SportsPlanning\Planning\Validity;
-use SportsScheduler\Schedule\Creator as ScheduleCreator;
+use SportsScheduler\Schedule\ScheduleCreator as ScheduleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;
 use SportsScheduler\TestHelper\PlanningCreator;
 
@@ -25,18 +25,24 @@ final class H2hTest extends TestCase
     use PlanningCreator;
     use GppMarginCalculator;
 
-    public function test1V1Places2H2H1(): void
+    public function test1V1Places2H2h1(): void
     {
-        $sportVariants = [
+        $sportVariantsWithFields = [
             $this->getAgainstH2hSportVariantWithFields(1),
         ];
-        $input = $this->createInput([2], $sportVariants);
+        $input = $this->createInput([2], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(2, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
+
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
@@ -57,18 +63,24 @@ final class H2hTest extends TestCase
         return $logger;
     }
 
-    public function test1V1Places3H2H1(): void
+    public function test1V1Places3H2h1(): void
     {
-        $sportVariants = [
+        $sportVariantsWithFields = [
             $this->getAgainstH2hSportVariantWithFields(1),
         ];
-        $input = $this->createInput([3], $sportVariants);
+        $input = $this->createInput([3], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(3, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
+
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
@@ -78,18 +90,24 @@ final class H2hTest extends TestCase
         self::assertEquals(Validity::VALID, $validator->validate($planning, true));
     }
 
-    public function test1V1Places4H2H1(): void
+    public function test1V1Places4H2h1(): void
     {
-        $sportVariants = [
+        $sportVariantsWithFields = [
             $this->getAgainstH2hSportVariantWithFields(1),
         ];
-        $input = $this->createInput([4], $sportVariants);
+        $input = $this->createInput([4], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(4, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
+
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
@@ -99,18 +117,24 @@ final class H2hTest extends TestCase
         self::assertEquals(Validity::VALID, $validator->validate($planning, true));
     }
 
-    public function test1V1Places5H2H1(): void
+    public function test1V1Places5H2h1(): void
     {
-        $sportVariants = [
+        $sportVariantsWithFields = [
             $this->getAgainstH2hSportVariantWithFields(1),
         ];
-        $input = $this->createInput([5], $sportVariants);
+        $input = $this->createInput([5], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(5, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
+
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
@@ -120,18 +144,24 @@ final class H2hTest extends TestCase
         self::assertEquals(Validity::VALID, $validator->validate($planning, true));
     }
 
-    public function test1V1Places6H2H1(): void
+    public function test1V1Places6H2h1(): void
     {
-        $sportVariants = [
+        $sportVariantsWithFields = [
             $this->getAgainstH2hSportVariantWithFields(1),
         ];
-        $input = $this->createInput([6], $sportVariants);
+        $input = $this->createInput([6], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(6, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
+
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
@@ -141,18 +171,24 @@ final class H2hTest extends TestCase
         self::assertEquals(Validity::VALID, $validator->validate($planning, true));
     }
 
-    public function test1VS1Places15H2H1(): void
+    public function test1VS1Places15H2h1(): void
     {
-        $sportVariants = [
+        $sportVariantsWithFields = [
             $this->getAgainstH2hSportVariantWithFields(1),
         ];
-        $input = $this->createInput([15], $sportVariants);
+        $input = $this->createInput([15], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(15, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
+
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
 //        (new PlanningOutput())->outputWithGames($planning, true);
@@ -162,18 +198,24 @@ final class H2hTest extends TestCase
         self::assertEquals(Validity::VALID, $validator->validate($planning, true));
     }
 
-    public function test1VS1Places16H2H1(): void
+    public function test1VS1Places16H2h1(): void
     {
-        $sportVariants = [
+        $sportVariantsWithFields = [
             $this->getAgainstH2hSportVariantWithFields(1),
         ];
-        $input = $this->createInput([16], $sportVariants);
+        $input = $this->createInput([16], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(16, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
+
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
 //        (new PlanningOutput())->outputWithGames($planning, true);
@@ -183,18 +225,24 @@ final class H2hTest extends TestCase
         self::assertEquals(Validity::VALID, $validator->validate($planning, true));
     }
 
-    public function test1VS1Places17H2H1(): void
+    public function test1VS1Places17H2h1(): void
     {
-        $sportVariants = [
+        $sportVariantsWithFields = [
             $this->getAgainstH2hSportVariantWithFields(1),
         ];
-        $input = $this->createInput([17], $sportVariants);
+        $input = $this->createInput([17], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(17,$sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
+
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
 //        (new PlanningOutput())->outputWithGames($planning, true);
@@ -204,18 +252,24 @@ final class H2hTest extends TestCase
         self::assertEquals(Validity::VALID, $validator->validate($planning, true));
     }
 
-    public function test1VS1Places18H2H1(): void
+    public function test1VS1Places18H2h1(): void
     {
-        $sportVariants = [
+        $sportVariantsWithFields = [
             $this->getAgainstH2hSportVariantWithFields(1),
         ];
-        $input = $this->createInput([18], $sportVariants);
+        $input = $this->createInput([18], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(18, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
+
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
         // (new PlanningOutput())->outputWithGames($planning, true);
@@ -225,18 +279,24 @@ final class H2hTest extends TestCase
         self::assertEquals(Validity::VALID, $validator->validate($planning, true));
     }
 
-    public function test1VS1Places19H2H1(): void
+    public function test1VS1Places19H2h1(): void
     {
-        $sportVariants = [
+        $sportVariantsWithFields = [
             $this->getAgainstH2hSportVariantWithFields(1),
         ];
-        $input = $this->createInput([19], $sportVariants);
+        $input = $this->createInput([19], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(19, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
+
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
 //        (new PlanningOutput())->outputWithGames($planning, true);
@@ -246,18 +306,24 @@ final class H2hTest extends TestCase
         self::assertEquals(Validity::VALID, $validator->validate($planning, true));
     }
 
-    public function test1VS1Places20H2H1(): void
+    public function test1VS1Places20H2h1(): void
     {
-        $sportVariants = [
+        $sportVariantsWithFields = [
             $this->getAgainstH2hSportVariantWithFields(1),
         ];
-        $input = $this->createInput([20], $sportVariants);
+        $input = $this->createInput([20], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(20,$sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
+
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
 //        (new PlanningOutput())->outputWithGames($planning, true);
@@ -267,18 +333,24 @@ final class H2hTest extends TestCase
         self::assertEquals(Validity::VALID, $validator->validate($planning, true));
     }
 
-    public function test1V1Places4H2H2(): void
+    public function test1V1Places4H2h2(): void
     {
-        $sportVariants = [
+        $sportVariantsWithFields = [
             $this->getAgainstH2hSportVariantWithFields(1, 1, 1, 2),
         ];
-        $input = $this->createInput([4], $sportVariants);
+        $input = $this->createInput([4], $sportVariantsWithFields);
+        $sportVariants = array_map(function(SportVariantWithFields $sportVariantWithFields) {
+            return $sportVariantWithFields->getSportVariant();
+        }, $sportVariantsWithFields);
+
         $planning = new Planning($input, new SportRange(1, 1), 0);
 
         $scheduleCreator = new ScheduleCreator($this->getLogger());
-        $biggestPoule = $input->getPoule(1);
-        $maxGppMargin = $this->getMaxGppMargin($biggestPoule, $this->getLogger() );
-        $schedules = $scheduleCreator->createFromInput($input, $maxGppMargin);
+        $maxGppMargin = $this->getMaxGppMargin(4, $sportVariants, $this->getLogger() );
+        $pouleStructure = $input->createPouleStructure();
+        $sportVariantsWithNr = $scheduleCreator->createSportVariantsWithNr($sportVariants);
+        $schedules = $scheduleCreator->createFromPouleStructureAndSports($pouleStructure, $sportVariantsWithNr, $maxGppMargin);
+
         $gameCreator = new GameCreator($this->getLogger());
         $gameCreator->createGames($planning, $schedules);
 
