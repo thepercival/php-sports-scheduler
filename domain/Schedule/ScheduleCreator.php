@@ -77,12 +77,12 @@ final class ScheduleCreator
             $schedules[$nrOfPlaces] = $schedule;
 
             $allInOneGameSportVariantsWithNr = $this->getAllInOneGameSportVariantsWithNr($sportVariantsWithNr);
-            (new AllInOneGameCreatorHelper())->createSportSchedules($schedule, $nrOfPlaces, $allInOneGameSportVariantsWithNr);
+            (new AllInOneGameCreatorHelper())->createScheduleSports($schedule, $nrOfPlaces, $allInOneGameSportVariantsWithNr);
 
             $assignedCounter = new AssignedCounter($nrOfPlaces, $sportVariants);
             $singleSportVariantsWithNr = $this->getSingleSportVariantsWithNr($sportVariantsWithNr);
             $singleHelper = new SingleCreatorHelper($this->logger);
-            $singleHelper->createSportSchedules($schedule, $nrOfPlaces, $singleSportVariantsWithNr, $assignedCounter);
+            $singleHelper->createScheduleSports($schedule, $nrOfPlaces, $singleSportVariantsWithNr, $assignedCounter);
 
             $againstVariantsWithNr = $this->getAgainstSportVariantsWithNr($sportVariantsWithNr, $nrOfPlaces);
             if( count($againstVariantsWithNr) > 0) {
@@ -95,7 +95,7 @@ final class ScheduleCreator
                 $againstH2hsWithNr = $this->getAgainstH2hSportVariantsWithNr($sportVariantsWithNr);
                 if( count($againstH2hsWithNr) > 0 ) {
                     $againstH2hHelper = new ScheduleAgainstH2hCreatorHelper($this->logger);
-                    $againstH2hHelper->createSportSchedules(
+                    $againstH2hHelper->createScheduleSports(
                         $schedule,
                         $nrOfPlaces,
                         $againstH2hsWithNr,
@@ -105,7 +105,7 @@ final class ScheduleCreator
                 $againstGppsWithNr = $this->getAgainstGppSportVariantsWithNr($sportVariantsWithNr, $nrOfPlaces);
                 if( count($againstGppsWithNr) > 0) {
                     $againstGppHelper = new ScheduleAgainstGppCreatorHelper($this->logger);
-                    $againstGppHelper->createSportSchedules(
+                    $againstGppHelper->createScheduleSports(
                         $schedule,
                         $nrOfPlaces,
                         $againstGppsWithNr,
@@ -131,8 +131,8 @@ final class ScheduleCreator
     {
         $nrOfPlaces = $schedule->getNrOfPlaces();
         $sportVariants = $schedule->createSportVariants();
-        $oldSportSchedules = array_values($schedule->getSportSchedules()->toArray());
-        $sportVariantsWithNr = $this->createSportVariantsWithNrFromScheduleSports($oldSportSchedules);
+        $oldScheduleSports = array_values($schedule->getScheduleSports()->toArray());
+        $sportVariantsWithNr = $this->createSportVariantsWithNrFromScheduleSports($oldScheduleSports);
         $newSchedule = new Schedule($nrOfPlaces, $sportVariants);
 
 //        $newPoule = (new Input( new Input\Configuration(
@@ -147,14 +147,14 @@ final class ScheduleCreator
         // ScheduleAllInOneGameCreatorHelper
         {
             $allInOneGameSportVariantMap = $this->getAllInOneGameSportVariantsWithNr($sportVariantsWithNr);
-            (new AllInOneGameCreatorHelper())->createSportSchedules($newSchedule, $schedule->getNrOfPlaces(), $allInOneGameSportVariantMap);
+            (new AllInOneGameCreatorHelper())->createScheduleSports($newSchedule, $schedule->getNrOfPlaces(), $allInOneGameSportVariantMap);
         }
 
         // SingleGameRoundCreator
         {
             $singleSportVariantsWithNr = $this->getSingleSportVariantsWithNr($sportVariantsWithNr);
             $singleHelper = new SingleCreatorHelper($this->logger);
-            $singleHelper->createSportSchedules($newSchedule, $schedule->getNrOfPlaces(), $singleSportVariantsWithNr, $assignedCounter);
+            $singleHelper->createScheduleSports($newSchedule, $schedule->getNrOfPlaces(), $singleSportVariantsWithNr, $assignedCounter);
         }
 
         // AgainstH2h|AgainstGpp
@@ -167,13 +167,13 @@ final class ScheduleCreator
                 $againstH2hsWithNr = $this->getAgainstH2hSportVariantsWithNr($againstVariantsWithNr);
                 if( count($againstH2hsWithNr) > 0 ) {
                     $againstH2hHelper = new ScheduleAgainstH2hCreatorHelper($this->logger);
-                    $againstH2hHelper->createSportSchedules(
+                    $againstH2hHelper->createScheduleSports(
                         $newSchedule, $nrOfPlaces, $againstH2hsWithNr, $assignedCounter, $differenceManager);
                 }
                 $againstGppsWithNr = $this->getAgainstGppSportVariantsWithNr($againstVariantsWithNr, $schedule->getNrOfPlaces());
                 if( count($againstGppsWithNr) > 0 ) {
                     $againstGppHelper = new ScheduleAgainstGppCreatorHelper($this->logger);
-                    $againstGppHelper->createSportSchedules(
+                    $againstGppHelper->createScheduleSports(
                         $newSchedule, $nrOfPlaces, $againstGppsWithNr,
                         $assignedCounter, $differenceManager, $nrOfSecondsBeforeTimeout);
                 }
@@ -387,14 +387,14 @@ final class ScheduleCreator
     }
 
     /**
-     * @param list<ScheduleSport> $sportSchedules
+     * @param list<ScheduleSport> $scheduleSports
      * @return list<SportVariantWithNr>
      */
-    public function createSportVariantsWithNrFromScheduleSports( array $sportSchedules ): array {
-        return array_map(function(ScheduleSport $sportSchedule): SportVariantWithNr {
-            return new SportVariantWithNr($sportSchedule->getNumber(), $sportSchedule->createVariant() );
+    public function createSportVariantsWithNrFromScheduleSports( array $scheduleSports ): array {
+        return array_map(function(ScheduleSport $scheduleSport): SportVariantWithNr {
+            return new SportVariantWithNr($scheduleSport->getNumber(), $scheduleSport->createVariant() );
         }
-        , $sportSchedules);
+        , $scheduleSports);
     }
 
 }

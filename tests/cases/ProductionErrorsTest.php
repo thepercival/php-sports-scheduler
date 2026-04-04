@@ -10,7 +10,7 @@ use SportsHelpers\SelfRefereeInfo;
 use SportsHelpers\SportRange;
 use SportsPlanning\Output\PlanningOutput\Extra;
 use SportsPlanning\Planning\TimeoutConfig;
-use SportsScheduler\Planning\Validator as PlanningValidator;
+use SportsScheduler\Planning\PlanningValidator as PlanningValidator;
 use SportsPlanning\Planning\Validity;
 use SportsPlanning\Output\PlanningOutput;
 use SportsPlanning\PlanningRefereeInfo;

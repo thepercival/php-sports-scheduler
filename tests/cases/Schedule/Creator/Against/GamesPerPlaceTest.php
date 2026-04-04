@@ -14,7 +14,7 @@ use SportsHelpers\Sport\VariantWithFields as SportVariantWithFields;
 use SportsHelpers\SportRange;
 use SportsScheduler\Game\GameCreatorFromSchedule as GameCreator;
 use SportsPlanning\Planning;
-use SportsScheduler\Planning\Validator as PlanningValidator;
+use SportsScheduler\Planning\PlanningValidator as PlanningValidator;
 use SportsPlanning\Planning\Validity;
 use SportsScheduler\Schedule\ScheduleCreator as ScheduleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;

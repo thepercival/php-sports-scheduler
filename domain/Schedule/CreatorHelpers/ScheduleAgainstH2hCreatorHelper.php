@@ -31,7 +31,7 @@ final class ScheduleAgainstH2hCreatorHelper extends AgainstHelper
      * @param AgainstDifferenceManager $againstGppDifferenceManager
      * @throws Exception
      */
-    public function createSportSchedules(
+    public function createScheduleSports(
         Schedule $schedule,
         int $nrOfPlaces,
         array $againstH2hsWithNr,
@@ -46,7 +46,7 @@ final class ScheduleAgainstH2hCreatorHelper extends AgainstHelper
             if( !($sportVariant instanceof AgainstH2h ) ) {
                 continue;
             }
-            $sportSchedule = new ScheduleSport($schedule, $sportNr, $sportVariant->toPersistVariant());
+            $scheduleSport = new ScheduleSport($schedule, $sportNr, $sportVariant->toPersistVariant());
 
             $gameRoundCreator = new ScheduleAgainstH2hGameRoundCreator($this->logger);
             $gameRound = $gameRoundCreator->createGameRound(
@@ -57,7 +57,7 @@ final class ScheduleAgainstH2hCreatorHelper extends AgainstHelper
                 $againstGppDifferenceManager->getHomeRange($sportNr)
             );
 
-            $this->createGames($sportSchedule, $gameRound);
+            $this->createGames($scheduleSport, $gameRound);
         }
     }
 

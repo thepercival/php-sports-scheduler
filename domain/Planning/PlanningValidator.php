@@ -10,27 +10,27 @@ use SportsHelpers\Sport\Variant\Against\GamesPerPlace as AgainstGpp;
 use SportsHelpers\Sport\Variant\Against\H2h as AgainstH2h;
 use SportsHelpers\Sport\Variant\AllInOneGame;
 use SportsHelpers\Sport\Variant\Creator as VariantCreator;
-use SportsPlanning\Planning\Validity as PlanningValidity;
-use SportsScheduler\Combinations\Validators\AgainstValidator as AgainstValidator;
-use SportsScheduler\Combinations\Validators\WithValidator as WithValidator;
-use SportsScheduler\Exceptions\UnequalAssignedFieldsException;
-use SportsScheduler\Exceptions\UnequalAssignedRefereePlacesException;
-use SportsScheduler\Exceptions\UnequalAssignedRefereesException;
+use SportsHelpers\Sport\Variant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
+use SportsHelpers\Sport\Variant\WithPoule\Against\H2h as AgainstH2hWithPoule;
+use SportsHelpers\Sport\Variant\WithPoule\AllInOneGame as AllInOneGameWithPoule;
+use SportsHelpers\Sport\Variant\WithPoule\Single as SingleWithPoule;
 use SportsPlanning\Game;
 use SportsPlanning\Game\Against as AgainstGame;
 use SportsPlanning\Game\Together as TogetherGame;
 use SportsPlanning\Input;
 use SportsPlanning\Place;
 use SportsPlanning\Planning;
-use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentsValidator;
+use SportsPlanning\Planning\Validity as PlanningValidity;
 use SportsPlanning\Poule;
 use SportsPlanning\Sport;
-use SportsHelpers\Sport\Variant\WithPoule\Against\H2h as AgainstH2hWithPoule;
-use SportsHelpers\Sport\Variant\WithPoule\Against\GamesPerPlace as AgainstGppWithPoule;
-use SportsHelpers\Sport\Variant\WithPoule\Single as SingleWithPoule;
-use SportsHelpers\Sport\Variant\WithPoule\AllInOneGame as AllInOneGameWithPoule;
+use SportsScheduler\Combinations\Validators\AgainstValidator as AgainstValidator;
+use SportsScheduler\Combinations\Validators\WithValidator as WithValidator;
+use SportsScheduler\Exceptions\UnequalAssignedFieldsException;
+use SportsScheduler\Exceptions\UnequalAssignedRefereePlacesException;
+use SportsScheduler\Exceptions\UnequalAssignedRefereesException;
+use SportsScheduler\Planning\PlanningGameAssignmentsValidator as GameAssignmentsValidator;
 
-final class Validator
+final class PlanningValidator
 {
     public function __construct()
     {
@@ -477,7 +477,7 @@ final class Validator
     protected function validateEquallyAssigned(Planning $planning): int
     {
         try {
-            $assignmentValidator = new GameAssignmentsValidator($planning);
+            $assignmentValidator = new PlanningGameAssignmentsValidator($planning);
             $assignmentValidator->validate();
         } catch (UnequalAssignedFieldsException $e) {
             return PlanningValidity::UNEQUALLY_ASSIGNED_FIELDS;
@@ -492,7 +492,7 @@ final class Validator
     protected function getUnqualAssignedDescription(Planning $planning): string
     {
         try {
-            $assignmentValidator = new GameAssignmentsValidator($planning);
+            $assignmentValidator = new PlanningGameAssignmentsValidator($planning);
             $assignmentValidator->validate();
         } catch (UnequalAssignedFieldsException | UnequalAssignedRefereesException | UnequalAssignedRefereePlacesException $e) {
             return $e->getMessage();

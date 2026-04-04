@@ -11,11 +11,11 @@ use SportsHelpers\SelfRefereeInfo;
 use SportsPlanning\Batch;
 use SportsPlanning\Batch\SelfReferee\OtherPoule as SelfRefereeBatchOtherPoule;
 use SportsPlanning\Batch\SelfReferee\SamePoule as SelfRefereeBatchSamePoule;
-use SportsPlanning\Resource\ResourceType;
-use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentValidator;
 use SportsPlanning\PlanningRefereeInfo;
 use SportsPlanning\Resource\GameCounter;
 use SportsPlanning\Resource\ResourceCounter;
+use SportsPlanning\Resource\ResourceType;
+use SportsScheduler\Planning\PlanningGameAssignmentsValidator as GameAssignmentValidator;
 use SportsScheduler\TestHelper\PlanningCreator;
 use SportsScheduler\TestHelper\PlanningReplacer;
 

@@ -33,7 +33,7 @@ final class ScheduleSingleGameCreatorHelper
      * @param list<SportVariantWithNr> $singlesWithNr
      * @param AssignedCounter $assignedCounter
      */
-    public function createSportSchedules(
+    public function createScheduleSports(
         Schedule $schedule,
         int $nrOfPlaces,
         array $singlesWithNr,
@@ -51,9 +51,9 @@ final class ScheduleSingleGameCreatorHelper
             if( !($sportVariant instanceof SingleSportVariant ) ) {
                 continue;
             }
-            $sportSchedule = new ScheduleSport($schedule, $singleWithNr->number, $sportVariant->toPersistVariant());
+            $scheduleSport = new ScheduleSport($schedule, $singleWithNr->number, $sportVariant->toPersistVariant());
             $gameRound = $this->generateGameRounds($nrOfPlaces, $sportVariant, $singleAssignedCounter);
-            $this->createGames($sportSchedule, $gameRound);
+            $this->createGames($scheduleSport, $gameRound);
         }
         $assignedCounter->setAssignedTogetherMap( $singleAssignedCounter->getAssignedTogetherMap() );
     }
@@ -142,11 +142,11 @@ final class ScheduleSingleGameCreatorHelper
 //        }
 //    }
 
-    protected function createGames(ScheduleSport $sportSchedule, ScheduleTogetherGameRound $gameRound): void
+    protected function createGames(ScheduleSport $scheduleSport, ScheduleTogetherGameRound $gameRound): void
     {
         while ($gameRound !== null) {
             foreach ($gameRound->getGames() as $gameRoundGame) {
-                $game = new ScheduleGame($sportSchedule, $gameRound->getNumber());
+                $game = new ScheduleGame($scheduleSport, $gameRound->getNumber());
                 foreach ($gameRoundGame->getGamePlaces() as $gameRoundGamePlace) {
                     $gamePlace = new ScheduleGamePlace($game, $gameRoundGamePlace->getPlaceNr());
                     $gamePlace->setGameRoundNumber($gameRoundGamePlace->getGameRoundNumber());

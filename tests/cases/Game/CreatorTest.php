@@ -20,7 +20,7 @@ use SportsPlanning\Planning;
 use SportsPlanning\Planning\Validity;
 use SportsPlanning\Output\PlanningOutput;
 use SportsPlanning\Planning\State as PlanningState;
-use SportsScheduler\Planning\Validator as PlanningValidator;
+use SportsScheduler\Planning\PlanningValidator as PlanningValidator;
 use SportsPlanning\PlanningRefereeInfo;
 use SportsScheduler\Schedule\ScheduleCreator as ScheduleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;

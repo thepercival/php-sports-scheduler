@@ -32,8 +32,8 @@ final class GameCreatorFromSchedule
     {
         foreach ($planning->getInput()->getPoules() as $poule) {
             foreach ($planning->getInput()->getSports() as $sport) {
-                $sportSchedule = $this->getSportSchedule($schedules, $poule, $sport);
-                $this->createSportGames($planning, $poule, $sport, $sportSchedule);
+                $scheduleSport = $this->getScheduleSport($schedules, $poule, $sport);
+                $this->createSportGames($planning, $poule, $sport, $scheduleSport);
             }
         }
     }
@@ -44,16 +44,16 @@ final class GameCreatorFromSchedule
      * @param Sport $sport
      * @return ScheduleSport
      */
-    protected function getSportSchedule(array $schedules, Poule $poule, Sport $sport): ScheduleSport
+    protected function getScheduleSport(array $schedules, Poule $poule, Sport $sport): ScheduleSport
     {
         $nrOfPlaces = $poule->getPlaces()->count();
         foreach ($schedules as $schedule) {
             if ($schedule->getNrOfPlaces() !== $nrOfPlaces) {
                 continue;
             }
-            foreach ($schedule->getSportSchedules() as $sportSchedule) {
-                if ($sportSchedule->getNumber() === $sport->getNumber()) {
-                    return $sportSchedule;
+            foreach ($schedule->getScheduleSports() as $scheduleSport) {
+                if ($scheduleSport->getNumber() === $sport->getNumber()) {
+                    return $scheduleSport;
                 }
             }
         }
@@ -66,11 +66,11 @@ final class GameCreatorFromSchedule
         Planning $planning,
         Poule $poule,
         Sport $sport,
-        ScheduleSport $sportSchedule
+        ScheduleSport $scheduleSport
     ): void {
         $sportVariant = $sport->createVariant();
         $defaultField = $sport->getField(1);
-        foreach ($sportSchedule->getGames() as $gameRoundGame) {
+        foreach ($scheduleSport->getGames() as $gameRoundGame) {
             if ($sportVariant instanceof AgainstSportVariant) {
                 $game = new AgainstGame($planning, $poule, $defaultField, $gameRoundGame->getGameRoundNumber());
                 foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {

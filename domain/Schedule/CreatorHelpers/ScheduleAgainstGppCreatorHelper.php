@@ -31,7 +31,7 @@ final class ScheduleAgainstGppCreatorHelper extends AgainstHelper
      * @param int|null $nrOfSecondsBeforeTimeout
      * @throws Exception
      */
-    public function createSportSchedules(
+    public function createScheduleSports(
         Schedule                 $schedule,
         int                      $nrOfPlaces,
         array                    $againstGppsWithNr,
@@ -48,7 +48,7 @@ final class ScheduleAgainstGppCreatorHelper extends AgainstHelper
             if( !($sportVariant instanceof AgainstGpp ) ) {
                 continue;
             }
-            $sportSchedule = new ScheduleSport($schedule, $sportNr, $sportVariant->toPersistVariant());
+            $scheduleSport = new ScheduleSport($schedule, $sportNr, $sportVariant->toPersistVariant());
 
             $gameRoundCreator = new ScheduleAgainstGppGameRoundCreator($this->logger);
             $gameRound = $gameRoundCreator->createGameRound(
@@ -63,7 +63,7 @@ final class ScheduleAgainstGppCreatorHelper extends AgainstHelper
                 $nrOfSecondsBeforeTimeout
             );
 
-            $this->createGames($sportSchedule, $gameRound);
+            $this->createGames($scheduleSport, $gameRound);
             $assignedCounter->assignHomeAways($gameRound->getAllHomeAways());
         }
     }

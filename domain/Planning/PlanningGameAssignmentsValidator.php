@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace SportsScheduler\Planning\Validator;
+namespace SportsScheduler\Planning;
 
 use SportsHelpers\SelfReferee;
-use SportsPlanning\Resource\ResourceType;
-use SportsScheduler\Exceptions\UnequalAssignedFieldsException;
-use SportsScheduler\Exceptions\UnequalAssignedRefereePlacesException;
-use SportsScheduler\Exceptions\UnequalAssignedRefereesException;
 use SportsPlanning\Place;
 use SportsPlanning\Planning;
 use SportsPlanning\Resource\GameCounter;
 use SportsPlanning\Resource\GameCounter\Place as PlaceGameCounter;
-use SportsScheduler\Resource\GameCounter\Unequal as UnequalGameCounter;
 use SportsPlanning\Resource\ResourceCounter as ResourceCounterManager;
+use SportsPlanning\Resource\ResourceType;
+use SportsScheduler\Exceptions\UnequalAssignedFieldsException;
+use SportsScheduler\Exceptions\UnequalAssignedRefereePlacesException;
+use SportsScheduler\Exceptions\UnequalAssignedRefereesException;
+use SportsScheduler\Resource\GameCounter\Unequal as UnequalGameCounter;
 use stdClass;
 
-final class GameAssignments
+final class PlanningGameAssignmentsValidator
 {
     private ResourceCounterManager $counterManager;
 

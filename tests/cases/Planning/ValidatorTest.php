@@ -27,7 +27,7 @@ use SportsScheduler\Game\GameCreatorFromSchedule as GameCreator;
 use SportsPlanning\Game\Place\Against as AgainstGamePlace;
 use SportsPlanning\Planning;
 use SportsPlanning\Planning\State as PlanningState;
-use SportsScheduler\Planning\Validator as PlanningValidator;
+use SportsScheduler\Planning\PlanningValidator as PlanningValidator;
 use SportsPlanning\Planning\Validity;
 use SportsPlanning\Referee as PlanningReferee;
 use SportsPlanning\PlanningRefereeInfo;
