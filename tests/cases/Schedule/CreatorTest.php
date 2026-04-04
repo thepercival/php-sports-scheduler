@@ -27,7 +27,7 @@ use SportsPlanning\Schedules\Schedule;
 use SportsPlanning\Schedules\ScheduleGame;
 use SportsPlanning\Schedules\ScheduleGamePlace;
 use SportsPlanning\Schedules\ScheduleSport;
-use SportsScheduler\Planning\Validator as PlanningValidator;
+use SportsScheduler\Planning\PlanningValidator as PlanningValidator;
 use SportsPlanning\Output\ScheduleOutput;
 use SportsScheduler\Schedule\ScheduleCreator as ScheduleCreator;
 use SportsScheduler\TestHelper\GppMarginCalculator;
@@ -106,12 +106,12 @@ final class CreatorTest extends TestCase
     protected function getNrOfGames(Schedule $schedule, int|null $placeNr = null): int
     {
         $nrOfGames = 0;
-        foreach ($schedule->getSportSchedules() as $sportSchedule) {
+        foreach ($schedule->getScheduleSports() as $scheduleSport) {
             if ($placeNr === null) {
-                $nrOfGames += count($sportSchedule->getGames());
+                $nrOfGames += count($scheduleSport->getGames());
                 continue;
             }
-            foreach ($sportSchedule->getGames() as $game) {
+            foreach ($scheduleSport->getGames() as $game) {
                 foreach ($game->getGamePlaces() as $gamePlace) {
                     if ($gamePlace->getNumber() === $placeNr) {
                         $nrOfGames++;
@@ -196,20 +196,20 @@ final class CreatorTest extends TestCase
 
 //        (new ScheduleOutput($this->getLogger()))->output($schedules);
 
-        foreach ($schedule->getSportSchedules() as $sportSchedule) {
-            if ($sportSchedule->getNumber() === 1) {
-                $this->checkFirstGamePlace($sportSchedule, 1);
+        foreach ($schedule->getScheduleSports() as $scheduleSport) {
+            if ($scheduleSport->getNumber() === 1) {
+                $this->checkFirstGamePlace($scheduleSport, 1);
             }
-            if ($sportSchedule->getNumber() === 2) {
-                $this->checkFirstGamePlace($sportSchedule, 5);
+            if ($scheduleSport->getNumber() === 2) {
+                $this->checkFirstGamePlace($scheduleSport, 5);
             }
         }
 
     }
 
-    protected function checkFirstGamePlace(ScheduleSport $sportSchedule, int $placeNr): void
+    protected function checkFirstGamePlace(ScheduleSport $scheduleSport, int $placeNr): void
     {
-        $firstGame = $sportSchedule->getGames()->first();
+        $firstGame = $scheduleSport->getGames()->first();
         self::assertNotFalse($firstGame);
         $firstGamePlace = $firstGame->getGamePlaces()->first();
         self::assertNotFalse($firstGamePlace);
@@ -237,15 +237,15 @@ final class CreatorTest extends TestCase
         $schedule = reset($schedules);
         self::assertNotFalse($schedule);
 
-        foreach ($schedule->getSportSchedules() as $sportSchedule) {
-            if ($sportSchedule->getNumber() === 1) {
-                $this->checkFirstGamePlace($sportSchedule, 1);
+        foreach ($schedule->getScheduleSports() as $scheduleSport) {
+            if ($scheduleSport->getNumber() === 1) {
+                $this->checkFirstGamePlace($scheduleSport, 1);
             }
-            if ($sportSchedule->getNumber() === 2) {
-                $this->checkFirstGamePlace($sportSchedule, 5);
+            if ($scheduleSport->getNumber() === 2) {
+                $this->checkFirstGamePlace($scheduleSport, 5);
             }
-            if ($sportSchedule->getNumber() === 3) {
-                $this->checkFirstGamePlace($sportSchedule, 4);
+            if ($scheduleSport->getNumber() === 3) {
+                $this->checkFirstGamePlace($scheduleSport, 4);
             }
         }
 //        (new Output($this->getLogger()))->output($schedules);
@@ -275,10 +275,10 @@ final class CreatorTest extends TestCase
         foreach( $schedules as $schedule) {
             $sportVariants = $schedule->createSportVariants();
             $assignedCounter = new AssignedCounter($nrOfPlaces, $sportVariants);
-            foreach( $schedule->getSportSchedules() as $sportSchedule) {
-                $sportVariant = $sportSchedule->createVariant();
+            foreach( $schedule->getScheduleSports() as $scheduleSport) {
+                $sportVariant = $scheduleSport->createVariant();
                 if( $sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
-                    $homeAways = $this->gamesToHomeAway($sportSchedule);
+                    $homeAways = $scheduleSport->createHomeAways();
                     $assignedCounter->assignHomeAways($homeAways);
                 }
             }
@@ -310,10 +310,10 @@ final class CreatorTest extends TestCase
         foreach( $schedules as $schedule) {
             $sportVariants = $schedule->createSportVariants();
             $assignedCounter = new AssignedCounter($nrOfPlaces, $sportVariants);
-            foreach( $schedule->getSportSchedules() as $sportSchedule) {
-                $sportVariant = $sportSchedule->createVariant();
+            foreach( $schedule->getScheduleSports() as $scheduleSport) {
+                $sportVariant = $scheduleSport->createVariant();
                 if( $sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
-                    $homeAways = $this->gamesToHomeAway($sportSchedule);
+                    $homeAways = $scheduleSport->createHomeAways();
                     $assignedCounter->assignHomeAways($homeAways);
                 }
             }
@@ -345,10 +345,10 @@ final class CreatorTest extends TestCase
         foreach( $schedules as $schedule) {
             $sportVariants = $schedule->createSportVariants();
             $assignedCounter = new AssignedCounter($nrOfPlaces, $sportVariants);
-            foreach( $schedule->getSportSchedules() as $sportSchedule) {
-                $sportVariant = $sportSchedule->createVariant();
+            foreach( $schedule->getScheduleSports() as $scheduleSport) {
+                $sportVariant = $scheduleSport->createVariant();
                 if( $sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
-                    $homeAways = $this->gamesToHomeAway($sportSchedule);
+                    $homeAways = $scheduleSport->createHomeAways();
                     $assignedCounter->assignHomeAways($homeAways);
                 }
             }
@@ -378,10 +378,10 @@ final class CreatorTest extends TestCase
         foreach( $schedules as $schedule) {
             $sportVariants = $schedule->createSportVariants();
             $assignedCounter = new AssignedCounter($nrOfPlaces, $sportVariants);
-            foreach( $schedule->getSportSchedules() as $sportSchedule) {
-                $sportVariant = $sportSchedule->createVariant();
+            foreach( $schedule->getScheduleSports() as $scheduleSport) {
+                $sportVariant = $scheduleSport->createVariant();
                 if( $sportVariant instanceof AgainstH2h || $sportVariant instanceof AgainstGpp) {
-                    $homeAways = $this->gamesToHomeAway($sportSchedule);
+                    $homeAways = $scheduleSport->createHomeAways();
                     $assignedCounter->assignHomeAways($homeAways);
                 }
             }
@@ -423,41 +423,24 @@ final class CreatorTest extends TestCase
     }
 
 
-//    protected function getWithAssignedDifference(SportSchedule $sportSchedule): int
+//    protected function getWithAssignedDifference(ScheduleSport $scheduleSport): int
 //    {
-//        $assignedCounter = new AssignedCounter($sportSchedule->getSchedule()->getPoule(),[$sportSchedule->createVariant()]);
-//        $homeAways = $sportSchedule->convertGamesToHomeAways();
+//        $assignedCounter = new AssignedCounter($scheduleSport->getSchedule()->getPoule(),[$scheduleSport->createVariant()]);
+//        $homeAways = $scheduleSport->convertGamesToHomeAways();
 //        $assignedCounter->assignHomeAways($homeAways);
 //        return $assignedCounter->getWithAmountDifference();
 //    }
 
 
-    protected function checkNotParticipating(ScheduleSport $sportSchedule, int $placeNr): void
+    protected function checkNotParticipating(ScheduleSport $scheduleSport, int $placeNr): void
     {
         self::assertCount(
             0,
-            $sportSchedule->getGames()->filter(function (ScheduleGame $game) use ($placeNr): bool {
+            $scheduleSport->getGames()->filter(function (ScheduleGame $game) use ($placeNr): bool {
                 return $game->getGamePlaces()->filter(function (ScheduleGamePlace $gamePlace) use ($placeNr): bool {
                         return $gamePlace->getNumber() === $placeNr;
                     })->count() > 0;
             })
         );
-    }
-
-    /**
-     * @param ScheduleSport $sportSchedule
-     * @return list<HomeAway>
-     */
-    protected function gamesToHomeAway(ScheduleSport $sportSchedule): array {
-        return array_map( function(ScheduleGame $game): HomeAway {
-            return $this->gameToHomeAway($game);
-        }, array_values( $sportSchedule->getGames()->toArray() ) );
-    }
-
-
-    protected function gameToHomeAway(ScheduleGame $game): HomeAway {
-        $homePlaceNrs = $game->getSidePlaceNrs(AgainstSide::Home);
-        $awayPlaceNrs = $game->getSidePlaceNrs(AgainstSide::Away);
-        return new HomeAway( new PlaceNrCombination( $homePlaceNrs ), new PlaceNrCombination( $awayPlaceNrs ) );
     }
 }

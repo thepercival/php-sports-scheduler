@@ -24,7 +24,7 @@ final class ScheduleAllInOneGameCreatorHelper
      * @param int $nrOfPlaces
      * @param list<SportVariantWithNr> $allInOneGamesWithNr
      */
-    public function createSportSchedules(
+    public function createScheduleSports(
         Schedule $schedule,
         int $nrOfPlaces,
         array $allInOneGamesWithNr): void
@@ -34,9 +34,9 @@ final class ScheduleAllInOneGameCreatorHelper
             if( !($sportVariant instanceof AllInOneGameBase ) ) {
                 continue;
             }
-            $sportSchedule = new ScheduleSport($schedule, $allInOneGameWithNr->number, $sportVariant->toPersistVariant());
+            $scheduleSport = new ScheduleSport($schedule, $allInOneGameWithNr->number, $sportVariant->toPersistVariant());
             $nrOfGamesPerPlace = $sportVariant->getNrOfGamesPerPlace();
-            $this->createGames($sportSchedule, $nrOfPlaces, $nrOfGamesPerPlace);
+            $this->createGames($scheduleSport, $nrOfPlaces, $nrOfGamesPerPlace);
         }
     }
 

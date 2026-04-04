@@ -6,12 +6,12 @@ namespace SportsScheduler\Resource\RefereePlace;
 
 use DateTimeImmutable;
 use SportsPlanning\Batch\SelfReferee as SelfRefereeBatch;
-use SportsScheduler\Exceptions\TimeoutException;
 use SportsPlanning\Place as PlanningPlace;
 use SportsPlanning\Planning;
-use SportsScheduler\Planning\Validator\GameAssignments as GameAssignmentValidator;
 use SportsPlanning\Resource\GameCounter;
 use SportsPlanning\Resource\GameCounter\Place as PlaceGameCounter;
+use SportsScheduler\Exceptions\TimeoutException;
+use SportsScheduler\Planning\PlanningGameAssignmentsValidator as GameAssignmentValidator;
 use SportsScheduler\Resource\GameCounter\Unequal as UnequalResource;
 
 final class Replacer

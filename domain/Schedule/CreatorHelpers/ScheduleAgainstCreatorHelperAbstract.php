@@ -17,11 +17,11 @@ abstract class ScheduleAgainstCreatorHelperAbstract
     {
     }
 
-    protected function createGames(ScheduleSport $sportSchedule, ScheduleAgainstGameRound $gameRound): void
+    protected function createGames(ScheduleSport $scheduleSport, ScheduleAgainstGameRound $gameRound): void
     {
         while ($gameRound !== null) {
             foreach ($gameRound->getHomeAways() as $homeAway) {
-                $game = new ScheduleGame($sportSchedule, $gameRound->getNumber());
+                $game = new ScheduleGame($scheduleSport, $gameRound->getNumber());
                 foreach ([AgainstSide::Home, AgainstSide::Away] as $side) {
                     foreach ($homeAway->get($side)->getPlaceNrs() as $placeNr) {
                         $gamePlace = new ScheduleGamePlace($game, $placeNr);
